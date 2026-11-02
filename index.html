@@ -341,6 +341,18 @@ button:active{transform:scale(.98)}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+.mobile-more-list{display:grid;gap:7px}
+.mobile-more-link{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);text-align:left;color:var(--ink)}
+.mobile-more-link>span:first-child{width:35px;height:35px;display:grid;place-items:center;border-radius:11px;background:var(--green-soft);color:var(--green-dark);font-size:17px;flex:0 0 auto}
+.mobile-more-link>span:nth-child(2){display:grid;gap:3px;min-width:0;flex:1}
+.mobile-more-link strong{font-size:11px}.mobile-more-link small{font-size:9px;color:var(--muted)}
+.mobile-more-link>b{color:var(--muted);font-size:15px}
+.sticker-art{background:var(--surface-2)}
+.sticker-upload-mark{background:var(--yellow-soft)}
+.sticker-upload-drop{border-color:var(--line);background:var(--surface-2)}
+@media(max-width:620px){.mobile-nav{justify-content:space-around}.mobile-nav button{flex:1;min-width:0;padding:6px 0;font-size:9px}.mobile-nav button span:first-child{font-size:18px}}
+
 </style>
 </head>
 <body>
@@ -381,8 +393,8 @@ button:active{transform:scale(.98)}
   </div>
  </div>
 </div>
-<nav class="mobile-nav">
- <button data-view="today"><span>◷</span>Today</button><button class="active" data-view="chat"><span>▤</span>Chat</button><button data-view="stickers"><span>✧</span>Stickers</button><button data-view="plans"><span>▦</span>Plans</button><button data-view="memories"><span>▧</span>Vault</button><button data-view="activities"><span>✳</span>Play</button><button data-view="profile"><span>◎</span>Me</button><button data-view="settings"><span>⚙</span>Settings</button>
+<nav class="mobile-nav" aria-label="Main navigation">
+ <button data-view="today"><span>◷</span>Today</button><button class="active" data-view="chat"><span>▤</span>Chat</button><button data-view="stickers"><span>✧</span>Stickers</button><button data-view="plans"><span>▦</span>Plans</button><button data-action="mobile-more" aria-haspopup="dialog"><span>···</span>More</button>
 </nav>
 <div id="modalRoot"></div><div class="toast" id="toast"></div>
 <script>
@@ -613,6 +625,15 @@ function renderProfile(){
  <div class="profile-form-foot"><span class="card-caption">Your email stays private.</span><button class="primary-btn" type="submit">Save profile</button></div></form></section>
  <section class="card card-pad profile-note"><div class="card-title">Your profile follows you</div><p class="card-caption">Your photo and display name update across the circles you’ve joined. You can change them whenever you like.</p></section>`;
 }
+function openMobileMoreMenu(){
+ openModal('More in Circle','The rest of your space is one tap away.',`<div class="mobile-more-list">
+ <button class="mobile-more-link" data-view="memories"><span>▧</span><span><strong>Memory Vault</strong><small>Photos, voice notes and saved moments</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="activities"><span>✳</span><span><strong>Activities</strong><small>Daily Drop, rituals and group activities</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="circle"><span>◉</span><span><strong>Your circle</strong><small>Members and invite details</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="profile"><span>◎</span><span><strong>My profile</strong><small>Your name, photo and bio</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="settings"><span>⚙</span><span><strong>Settings</strong><small>Appearance, quiet hours and alerts</small></span><b>→</b></button>
+ </div>`);
+}
 function renderSettings(){
  const s=state.settings;
  const row=(title,desc,key)=>`<div class="card setting-row"><div class="setting-copy"><strong>${title}</strong><small>${desc}</small></div><button class="toggle ${s[key]?'on':''}" data-action="setting-toggle" data-key="${key}" aria-label="Toggle ${title}"><span></span></button></div>`;
@@ -727,7 +748,7 @@ async function sendSelectedPhoto(button){
 const root=document.body;root.addEventListener('click',e=>{const b=e.target.closest('[data-view],[data-action],[data-filter]');if(!b)return;
  if(b.dataset.view){if(b.tagName==='A')e.preventDefault();if(b.closest('.modal'))closeModal();setView(b.dataset.view);return}if(b.dataset.filter){memoryFilter=b.dataset.filter;render();return}
  const a=b.dataset.action,rawId=b.dataset.id,id=rawId&&Number.isNaN(Number(rawId))?rawId:Number(rawId);
- if(a==='close-modal'){closeModal();return}if(a==='open-reactions'){openReactionPicker(rawId);return}if(a==='choose-reaction'){const messageId=rawId,emoji=b.dataset.reaction;openReactionMessageId=null;render();if(window.CircleCloud)window.CircleCloud.react(messageId,emoji).catch(e=>toast('Reaction not saved: '+(e.code||e.message)));else{const message=state.messages.find(item=>String(item.id)===String(messageId));if(message){const list=message.reactions||(message.reactions=[]),index=list.findIndex(value=>value.startsWith(emoji));if(index>=0)list.splice(index,1);else list.push(emoji+' 1');save();render()}}return}if(a==='backdrop-close'&&e.target===b){closeModal();return}if(a==='remove-drop-photo'){pendingDropPhotoData='';const preview=$('#dropPhotoPreview'),remove=$('[data-action="remove-drop-photo"]');if(preview){preview.src='';preview.hidden=true}if(remove)remove.hidden=true;return}if(a==='device-check'){openDeviceCheck();return}if(a==='device-mic'){runDeviceCheck('mic');return}if(a==='device-camera'){runDeviceCheck('camera');return}if(a==='device-stop'){stopDeviceCheck();const status=$('#deviceCheckStatus');if(status)status.textContent='Devices stopped.';return}if(a==='send-photo'){sendSelectedPhoto(b);return}
+ if(a==='close-modal'){closeModal();return}if(a==='mobile-more'){openMobileMoreMenu();return}if(a==='open-reactions'){openReactionPicker(rawId);return}if(a==='choose-reaction'){const messageId=rawId,emoji=b.dataset.reaction;openReactionMessageId=null;render();if(window.CircleCloud)window.CircleCloud.react(messageId,emoji).catch(e=>toast('Reaction not saved: '+(e.code||e.message)));else{const message=state.messages.find(item=>String(item.id)===String(messageId));if(message){const list=message.reactions||(message.reactions=[]),index=list.findIndex(value=>value.startsWith(emoji));if(index>=0)list.splice(index,1);else list.push(emoji+' 1');save();render()}}return}if(a==='backdrop-close'&&e.target===b){closeModal();return}if(a==='remove-drop-photo'){pendingDropPhotoData='';const preview=$('#dropPhotoPreview'),remove=$('[data-action="remove-drop-photo"]');if(preview){preview.src='';preview.hidden=true}if(remove)remove.hidden=true;return}if(a==='device-check'){openDeviceCheck();return}if(a==='device-mic'){runDeviceCheck('mic');return}if(a==='device-camera'){runDeviceCheck('camera');return}if(a==='device-stop'){stopDeviceCheck();const status=$('#deviceCheckStatus');if(status)status.textContent='Devices stopped.';return}if(a==='send-photo'){sendSelectedPhoto(b);return}
  if(a==='free'){openFree();return}if(a==='not-free'){state.me.free=false;state.me.freeUntil=null;if(window.CircleCloud)window.CircleCloud.setAvailability(false).catch(e=>toast('Availability not updated: '+e.code));save();closeModal();render();toast('Your availability is now off.');return}if(a==='invite'){openInvite();return}if(a==='new-plan'){openNewPlan();return}if(a==='new-circle'){openNewCircle();return}if(a==='hangout'){openHangout();return}if(a==='circle-info'){setView('circle');return}if(a==='daily-drop'){openDailyDrop();return}
  if(a==='send-message'){const inp=$('#messageInput');if(inp&&!b.disabled&&inp.value.trim()){const value=inp.value;b.disabled=true;sendMessage(value).then(sent=>{if(sent){const current=$('#messageInput');if(current){current.value='';current.style.height='36px'}pendingChatBottom=true;render();$('#messageInput')?.focus()}}).catch(e=>toast('Message not sent: '+(e.code||e.message))).finally(()=>{if(b.isConnected)b.disabled=false})}return}if(a==='cancel-reply'){replyTo=null;render();return}
  if(a==='commitment'){const m=state.messages.find(x=>String(x.id)===String(id));openCommitment(m?.text||'');return}
