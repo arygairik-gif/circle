@@ -45,11 +45,19 @@ service cloud.firestore {
    }
 
    match /{feature}/{itemId} {
-    function supportedFeature(){return feature in ['commitments','memories','rituals','quests','activities','dropAnswers'];}
+    function supportedFeature(){return feature in ['commitments','memories','rituals','quests','activities'];}
     allow read:if supportedFeature() && isMember(cid);
     allow create:if supportedFeature() && isMember(cid) && request.resource.data.uid==request.auth.uid;
     allow update:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid && request.resource.data.uid==request.auth.uid;
     allow delete:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid;
+   }
+   match /dailyDrops/{date}/answers/{uid} {
+    allow create: if isMember(cid) && request.auth.uid==uid && request.resource.data.uid==uid &&
+     request.resource.data.date==date && request.resource.data.answer is string &&
+     request.resource.data.answer.size()>0 && request.resource.data.answer.size()<=1000;
+    allow get, list: if isMember(cid) && (request.auth.uid==uid ||
+     exists(/databases/$(database)/documents/circles/$(cid)/dailyDrops/$(date)/answers/$(request.auth.uid)));
+    allow update, delete: if false;
    }
    match /privateReplies/{replyId} {
     allow create:if isMember(cid) && request.resource.data.fromUid==request.auth.uid && request.resource.data.toUid is string && exists(/databases/$(database)/documents/circles/$(cid)/members/$(request.resource.data.toUid)) && request.resource.data.reply is string && request.resource.data.reply.size()<=1500;
