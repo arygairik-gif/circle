@@ -40,7 +40,16 @@ async function openCircle(id){
  const p=await getDoc(doc(db,'users',user.uid));const el=$('.profile-name');if(el)el.textContent=p.data()?.displayName||user.displayName||'You';ui.state.members=ui.state.members||[];ui.render();
  const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);ui.render()},e=>ui.toast(name+' could not load: '+e.code)));
  watch('commitments','commitments');watch('memories','memories');watch('rituals','rituals');watch('quests','quests');watch('activities','activities');
- stops.push(onSnapshot(query(collection(db,'circles',id,'dropAnswers'),where('date','==',dayKey())),s=>{const entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.state.dropEntries=entries;ui.state.drop.entries=entries;const mine=entries.find(x=>x.uid===user.uid);ui.state.drop.posted=!!mine;ui.state.drop.answer=mine?.answer||'';ui.render()},e=>ui.toast('Daily Drop could not load: '+e.code)));
+ async function listenDailyDropAnswers(targetCircleId){
+ const ownRef=doc(db,'circles',targetCircleId,'dailyDrops',dayKey(),'answers',user.uid);
+ const own=await getDoc(ownRef);
+ ui.state.drop.posted=own.exists();ui.state.drop.answer=own.data()?.answer||'';
+ if(own.exists())stops.push(onSnapshot(collection(db,'circles',targetCircleId,'dailyDrops',dayKey(),'answers'),s=>{
+  ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
+ },e=>ui.toast('Daily Drop answers could not load: '+e.code)));
+ ui.render();
+}
+listenDailyDropAnswers(id).catch(e=>ui.toast('Daily Drop could not load: '+e.code));
  let sentReplies=[],receivedReplies=[];
  const renderReplies=()=>{ui.state.quietReplies=[...sentReplies,...receivedReplies].filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i);ui.render()};
  stops.push(onSnapshot(query(collection(db,'circles',id,'privateReplies'),where('fromUid','==',user.uid)),s=>{sentReplies=s.docs.map(d=>({id:d.id,...d.data()}));renderReplies()},e=>ui.toast('Sent private replies could not load: '+e.code)));
@@ -71,7 +80,17 @@ async function addRitual(d){return addRecord('rituals',{title:safeText(d.title,1
 async function addQuest(d){return addRecord('quests',{title:safeText(d.title,100),desc:safeText(d.desc,300),icon:safeText(d.icon,8),done:false,people:1})}
 async function toggleQuest(id,done){return updateDoc(doc(db,'circles',circleId,'quests',String(id)),{done:!!done,updatedAt:serverTimestamp()})}
 async function addActivity(d){return addRecord('activities',{type:safeText(d.type,40),answer:safeText(d.answer,1500),unlock:safeText(d.unlock,40),title:safeText(d.title,100)})}
-async function addDropAnswer(answer,prompt){const value=safeText(answer,1000);if(!value)throw new Error('Write an answer first.');const existing=await getDocs(query(collection(db,'circles',circleId,'dropAnswers'),where('date','==',dayKey()),where('uid','==',user.uid)));if(!existing.empty)throw new Error('You have already posted today.');return addRecord('dropAnswers',{date:dayKey(),prompt:safeText(prompt,300),answer:value,name:user.displayName||'You'})}
+async function addDropAnswer(answer,prompt){
+ const value=safeText(answer,1000);if(!value)throw new Error('Write an answer first.');
+ const answerRef=doc(db,'circles',circleId,'dailyDrops',dayKey(),'answers',user.uid);
+ const existing=await getDoc(answerRef);if(existing.exists())throw new Error('You have already posted today.');
+ await setDoc(answerRef,{uid:user.uid,date:dayKey(),prompt:safeText(prompt,300),answer:value,name:user.displayName||'You',createdAt:serverTimestamp()});
+ const ui=window.CircleApp;ui.state.drop.posted=true;ui.state.drop.answer=value;
+ stops.push(onSnapshot(collection(db,'circles',circleId,'dailyDrops',dayKey(),'answers'),s=>{
+  ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
+ },e=>ui.toast('Daily Drop answers could not load: '+e.code)));
+ ui.render();
+}
 async function addQuietReply(toUid,messageId,reply){if(!toUid||toUid==='you'||toUid===user.uid)throw new Error('Choose another circle member.');return addRecord('privateReplies',{fromUid:user.uid,toUid,messageId:String(messageId),reply:safeText(reply,1500)})}
 async function setSupport(enabled,preference=''){return updateDoc(memberRef(),{support:!!enabled,supportPreference:safeText(preference,100),lastSeen:serverTimestamp()})}
 async function createPlan(d){const options=String(d.options||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);await addDoc(collection(db,'circles',circleId,'plans'),{title:String(d.title).slice(0,100),description:String(d.description||'').slice(0,500),date:d.date||'',time:options[0]||'',place:String(d.place||'').slice(0,120),options,votes:options.map(()=>[]),rsvps:[],status:'Voting open',createdBy:user.uid,createdAt:serverTimestamp()})}
