@@ -9,7 +9,7 @@ function dailyPrompt(){let n=0;for(const ch of dayKey())n=(n*31+ch.charCodeAt(0)
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const gate=$('#cloudGate'), shell=$('.app');
-let user=null,circleId=null,stops=[];
+let user=null,circleId=null,stops=[],firstMessageSnapshot=true;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const error=m=>{const el=$('#cloudError');if(el)el.textContent=m};
 const explain=e=>({'auth/email-already-in-use':'That email already has an account. Sign in instead.','auth/invalid-credential':'Email or password is incorrect.','auth/weak-password':'Use at least 6 characters.','auth/unauthorized-domain':'Add this website in Firebase Authentication → Authorized domains.'}[e.code]||`Firebase error: ${e.code||e.message}`);
@@ -33,11 +33,11 @@ function picker(items){
 }
 function makeCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',a=crypto.getRandomValues(new Uint8Array(10));return [...a].map(x=>chars[x%chars.length]).join('')}
 async function openCircle(id){
- stop();circleId=id;const ui=window.CircleApp;
+ stop();circleId=id;firstMessageSnapshot=true;const ui=window.CircleApp;
  try{const c=await getDoc(doc(db,'circles',id)),m=await getDoc(doc(db,'circles',id,'members',user.uid));if(!c.exists()||!m.exists())throw new Error('Circle not found or membership is no longer active.');
  ui.state.circleName=c.data().name||'Your circle';ui.state.messages=[];ui.state.members=[];ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
  stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{const members=s.docs.map(d=>({id:d.id,...d.data(),status:d.data().status==='free'?'Free now':'Around',initial:(d.data().name||'?').slice(0,1).toUpperCase(),tone:''})),mine=members.find(x=>x.id===user.uid);if(mine){ui.state.me.mood=mine.mood||null;ui.state.me.free=mine.status==='Free now';ui.state.me.activity=mine.activity||''}ui.state.members=members;ui.render()},e=>ui.toast('Members could not load: '+e.code)));
- stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',image:x.imageUrl||(x.attachmentType==='image'?x.attachmentUrl:''),audio:x.attachmentType==='audio'?x.attachmentUrl:'',reactions:Object.entries(x.reactions||{}).map(([k,v])=>`${k} ${v.length}`)}});ui.render()},e=>ui.toast('Messages could not load: '+e.code)));
+ stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{if(firstMessageSnapshot){firstMessageSnapshot=false}else if(ui.state.settings?.browserNotifications&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})})}ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',image:x.imageUrl||(x.attachmentType==='image'?x.attachmentUrl:''),audio:x.attachmentType==='audio'?x.attachmentUrl:'',reactions:Object.entries(x.reactions||{}).map(([k,v])=>`${k} ${v.length}`)}});ui.render()},e=>ui.toast('Messages could not load: '+e.code)));
  stops.push(onSnapshot(query(collection(db,'circles',id,'plans'),orderBy('createdAt','desc'),limit(50)),s=>{ui.state.plans=s.docs.map(d=>{const x=d.data();return{id:d.id,...x,options:x.options||[],votes:(x.votes||[]).map(a=>(a||[]).map(uid=>uid===user.uid?'you':uid)),rsvps:(x.rsvps||[]).map(uid=>uid===user.uid?'you':uid)}});ui.render()},e=>ui.toast('Plans could not load: '+e.code)));
  const p=await getDoc(doc(db,'users',user.uid));const el=$('.profile-name');if(el)el.textContent=p.data()?.displayName||user.displayName||'You';ui.state.members=ui.state.members||[];ui.render();
  const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);ui.render()},e=>ui.toast(name+' could not load: '+e.code)));
@@ -57,6 +57,14 @@ listenDailyDropAnswers(id).catch(e=>ui.toast('Daily Drop could not load: '+e.cod
  stops.push(onSnapshot(query(collection(db,'circles',id,'privateReplies'),where('fromUid','==',user.uid)),s=>{sentReplies=s.docs.map(d=>({id:d.id,...d.data()}));renderReplies()},e=>ui.toast('Sent private replies could not load: '+e.code)));
  stops.push(onSnapshot(query(collection(db,'circles',id,'privateReplies'),where('toUid','==',user.uid)),s=>{receivedReplies=s.docs.map(d=>({id:d.id,...d.data()}));renderReplies()},e=>ui.toast('Received private replies could not load: '+e.code)));
  }catch(x){gateView(`<section class="cloud-panel"><h1>Couldn’t open this circle</h1><p class="cloud-copy">${esc(x.message)}</p><button class="cloud-primary" id="backCircles">Back to circles</button></section>`);$('#backCircles').onclick=()=>myCircles().then(picker)}
+}
+async function enableBrowserNotifications(){
+ if(!('Notification' in window))throw new Error('This browser does not support notifications.');
+ const permission=await Notification.requestPermission();
+ if(permission!=='granted')throw new Error('Notification permission was not granted.');
+ window.CircleApp.state.settings.browserNotifications=true;
+ window.CircleApp.render();
+ return true;
 }
 async function sendMessage(text){const value=safeText(text,1500);if(!value)return;if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');await addDoc(collection(db,'circles',circleId,'messages'),{uid:user.uid,displayName:user.displayName||user.email.split('@')[0],text:value,createdAt:serverTimestamp(),reactions:{}})}
 async function uploadCircleFile(file){
@@ -102,5 +110,5 @@ async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id)
 const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
 async function setAvailability(free,activity=''){await updateDoc(memberRef(),{status:free?'free':'around',activity:String(activity).slice(0,80),lastSeen:serverTimestamp()})}
-window.CircleCloud={backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,signOut:()=>signOut(auth),inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>signOut(auth),inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{stop();user=u;if(!u){authScreen();return}try{const r=doc(db,'users',u.uid),p=await getDoc(r);if(!p.exists())await setDoc(r,{displayName:u.displayName||u.email.split('@')[0],email:u.email,createdAt:serverTimestamp()},{merge:true});picker(await myCircles())}catch(x){authScreen();error(`Firebase setup issue: ${x.code||x.message}. Enable Authentication and create a Firestore database.`)}});
