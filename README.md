@@ -36,7 +36,7 @@ npm install -g firebase-tools
 firebase login
 firebase use circle-20c34
 npm run build
-firebase deploy --only firestore:rules,hosting
+firebase deploy --only firestore,storage,hosting
 ```
 
 `firebase.json` publishes Vite's `dist/` folder.
@@ -51,7 +51,14 @@ firebase deploy --only firestore:rules,hosting
 
 The rules deny circle reads/writes unless the signed-in user is a member. Invite documents allow direct lookup by code, not listing. Do not replace these rules with open access rules.
 
-## Still not live
-Image/file uploads and voice notes still need Firebase Storage plus recording/playback UI. Voice/video rooms need a separate real-time media service such as LiveKit. Browser alerts are available while Circle is open in a background tab. True background push notifications need FCM setup, a service worker and web-push configuration. AI catch-up needs a secure server-side AI integration. Some decorative counters, awards, sample prompts and room UI remain demo content.
+## Feature status and remaining setup
+- **Photos and voice notes:** upload from chat to Firebase Storage and appear in chat and Memory Vault. Enable the Storage bucket and publish `storage.rules` before using them. Browser microphone permission is requested only when recording starts.
+- **Daily Drop:** prompts are consistent by local calendar date. Each member's answers are hidden from other members until that member has submitted their own answer; the Firestore rules enforce this.
+- **Catch-up panel:** uses recent messages, plans and open commitments. It is a data-driven summary, not an AI-generated summary.
+- **Group stats and awards:** counts are calculated from loaded circle data. Playlist and sticker activities currently save text contributions; they do not connect to a music service or generate sticker images.
+- **Browser alerts:** can show new-message alerts while Circle is open in a background tab. True push when the site is closed still needs Firebase Cloud Messaging, a VAPID public key, a service worker and a trusted sender backend.
+- **Voice/video rooms:** the room tile is still a preview. A real multi-person room needs a provider such as LiveKit and a server endpoint that issues signed room tokens. Never put media-provider API secrets in browser code.
+- **AI catch-up:** not connected. It needs a secure server-side AI integration and a provider key; do not paste a private API key into `src/` or the browser.
+
 
 **Security:** Firebase Auth + Firestore rules provide authenticated access control, not end-to-end encryption. Do not describe Circle as E2EE. Add App Check, abuse controls, rate limits, retention/deletion workflows and a security review before wider use.
