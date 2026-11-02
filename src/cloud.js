@@ -224,7 +224,7 @@ async function openCircle(id){
   async function listenDailyDropAnswers(targetCircleId){
    const ownRef=doc(db,'circles',targetCircleId,'dailyDrops',dayKey(),'answers',user.uid);
    const own=await getDoc(ownRef);
-   ui.state.drop.posted=own.exists();ui.state.drop.answer=own.data()?.answer||'';
+   ui.state.drop.posted=own.exists();ui.state.drop.answer=own.data()?.answer||'';ui.state.drop.photoDataUrl=own.data()?.photoDataUrl||'';
    if(own.exists())stops.push(onSnapshot(collection(db,'circles',targetCircleId,'dailyDrops',dayKey(),'answers'),s=>{
     ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
    },e=>ui.toast('Daily Drop answers could not load: '+e.code)));
