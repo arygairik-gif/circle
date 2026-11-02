@@ -586,10 +586,15 @@ async function sendSelectedPhoto(button){
  if(!pendingPhotoFile){toast('Choose a photo first.');return}
  button.disabled=true;button.textContent='Sending…';
  try{
-  await window.CircleCloud.sendAttachment(pendingPhotoFile);
-  pendingChatBottom=true;toast('Photo shared and saved to Memory Vault.');
+  const result=await window.CircleCloud.sendAttachment(pendingPhotoFile);
+  pendingChatBottom=true;
+  toast(result.memorySaved?'Photo shared and saved to Memory Vault.':'Photo sent to chat. The Memory Vault copy was blocked by Firestore rules.');
   pendingPhotoFile=null;closeModal();
- }catch(e){button.disabled=false;button.textContent='Try again';toast('Photo not sent: '+(e.code||e.message))}
+ }catch(e){
+  button.disabled=false;button.textContent='Try again';
+  const reason=e.code==='permission-denied'?'Firestore denied the chat photo write. Publish the latest firestore.rules and confirm you are still a member of this circle.':(e.message||e.code||'Unknown error');
+  toast('Photo not sent: '+reason);
+ }
 }
 // Delegated interactions
 const root=document.body;root.addEventListener('click',e=>{const b=e.target.closest('[data-view],[data-action],[data-filter]');if(!b)return;
