@@ -1,46 +1,57 @@
 # Circle
 
-A private home for your friend group to chat, make plans, see who is free, and keep shared memories.
+Circle keeps the original warm, card-based design and now uses Firebase Authentication and Cloud Firestore for its live account and group features.
 
-This repository contains the original Circle browser prototype. The visual design stays with the first warm, card-based layout: left navigation, a focused group conversation, and a right rail for plans, availability, promises, and the Daily Drop.
+## Live features
+- Email/password accounts and Google sign-in.
+- Create multiple private circles and switch between them.
+- Random invite codes; joining requires a valid code and creates a member record.
+- Live group chat across signed-in devices.
+- Firestore-backed message reactions.
+- Shared plans, time-option voting and RSVPs.
+- Group member profiles, availability and mood check-ins.
+- Firestore rules restrict circle content to authenticated members.
 
-## Run it
+## Run locally
+Requires Node.js 20.19+ or 22.12+.
 
-No build step or package installation is required.
+```bash
+npm install
+npm run dev
+```
 
-1. Download or clone this repository.
-2. Open `index.html` in a modern browser, or serve the repository with any static web host.
-3. Changes are stored in the current browser when local storage is available. Use **Settings → Export my data** to keep a JSON copy.
+Open the Vite URL (normally http://localhost:5173). The Firebase web configuration for `circle-20c34` is in `src/firebase.js`. Firebase web config is public client configuration, not a server credential. Never commit a service-account JSON file or Admin SDK private key.
 
-## Included in the prototype
+## One-time Firebase Console setup
+1. Open Firebase project `circle-20c34`.
+2. In **Authentication → Sign-in method**, enable **Email/Password** and **Google**.
+3. In **Authentication → Settings → Authorized domains**, add `localhost` and the exact production hosting domain.
+4. In **Firestore Database**, create a database.
+5. Publish `firestore.rules` (Firestore → Rules) or deploy using the Firebase CLI.
+6. Run Circle, create an account, then create a circle. Friends join using the generated invite code.
 
-- Today dashboard, friend-group chat, plans board, Memory Vault, activities, circle details, and settings.
-- Local demo messages, message reactions, replies, quiet replies, and image attachments (up to 5 MB).
-- Catch-up card, plans with voting and RSVPs, commitments, availability, Daily Drop, Group Pulse, Friend Quests, and rituals.
-- Search across demo messages and memories.
-- Invite link preview, browser data export, and demo-data reset.
-- Responsive layouts for desktop, tablet, and mobile.
+## Deploy
+```bash
+npm install -g firebase-tools
+firebase login
+firebase use circle-20c34
+npm run build
+firebase deploy --only firestore:rules,hosting
+```
 
-## Prototype boundaries
+`firebase.json` publishes Vite's `dist/` folder.
 
-This is a front-end prototype, not a live multi-user chat service. Data is local to one browser and is not synchronized between friends or devices.
+## Data model
+- `users/{uid}` and `users/{uid}/circles/{circleId}`
+- `circles/{circleId}`
+- `circles/{circleId}/members/{uid}`
+- `circles/{circleId}/messages/{messageId}`
+- `circles/{circleId}/plans/{planId}`
+- `invites/{code}` (random code lookup; listing is denied)
 
-The following still need a real backend or media service: account authentication, invite validation, real-time cross-device messaging, actual push notifications, voice/video/screen-share rooms, voice recording and transcription, AI catch-up summaries, and end-to-end encryption.
+The rules deny circle reads/writes unless the signed-in user is a member. Invite documents allow direct lookup by code, not listing. Do not replace these rules with open access rules.
 
-Do not treat the sample invite link, sample availability, seeded friends, or sample activity responses as live service data.
+## Still not live
+Memory Vault, Daily Drop, commitments, friend quests, rituals, most activities, private replies, image/file uploads, voice notes, voice/video rooms, push notifications and AI catch-up are not yet synchronized or implemented as live services. Some remaining UI interactions are local/demo behavior. Image uploads need Firebase Storage setup and appropriate billing/security rules. Voice/video needs a separate real-time media service. Notifications need a service worker and web-push setup.
 
-## Current UI and reliability fixes
-
-- Opens the conversation at the newest message.
-- Keeps the mobile chat composer above the bottom navigation while the message history scrolls independently.
-- Prevents horizontal overflow at common phone widths.
-- Makes global search submit by Enter or its visible submit control and allows memory results to open in the Memory Vault.
-- Adds a clipboard fallback for invite copying.
-- Handles unavailable browser storage and malformed saved data without breaking the interface.
-- Escapes user-entered content before rendering it as HTML.
-- Adds modal dialog semantics, focus handling, Escape-to-close, and visible keyboard focus.
-- Uses local calendar dates for date fields and safely handles missing or invalid stored dates.
-
-## Next step
-
-Connect the prototype to Firebase or Supabase for authentication, persistent circle data, and real-time messaging. Add a dedicated WebRTC service for live rooms and a reviewed encryption implementation before calling it a private, end-to-end encrypted messaging service.
+**Security:** Firebase Auth + Firestore rules provide authenticated access control, not end-to-end encryption. Do not describe Circle as E2EE. Add App Check, abuse controls, rate limits, retention/deletion workflows and a security review before wider use.
