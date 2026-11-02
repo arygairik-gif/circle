@@ -35,30 +35,131 @@ async function prepareProfilePhoto(file){
  if(!blob||blob.size>140*1024)throw new Error('That photo could not be compressed enough. Try a smaller picture.');
  return readAsDataUrl(new File([blob],'circle-profile.jpg',{type:'image/jpeg'}));
 }
+function authShell(panel,mode='auth'){
+ return `<div class="cloud-auth-layout ${mode==='setup'?'cloud-setup-layout':''}">
+  <aside class="cloud-auth-story">
+   <div class="cloud-story-brand"><span class="brand-mark">c</span><span><strong>circle</strong><small>CLOSER, TOGETHER</small></span></div>
+   <div class="cloud-story-copy"><p class="cloud-kicker">A LITTLE SPACE FOR YOUR PEOPLE</p><h2>Good things<br>happen <em>together.</em></h2><p>Keep the chats, plans, tiny traditions and everyday moments with the people who matter.</p></div>
+   <div class="cloud-story-scene" aria-hidden="true"><span class="cloud-scene-orbit orbit-one"></span><span class="cloud-scene-orbit orbit-two"></span><span class="cloud-scene-dot dot-one">M</span><span class="cloud-scene-dot dot-two">A</span><span class="cloud-scene-dot dot-three">R</span><span class="cloud-scene-note">the usuals · since always ✳</span></div>
+   <div class="cloud-story-foot">PRIVATE CIRCLES · SMALL MOMENTS · REAL FRIENDSHIPS</div>
+  </aside>
+  <section class="cloud-panel">${panel}</section>
+ </div>`;
+}
+function suggestedHandle(name,email=''){
+ const base=safeText(name||email.split('@')[0]||'friend',24).toLowerCase().replace(/[^a-z0-9._]/g,'').replace(/^[._]+|[._]+$/g,'');
+ return base.length>=3?base:'friend'+String(user?.uid||'').slice(0,5).toLowerCase();
+}
+function paintAuthAvatar(imageUrl,initial){
+ const img=$('#cloudPhotoImg'),fallback=$('#cloudPhotoFallback');
+ if(img){img.src=imageUrl||'';img.hidden=!imageUrl}
+ if(fallback){fallback.textContent=(initial||'C').slice(0,1).toUpperCase();fallback.hidden=!!imageUrl}
+}
 function authScreen(){
- gateView(`<section class="cloud-panel"><div class="brand-mark">c</div><p class="cloud-kicker">CIRCLE · FRIENDS ONLY</p><h1>Closer, together.</h1><p class="cloud-copy">Sign in to reach your private circle, pick up conversations and make plans.</p><form id="cloudAuthForm"><label>Email<input name="email" type="email" autocomplete="email" required maxlength="254"></label><label>Password<input name="password" type="password" autocomplete="current-password" required minlength="6"></label><label id="cloudNameWrap" hidden>Display name<input name="displayName" maxlength="40" autocomplete="name"></label><label id="cloudHandleWrap" hidden>Username<input name="handle" maxlength="24" autocomplete="username" placeholder="e.g. gairik"></label><label id="cloudPhotoWrap" hidden>Profile photo<input id="cloudSignupPhoto" name="photo" type="file" accept="image/*"></label><img id="cloudPhotoPreview" class="cloud-photo-preview" alt="Profile photo preview" hidden><div class="cloud-error" id="cloudError" role="alert"></div><button class="cloud-primary" id="cloudSubmit">Sign in</button></form><button class="cloud-google" id="cloudGoogle">Continue with Google</button><p class="cloud-switch"><span id="cloudSwitchText">New to Circle?</span> <button id="cloudSwitch" type="button">Create account</button></p></section>`);
+ const panel=`<div class="cloud-mobile-brand"><span class="brand-mark">c</span><span>circle</span></div>
+  <div class="cloud-panel-heading"><p class="cloud-kicker">CIRCLE · FRIENDS ONLY</p><h1>Closer, together.</h1><p class="cloud-copy">A private space for your chats, plans and favourite people.</p></div>
+  <div class="cloud-auth-tabs"><span id="cloudModeLabel">Welcome back</span><span class="cloud-auth-secure">Private by design</span></div>
+  <form id="cloudAuthForm" novalidate>
+   <label>Email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></label>
+   <label>Password<input name="password" type="password" autocomplete="current-password" required minlength="6" placeholder="At least 6 characters"></label>
+   <div id="cloudIdentityWrap" class="cloud-identity-wrap" hidden>
+    <div class="cloud-dp-row"><div class="cloud-dp-preview"><img id="cloudPhotoImg" alt="Profile photo preview" hidden><span id="cloudPhotoFallback">Y</span></div><div class="cloud-dp-copy"><strong>Your profile photo</strong><small>Pick a photo or use your initials for now.</small><label class="cloud-upload-btn" for="cloudSignupPhoto">Choose photo</label><input id="cloudSignupPhoto" class="cloud-file-input" type="file" accept="image/*"></div></div>
+    <label>Display name<input name="displayName" maxlength="40" autocomplete="name" placeholder="What should friends call you?"></label>
+    <label>Username<input name="handle" maxlength="24" autocomplete="username" required pattern="[A-Za-z0-9._]{3,24}" placeholder="e.g. gairik"></label>
+    <p class="cloud-field-hint">3–24 characters · letters, numbers, dots or underscores.</p>
+   </div>
+   <div class="cloud-error" id="cloudError" role="alert"></div>
+   <button class="cloud-primary" id="cloudSubmit">Sign in</button>
+  </form>
+  <div class="cloud-or"><span></span>OR<span></span></div>
+  <button class="cloud-google" id="cloudGoogle"><span class="google-g">G</span> Continue with Google</button>
+  <p class="cloud-switch"><span id="cloudSwitchText">New to Circle?</span> <button id="cloudSwitch" type="button">Create account</button></p>
+  <p class="cloud-legal">By continuing, you agree to use Circle respectfully and keep your friends’ moments private.</p>`;
+ gateView(authShell(panel));
  let mode='signin';
- const setMode=next=>{mode=next;const signup=mode==='signup';$('#cloudNameWrap').hidden=!signup;$('#cloudHandleWrap').hidden=!signup;$('#cloudPhotoWrap').hidden=!signup;$('#cloudNameWrap').querySelector('input').required=signup;$('#cloudSubmit').textContent=signup?'Create account':'Sign in';$('#cloudSwitchText').textContent=signup?'Already have an account?':'New to Circle?';$('#cloudSwitch').textContent=signup?'Sign in':'Create account';error('');if(!signup){signupPhotoDataUrl='';$('#cloudPhotoPreview').hidden=true}};
+ const setMode=next=>{
+  mode=next;const signup=mode==='signup';
+  $('#cloudIdentityWrap').hidden=!signup;
+  $('#cloudIdentityWrap').querySelector('[name="handle"]').required=signup;
+  $('#cloudModeLabel').textContent=signup?'Make your space':'Welcome back';
+  $('#cloudSubmit').textContent=signup?'Create account':'Sign in';
+  $('#cloudSwitchText').textContent=signup?'Already have an account?':'New to Circle?';
+  $('#cloudSwitch').textContent=signup?'Sign in':'Create account';
+  error('');
+  if(signup){paintAuthAvatar(signupPhotoDataUrl,$('#cloudAuthForm').elements.displayName.value||'Y')}
+  else{signupPhotoDataUrl='';paintAuthAvatar('','Y')}
+ };
  $('#cloudSwitch').onclick=()=>setMode(mode==='signin'?'signup':'signin');
+ $('#cloudAuthForm').addEventListener('input',e=>{
+  if(e.target.name==='displayName'&&!signupPhotoDataUrl)paintAuthAvatar('',e.target.value||'Y');
+ });
  $('#cloudAuthForm').addEventListener('change',async e=>{
   if(e.target.id!=='cloudSignupPhoto')return;
   const file=e.target.files?.[0];if(!file)return;
-  try{signupPhotoDataUrl=await prepareProfilePhoto(file);const preview=$('#cloudPhotoPreview');preview.src=signupPhotoDataUrl;preview.hidden=false}
-  catch(x){signupPhotoDataUrl='';error(x.message||'Could not prepare that photo.')}
+  try{signupPhotoDataUrl=await prepareProfilePhoto(file);paintAuthAvatar(signupPhotoDataUrl,$('#cloudAuthForm').elements.displayName.value||'Y');error('')}
+  catch(x){signupPhotoDataUrl='';paintAuthAvatar('',$('#cloudAuthForm').elements.displayName.value||'Y');error(x.message||'Could not prepare that photo.')}
  });
- $('#cloudAuthForm').onsubmit=async e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.currentTarget)),b=$('#cloudSubmit');b.disabled=true;
+ $('#cloudAuthForm').onsubmit=async e=>{
+  e.preventDefault();const form=e.currentTarget,d=Object.fromEntries(new FormData(form)),b=$('#cloudSubmit');
+  if(!form.reportValidity())return;
+  b.disabled=true;
   try{
    if(mode==='signup'){
-    const name=safeText(d.displayName||d.email.split('@')[0],40),handle=safeText(d.handle,24).replace(/[^a-zA-Z0-9._]/g,'');
+    const name=safeText(d.displayName||d.email.split('@')[0],40),handle=safeText(d.handle,24).toLowerCase();
+    if(!/^[a-z0-9._]{3,24}$/.test(handle))throw new Error('Choose a username with 3–24 letters, numbers, dots or underscores.');
+    profileData={displayName:name,handle,bio:'',photoURL:signupPhotoDataUrl||'',email:d.email.trim()};
     const c=await createUserWithEmailAndPassword(auth,d.email.trim(),d.password);
     await updateProfile(c.user,{displayName:name});
-    profileData={displayName:name,handle,bio:'',photoURL:signupPhotoDataUrl||'',email:c.user.email};
     await setDoc(doc(db,'users',c.user.uid),{...profileData,createdAt:serverTimestamp()});
    }else await signInWithEmailAndPassword(auth,d.email.trim(),d.password);
-  }catch(x){error(explain(x))}finally{b.disabled=false}
+  }catch(x){error(explain(x))}
+  finally{b.disabled=false}
  };
- $('#cloudGoogle').onclick=async()=>{try{await signInWithPopup(auth,new GoogleAuthProvider())}catch(x){error(explain(x))}};
+ $('#cloudGoogle').onclick=async()=>{
+  const b=$('#cloudGoogle');b.disabled=true;
+  try{const result=await signInWithPopup(auth,new GoogleAuthProvider());const photo=result.user.photoURL||'';const current=await getDoc(doc(db,'users',result.user.uid));profileData={...(current.data()||{}),displayName:current.data()?.displayName||result.user.displayName||result.user.email.split('@')[0],handle:current.data()?.handle||'',bio:current.data()?.bio||'',photoURL:current.data()?.photoURL||photo,email:result.user.email};}
+  catch(x){error(explain(x))}
+  finally{b.disabled=false}
+ };
 }
+function profileSetupScreen(){
+ const googlePhoto=profileData.photoURL||user?.photoURL||'',displayName=profileData.displayName||user?.displayName||user?.email?.split('@')[0]||'Friend';
+ const defaultHandle=profileData.handle||suggestedHandle(displayName,user?.email||'');
+ const photoMarkup=googlePhoto?`<img id="setupPhotoImg" src="${esc(googlePhoto)}" alt="Profile photo preview">`:`<span id="setupPhotoFallback">${esc(displayName.slice(0,1).toUpperCase())}</span>`;
+ const panel=`<div class="cloud-mobile-brand"><span class="brand-mark">c</span><span>circle</span></div>
+  <div class="cloud-panel-heading"><p class="cloud-kicker">ONE LAST LITTLE THING</p><h1>Make it yours.</h1><p class="cloud-copy">Your Google account is connected. Add a username and check your profile photo before joining your circle.</p></div>
+  <form id="cloudProfileSetupForm">
+   <div class="cloud-setup-avatar-row"><div class="cloud-setup-avatar" id="setupAvatarPreview">${photoMarkup}</div><div><strong>Profile photo</strong><small>${googlePhoto?'We brought this over from Google. Keep it or choose another.':'Choose a photo so friends can recognise you.'}</small><label class="cloud-upload-btn" for="setupPhotoInput">Change photo</label><input id="setupPhotoInput" class="cloud-file-input" type="file" accept="image/*"></div></div>
+   <label>Display name<input name="displayName" value="${esc(displayName)}" maxlength="40" required autocomplete="name"></label>
+   <label>Username<input name="handle" value="${esc(defaultHandle)}" maxlength="24" required pattern="[A-Za-z0-9._]{3,24}" autocomplete="username" placeholder="e.g. gairik"></label>
+   <label>Short bio <span class="cloud-optional">optional</span><input name="bio" value="${esc(profileData.bio||'')}" maxlength="160" placeholder="A little about you"></label>
+   <p class="cloud-field-hint">Username: 3–24 characters, using letters, numbers, dots or underscores.</p>
+   <div class="cloud-error" id="cloudError" role="alert"></div>
+   <button class="cloud-primary" id="cloudSetupSubmit">Save and continue</button>
+  </form>
+  <button class="cloud-signout" id="cloudSetupSignout">Not you? Sign out</button>`;
+ gateView(authShell(panel,'setup'));
+ let selectedPhoto=googlePhoto;
+ $('#setupPhotoInput').addEventListener('change',async e=>{
+  const file=e.target.files?.[0];if(!file)return;
+  try{selectedPhoto=await prepareProfilePhoto(file);$('#setupAvatarPreview').innerHTML=`<img id="setupPhotoImg" src="${esc(selectedPhoto)}" alt="Profile photo preview">`;const note=$('#setupAvatarPreview')?.parentElement?.querySelector('small');if(note)note.textContent='Your new photo is ready.';error('')}
+  catch(x){error(x.message||'Could not prepare that photo.')}
+ });
+ $('#cloudProfileSetupForm').onsubmit=async e=>{
+  e.preventDefault();const form=e.currentTarget;if(!form.reportValidity())return;
+  const d=Object.fromEntries(new FormData(form)),button=$('#cloudSetupSubmit');button.disabled=true;
+  try{
+   const handle=safeText(d.handle,24).toLowerCase();
+   if(!/^[a-z0-9._]{3,24}$/.test(handle))throw new Error('Choose a username with 3–24 letters, numbers, dots or underscores.');
+   const saved=await saveProfile({displayName:d.displayName,handle,bio:d.bio,photoURL:selectedPhoto});
+   profileData={...profileData,...saved};
+   picker(await myCircles());
+  }catch(x){error(explain(x))}
+  finally{button.disabled=false}
+ };
+ $('#cloudSetupSignout').onclick=()=>signOut(auth);
+}
+
 async function myCircles(){const s=await getDocs(collection(db,'users',user.uid,'circles'));return s.docs.map(d=>({id:d.id,...d.data()}))}
 function picker(items){
  gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">YOUR PEOPLE, IN ONE PLACE</p><h1>Welcome, ${esc(user.displayName||user.email.split('@')[0])}.</h1><p class="cloud-copy">Choose a circle or start a new one. Only invited members can see its conversations.</p>${items.length?`<div class="cloud-circle-list">${items.map(c=>`<button class="cloud-circle-choice" data-open-circle="${esc(c.id)}"><span class="cloud-circle-dot">✿</span><span><strong>${esc(c.name||'Your circle')}</strong><small>Open circle</small></span><b>→</b></button>`).join('')}</div>`:'<p class="cloud-empty">You haven’t joined a circle yet.</p>'}<div class="cloud-divider"><span>OR</span></div><form id="cloudCreateForm" class="cloud-inline"><label>Start a circle<input name="name" required maxlength="40" placeholder="e.g. The Usuals"></label><button class="cloud-primary">Create circle</button></form><form id="cloudJoinForm" class="cloud-inline"><label>Join with an invite code<input name="code" required maxlength="24" placeholder="Paste your invite code"></label><button class="cloud-secondary">Join circle</button></form><div class="cloud-error" id="cloudError" role="alert"></div><button class="cloud-signout" id="cloudSignOut">Sign out</button></section>`);
@@ -199,9 +300,14 @@ const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
 async function setAvailability(free,activity=''){await updateDoc(memberRef(),{status:free?'free':'around',activity:String(activity).slice(0,80),lastSeen:serverTimestamp()})}
 window.CircleCloud={saveProfile,prepareProfilePhoto,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>signOut(auth),inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
-onAuthStateChanged(auth,async u=>{stop();user=u;if(!u){profileData={};authScreen();return}try{
- const r=doc(db,'users',u.uid),p=await getDoc(r),fallbackName=u.displayName||u.email.split('@')[0];
- profileData={...(p.data()||{}),displayName:p.data()?.displayName||fallbackName,email:u.email,photoURL:p.data()?.photoURL||u.photoURL||'',handle:p.data()?.handle||'',bio:p.data()?.bio||''};
- await setDoc(r,{displayName:profileData.displayName,email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
- picker(await myCircles())
- }catch(x){authScreen();error(`Firebase setup issue: ${x.code||x.message}. Enable Authentication and create a Firestore database.`)} });
+onAuthStateChanged(auth,async u=>{
+ stop();user=u;
+ if(!u){profileData={};authScreen();return}
+ try{
+  const r=doc(db,'users',u.uid),p=await getDoc(r),saved=p.data()||{},fallbackName=u.displayName||u.email.split('@')[0];
+  profileData={...profileData,...saved,displayName:saved.displayName||u.displayName||fallbackName,email:u.email,photoURL:saved.photoURL||profileData.photoURL||u.photoURL||'',handle:saved.handle||profileData.handle||'',bio:saved.bio||profileData.bio||''};
+  await setDoc(r,{displayName:profileData.displayName,email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
+  if(!profileData.handle){profileSetupScreen();return}
+  picker(await myCircles());
+ }catch(x){authScreen();error(`Firebase setup issue: ${x.code||x.message}. Enable Authentication and create a Firestore database.`)}
+});
