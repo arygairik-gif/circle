@@ -15,6 +15,13 @@ function saveActiveCircleId(id){try{if(id)localStorage.setItem(ACTIVE_CIRCLE_KEY
 
 const dailyPrompts=['Show us one tiny thing that made today better.','What is a song that fits your mood this week?','Share one photo-worthy corner near you.','What is something small you are looking forward to?','What snack would you bring to a group hangout?','What is one thing you learned recently?','Describe today using only three words.','What is a place you want to revisit with the circle?','Share a harmless unpopular opinion.','What is one memory that still makes you smile?'];
 function dailyPrompt(){let n=0;for(const ch of dayKey())n=(n*31+ch.charCodeAt(0))>>>0;return dailyPrompts[n%dailyPrompts.length]}
+function isQuietNow(settings={}){
+ if(!settings.quiet)return false;
+ const minutes=value=>{const parts=String(value||'').split(':').map(Number);return parts.length===2&&parts.every(Number.isFinite)?parts[0]*60+parts[1]:NaN};
+ const start=minutes(settings.quietStart),end=minutes(settings.quietEnd),now=new Date(),current=now.getHours()*60+now.getMinutes();
+ if(!Number.isFinite(start)||!Number.isFinite(end)||start===end)return false;
+ return start<end?current>=start&&current<end:current>=start||current<end;
+}
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const gate=$('#cloudGate'), shell=$('.app');
@@ -207,7 +214,7 @@ async function openCircle(id){
   },e=>ui.toast('Your stickers could not load: '+e.code)));
   stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{
    if(firstMessageSnapshot){firstMessageSnapshot=false}
-   else if(ui.state.settings?.browserNotifications&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
+   else if(ui.state.settings?.browserNotifications&&!isQuietNow(ui.state.settings)&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
     s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})});
    }
    ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',reply:x.reply||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',sticker:x.attachmentType==='sticker'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:x.reactions||{}}});
@@ -253,6 +260,7 @@ async function enableBrowserNotifications(){
  const permission=await Notification.requestPermission();
  if(permission!=='granted')throw new Error('Notification permission was not granted.');
  window.CircleApp.state.settings.browserNotifications=true;
+ window.CircleApp.save?.();
  window.CircleApp.render();
  return true;
 }
