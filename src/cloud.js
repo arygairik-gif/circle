@@ -1,5 +1,5 @@
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
 const dayKey=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const safeText=(v,n=1000)=>String(v??'').trim().slice(0,n);
@@ -98,16 +98,20 @@ async function sendAttachment(file){
  const dataUrl=await readAsDataUrl(prepared);
  if(dataUrl.length>420000)throw new Error('This file is too large for the free Firestore attachment limit.');
  const name=safeText(prepared.name||'attachment',100);
- const message=await addDoc(collection(db,'circles',circleId,'messages'),{
+ const messageRef=doc(collection(db,'circles',circleId,'messages'));
+ const memoryRef=doc(collection(db,'circles',circleId,'memories'));
+ const batch=writeBatch(db);
+ batch.set(messageRef,{
   uid:user.uid,displayName:user.displayName||user.email.split('@')[0],
   text:type==='image'?'Shared a photo':'Shared a voice note',
   attachmentDataUrl:dataUrl,attachmentType:type,attachmentName:name,
   createdAt:serverTimestamp(),reactions:{}
  });
- await addRecord('memories',{type:type==='image'?'photo':'voice',icon:type==='image'?'▧':'♫',
+ batch.set(memoryRef,{uid:user.uid,type:type==='image'?'photo':'voice',icon:type==='image'?'▧':'♫',
   title:type==='image'?'A shared photo':'A voice note',desc:name,mediaUrl:dataUrl,mediaType:type,
-  date:dayKey(),by:user.displayName||'You',color:type});
- return {id:message.id,type,name,size:prepared.size};
+  date:dayKey(),by:user.displayName||'You',color:type,createdAt:serverTimestamp()});
+ await batch.commit();
+ return {id:messageRef.id,type,name,size:prepared.size};
 }
 const addRecord=async(name,data)=>addDoc(collection(db,'circles',circleId,name),{...data,uid:user.uid,createdAt:serverTimestamp()});
 async function addCommitment(d){return addRecord('commitments',{text:safeText(d.task,240),by:user.displayName||'You',when:safeText(d.when,80),done:false})}
