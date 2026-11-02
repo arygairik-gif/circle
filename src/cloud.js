@@ -1,5 +1,5 @@
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
 const dayKey=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const safeText=(v,n=1000)=>String(v??'').trim().slice(0,n);
@@ -194,13 +194,17 @@ async function openCircle(id){
   if(!c.exists())throw new Error('This circle no longer exists.');
   saveActiveCircleId(id);
   stage='opening circle interface';
-  ui.state.circleName=c.data().name||'Your circle';ui.state.messages=[];ui.state.members=[];ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
+  ui.state.circleName=c.data().name||'Your circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
    const members=s.docs.map(d=>({id:d.id,...d.data(),status:d.data().status==='free'?'Free now':(d.data().status||'Around'),initial:(d.data().name||'?').slice(0,1).toUpperCase(),tone:'',photoURL:d.data().photoURL||'',handle:d.data().handle||'',bio:d.data().bio||''}));
    const mine=members.find(x=>x.id===user.uid);
    if(mine){ui.state.me.mood=mine.mood||null;ui.state.me.free=mine.status==='Free now';ui.state.me.activity=mine.activity||''}
    ui.state.members=members;ui.render();
   },e=>ui.toast('Members could not load: '+e.code)));
+  stops.push(onSnapshot(collection(db,'users',user.uid,'stickers'),s=>{
+   ui.state.stickers=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
+   if(ui.state.view==='stickers')ui.render();
+  },e=>ui.toast('Your stickers could not load: '+e.code)));
   stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{
    if(firstMessageSnapshot){firstMessageSnapshot=false}
    else if(ui.state.settings?.browserNotifications&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
@@ -311,6 +315,46 @@ async function prepareDailyDropPhoto(file){
  if(dataUrl.length>200000)throw new Error('Choose a smaller photo for Today’s Drop.');
  return dataUrl;
 }
+
+async function prepareSticker(file){
+ if(!file||!file.type.startsWith('image/'))throw new Error('Choose a PNG, JPG or WebP image.');
+ if(file.size>10*1024*1024)throw new Error('Choose an image smaller than 10 MB.');
+ let bitmap;
+ try{bitmap=await createImageBitmap(file)}catch{throw new Error('This image format could not be opened by your browser.')}
+ let width=Math.max(1,Math.round(bitmap.width*Math.min(1,512/Math.max(bitmap.width,bitmap.height))));
+ let height=Math.max(1,Math.round(bitmap.height*Math.min(1,512/Math.max(bitmap.width,bitmap.height))));
+ const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+ if(!ctx){bitmap.close?.();throw new Error('Sticker compression is unavailable in this browser.')}
+ let blob=null;
+ for(let attempt=0;attempt<8;attempt++){
+  canvas.width=width;canvas.height=height;ctx.clearRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
+  blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/webp',Math.max(.48,.88-attempt*.05)));
+  if(blob&&blob.size<=128*1024)break;
+  width=Math.max(1,Math.round(width*.88));height=Math.max(1,Math.round(height*.88));
+ }
+ bitmap.close?.();
+ if(!blob||blob.size>128*1024)throw new Error('That sticker is still too large. Try a simpler or smaller image.');
+ return readAsDataUrl(new File([blob],'circle-sticker.webp',{type:blob.type||'image/webp'}));
+}
+async function saveSticker(name,dataUrl){
+ const label=safeText(name,40)||'My sticker';
+ if(typeof dataUrl!=='string'||!dataUrl.startsWith('data:image/')||dataUrl.length>180000)throw new Error('Choose a valid sticker image under the size limit.');
+ const ref=await addDoc(collection(db,'users',user.uid,'stickers'),{uid:user.uid,name:label,dataUrl,createdAt:serverTimestamp()});
+ return {id:ref.id,name:label,dataUrl};
+}
+async function deleteSticker(id){
+ await deleteDoc(doc(db,'users',user.uid,'stickers',String(id)));
+}
+async function sendSticker(id){
+ const snap=await getDoc(doc(db,'users',user.uid,'stickers',String(id)));
+ if(!snap.exists())throw new Error('That sticker is no longer in your shelf.');
+ const sticker=snap.data();
+ await addDoc(collection(db,'circles',circleId,'messages'),{
+  uid:user.uid,displayName:accountDisplayName(),text:'Sticker',
+  attachmentDataUrl:sticker.dataUrl,attachmentType:'sticker',attachmentName:safeText(sticker.name,40),
+  createdAt:serverTimestamp(),reactions:{}
+ });
+}
 async function addDropAnswer(answer,prompt,photoDataUrl=''){
  const value=safeText(answer,1000),photo=typeof photoDataUrl==='string'?photoDataUrl:'';
  if(!value&&!photo)throw new Error('Write an answer or add a photo first.');
@@ -361,7 +405,7 @@ async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id)
 const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
 async function setAvailability(free,activity=''){await updateDoc(memberRef(),{status:free?'free':'around',activity:String(activity).slice(0,80),lastSeen:serverTimestamp()})}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,backToCircles:async()=>{stop();circleId=null;saveActiveCircleId('');picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>{saveActiveCircleId('');return signOut(auth)},inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;saveActiveCircleId('');picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>{saveActiveCircleId('');return signOut(auth)},inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};authScreen();return}
