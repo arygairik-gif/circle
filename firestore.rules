@@ -49,7 +49,7 @@ service cloud.firestore {
     allow create:if isMember(cid) && request.resource.data.uid==request.auth.uid &&
      request.resource.data.text is string && request.resource.data.text.size()>0 &&
      request.resource.data.text.size()<=1500 &&
-     request.resource.data.keys().hasOnly(['uid','displayName','text','imageUrl','attachmentUrl','attachmentDataUrl','attachmentType','attachmentName','createdAt','reactions']) &&
+     request.resource.data.keys().hasOnly(['uid','displayName','text','reply','imageUrl','attachmentUrl','attachmentDataUrl','attachmentType','attachmentName','createdAt','reactions']) &&
      (!('attachmentDataUrl' in request.resource.data) || (request.resource.data.attachmentDataUrl is string && request.resource.data.attachmentDataUrl.size()<=420000));
     allow update:if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
     allow delete:if isMember(cid) && resource.data.uid==request.auth.uid;
