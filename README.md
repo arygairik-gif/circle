@@ -8,7 +8,8 @@ Circle keeps the original warm, card-based design and now uses Firebase Authenti
 - Remember the last opened circle on this browser and restore it on the next visit; selecting Back to circles or signing out clears that selection.
 - Random invite codes; joining requires a valid code and creates a member record.
 - Live group chat across signed-in devices.
-- Firestore-backed message reactions.
+- Inline emoji reactions with per-person reaction state.
+- A private sticker shelf: upload, resize, reuse and send custom stickers to the current circle.
 - Shared plans, time-option voting and RSVPs.
 - Group member profiles, availability and mood check-ins.
 - Firestore rules restrict circle content to authenticated members.
@@ -43,7 +44,7 @@ firebase deploy --only firestore:rules,hosting
 `firebase.json` publishes Vite's `dist/` folder.
 
 ## Data model
-- `users/{uid}` and `users/{uid}/circles/{circleId}`
+- `users/{uid}`, `users/{uid}/circles/{circleId}` and private `users/{uid}/stickers/{stickerId}`
 - `circles/{circleId}`
 - `circles/{circleId}/members/{uid}`
 - `circles/{circleId}/messages/{messageId}`
@@ -53,7 +54,7 @@ firebase deploy --only firestore:rules,hosting
 The rules deny circle reads/writes unless the signed-in user is a member. Invite documents allow direct lookup by code, not listing. Do not replace these rules with open access rules.
 
 ## Feature status and remaining setup
-- **Photos and voice notes:** compressed images (up to 300 KB before encoding) and short audio clips (up to 300 KB) are stored as data URLs in Firestore message/memory documents. This avoids Firebase Storage and a billing-plan upgrade, but it is only suitable for small, low-volume sharing. The Firestore document-size limit and daily quotas still apply. Browser microphone permission is requested only when recording starts.
+- **Photos, voice notes and stickers:** compressed images and short audio clips are stored as data URLs in Firestore message/memory documents. Personal stickers are compressed to a small WebP image and stored in the owner's private sticker collection. This avoids Firebase Storage and a billing-plan upgrade, but it is only suitable for small, low-volume sharing. The Firestore document-size limit and daily quotas still apply. Browser microphone permission is requested only when recording starts.
 - **Daily Drop:** prompts are consistent by local calendar date. Each member's answers are hidden from other members until that member has submitted their own answer; the Firestore rules enforce this.
 - **Catch-up panel:** uses recent messages, plans and open commitments. It is a data-driven summary, not an AI-generated summary.
 - **Group stats and awards:** counts are calculated from loaded circle data. Playlist and sticker activities currently save text contributions; they do not connect to a music service or generate sticker images.
