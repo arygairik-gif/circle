@@ -55,9 +55,16 @@ service cloud.firestore {
     allow delete:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid;
    }
    match /dailyDrops/{date}/answers/{uid} {
-    allow create: if isMember(cid) && request.auth.uid==uid && request.resource.data.uid==uid &&
-     request.resource.data.date==date && request.resource.data.answer is string &&
-     request.resource.data.answer.size()>0 && request.resource.data.answer.size()<=1000;
+    allow create: if isMember(cid) && request.auth.uid==uid &&
+     request.resource.data.uid==uid && request.resource.data.date==date &&
+     (
+      ('answer' in request.resource.data && request.resource.data.answer is string &&
+       request.resource.data.answer.size()>0 && request.resource.data.answer.size()<=1000) ||
+      ('photoDataUrl' in request.resource.data && request.resource.data.photoDataUrl is string &&
+       request.resource.data.photoDataUrl.size()>0 && request.resource.data.photoDataUrl.size()<=200000)
+     ) &&
+     (!('photoDataUrl' in request.resource.data) ||
+      (request.resource.data.photoDataUrl is string && request.resource.data.photoDataUrl.size()<=200000));
     allow get, list: if isMember(cid) && (request.auth.uid==uid ||
      exists(/databases/$(database)/documents/circles/$(cid)/dailyDrops/$(date)/answers/$(request.auth.uid)));
     allow update, delete: if false;
