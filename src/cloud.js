@@ -140,6 +140,9 @@ function profileSetupScreen(){
   <button class="cloud-signout" id="cloudSetupSignout">Not you? Sign out</button>`;
  gateView(authShell(panel,'setup'));
  let selectedPhoto=googlePhoto;
+ $('#cloudProfileSetupForm').addEventListener('input',e=>{
+  if(e.target.name==='displayName'&&!selectedPhoto){const fallback=$('#setupPhotoFallback');if(fallback)fallback.textContent=(e.target.value||'C').slice(0,1).toUpperCase()}
+ });
  $('#setupPhotoInput').addEventListener('change',async e=>{
   const file=e.target.files?.[0];if(!file)return;
   try{selectedPhoto=await prepareProfilePhoto(file);$('#setupAvatarPreview').innerHTML=`<img id="setupPhotoImg" src="${esc(selectedPhoto)}" alt="Profile photo preview">`;const note=$('#setupAvatarPreview')?.parentElement?.querySelector('small');if(note)note.textContent='Your new photo is ready.';error('')}
