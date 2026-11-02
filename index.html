@@ -57,8 +57,103 @@
 button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(73,107,79,.65);outline-offset:2px}
 
 
-/* Cloud account gate — shares Circle's original paper-and-pine design. */
-.cloud-gate{position:fixed;inset:0;z-index:100;background:var(--paper);display:grid;place-items:center;padding:22px;overflow:auto}.cloud-gate[hidden]{display:none}.cloud-panel{width:min(440px,100%);background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:34px;box-shadow:var(--shadow)}.cloud-panel.cloud-wide{width:min(560px,100%)}.cloud-panel>.brand-mark{margin-bottom:20px}.cloud-kicker{font-size:10px;letter-spacing:1.6px;font-weight:800;color:var(--green);margin:0 0 8px}.cloud-panel h1{font:800 29px/1.12 Manrope;letter-spacing:-1.2px;margin:0}.cloud-copy{font-size:12px;color:var(--muted);line-height:1.6;margin:10px 0 23px}.cloud-panel form label{display:grid;gap:6px;font-size:10px;font-weight:700;color:#687064;margin:0 0 12px}.cloud-panel input{width:100%;border:1px solid var(--line);background:#fffefa;border-radius:10px;padding:12px;font-size:12px;color:var(--ink)}.cloud-primary,.cloud-secondary,.cloud-google{width:100%;border-radius:11px;padding:12px 14px;font-size:12px;font-weight:700}.cloud-primary{border:0;background:var(--green);color:#fff}.cloud-primary:hover{background:var(--green-dark)}.cloud-secondary,.cloud-google{border:1px solid var(--line);background:#fffefa;color:var(--ink)}.cloud-google{margin-top:9px}.cloud-switch{text-align:center;font-size:11px;color:var(--muted);margin:17px 0 0}.cloud-switch button,.cloud-signout{border:0;background:none;color:var(--green-dark);font-size:11px;font-weight:700}.cloud-legal{font-size:9px;line-height:1.5;color:#999b91;text-align:center;margin:18px 0 0}.cloud-error{min-height:17px;color:#a34e38;font-size:10px;line-height:1.4;margin:8px 0}.cloud-circle-list{display:grid;gap:8px;margin:18px 0}.cloud-circle-choice{display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fffefa;color:var(--ink)}.cloud-circle-choice>span:nth-child(2){display:grid;gap:3px;flex:1}.cloud-circle-choice small{font-size:10px;color:var(--muted)}.cloud-circle-choice>b{color:var(--green)}.cloud-circle-dot{width:34px;height:34px;border-radius:11px;background:var(--green-soft);display:grid;place-items:center;color:var(--green-dark)}.cloud-empty{font-size:11px;color:var(--muted);padding:13px;background:var(--surface-2);border-radius:10px}.cloud-divider{display:flex;align-items:center;gap:12px;color:#a1a398;font-size:9px;margin:19px 0}.cloud-divider:before,.cloud-divider:after{content:'';height:1px;background:var(--line);flex:1}.cloud-inline{display:grid;grid-template-columns:1fr auto;align-items:end;gap:9px;margin:12px 0}.cloud-inline label{margin:0!important}.cloud-inline button{width:auto;white-space:nowrap}.cloud-signout{display:block;margin:10px auto 0}.cloud-gate button:disabled{opacity:.55;cursor:wait}@media(max-width:480px){.cloud-panel{padding:25px 20px}.cloud-inline{grid-template-columns:1fr}.cloud-inline button{width:100%}}
+/* Responsive account experience: split-panel desktop, compact focused mobile. */
+.cloud-gate{position:fixed;inset:0;z-index:100;background:#eeeee7;display:grid;place-items:center;padding:28px;overflow:auto}
+.cloud-gate[hidden]{display:none}
+.cloud-auth-layout{width:min(1080px,100%);min-height:min(690px,calc(100dvh - 56px));display:grid;grid-template-columns:minmax(0,1.04fr) minmax(390px,.96fr);background:var(--surface);border:1px solid var(--line);border-radius:30px;overflow:hidden;box-shadow:0 28px 80px rgba(37,48,37,.13)}
+.cloud-auth-story{position:relative;overflow:hidden;padding:48px 48px 32px;background:#e7eee3;color:#29432f;display:flex;flex-direction:column;isolation:isolate}
+.cloud-story-brand{display:flex;align-items:center;gap:11px}
+.cloud-story-brand>span:last-child{display:grid;gap:2px}
+.cloud-story-brand strong{font:800 20px Manrope;letter-spacing:-.8px}
+.cloud-story-brand small{font-size:9px;letter-spacing:1.4px;color:#70846d}
+.cloud-story-copy{position:relative;z-index:2;margin-top:74px;max-width:390px}
+.cloud-story-copy h2{font:800 clamp(38px,4vw,57px)/1.03 Manrope;letter-spacing:-2.4px;margin:0;color:#29432f}
+.cloud-story-copy h2 em{font-style:normal;color:#72916e}
+.cloud-story-copy>p:last-child{font-size:13px;line-height:1.75;color:#657962;max-width:340px;margin-top:18px}
+.cloud-story-scene{position:relative;height:210px;margin-top:auto}
+.cloud-scene-orbit{position:absolute;border:1px solid rgba(73,107,79,.16);border-radius:50%;transform:rotate(-18deg)}
+.orbit-one{width:360px;height:130px;left:0;bottom:26px}
+.orbit-two{width:310px;height:112px;left:24px;bottom:34px;transform:rotate(23deg)}
+.cloud-scene-dot{position:absolute;display:grid;place-items:center;width:48px;height:48px;border:4px solid #e7eee3;border-radius:18px;background:#496b4f;color:white;font:800 14px Manrope;box-shadow:0 10px 22px rgba(40,62,42,.14)}
+.dot-one{left:44px;bottom:71px}.dot-two{left:174px;bottom:120px;background:#d58f75}.dot-three{left:278px;bottom:55px;background:#d0b46c;color:#604c23}
+.cloud-scene-note{position:absolute;right:0;bottom:12px;padding:10px 13px;border:1px solid rgba(73,107,79,.14);border-radius:12px;background:rgba(255,255,255,.52);font:600 10px Manrope;color:#587155}
+.cloud-story-foot{font-size:8px;letter-spacing:1.4px;font-weight:800;color:#81917c}
+.cloud-panel{width:100%;max-width:510px;align-self:center;justify-self:center;padding:52px 48px;background:var(--surface);border:0;border-radius:0;box-shadow:none}
+.cloud-mobile-brand{display:none}
+.cloud-panel-heading h1{font:800 33px/1.08 Manrope;letter-spacing:-1.5px;margin:0;color:var(--ink)}
+.cloud-kicker{font-size:9px;letter-spacing:1.7px;font-weight:800;color:var(--green);margin:0 0 10px}
+.cloud-copy{font-size:12px;color:var(--muted);line-height:1.7;margin:10px 0 25px}
+.cloud-auth-tabs{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:18px;font-size:11px;font-weight:700;color:var(--ink)}
+.cloud-auth-secure{font-size:9px;color:var(--muted);font-weight:500}
+.cloud-panel form label{display:grid;gap:7px;font-size:10px;font-weight:700;color:var(--muted);margin:0 0 14px}
+.cloud-panel input:not([type=file]){width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:11px;padding:13px 14px;font-size:12px;color:var(--ink);transition:border-color .18s,box-shadow .18s}
+.cloud-panel input:focus{border-color:#8da68a;box-shadow:0 0 0 3px rgba(73,107,79,.09);outline:0}
+.cloud-panel input::placeholder{color:#a0a59a}
+.cloud-primary,.cloud-secondary,.cloud-google{width:100%;display:flex;justify-content:center;align-items:center;gap:10px;border-radius:12px;padding:13px 15px;font-size:12px;font-weight:700;transition:transform .15s,background .15s}
+.cloud-primary{border:0;background:var(--green);color:#fff;box-shadow:0 7px 16px rgba(53,84,60,.13)}
+.cloud-primary:hover{background:var(--green-dark);transform:translateY(-1px)}
+.cloud-secondary,.cloud-google{border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.cloud-google{margin:0}
+.google-g{font:800 16px Arial;color:#4285f4}
+.cloud-switch{text-align:center;font-size:11px;color:var(--muted);margin:18px 0 0}
+.cloud-switch button,.cloud-signout{border:0;background:none;color:var(--green-dark);font-size:11px;font-weight:800;padding:2px 3px}
+.cloud-legal{font-size:9px;line-height:1.55;color:#999b91;text-align:center;margin:18px 0 0}
+.cloud-error{min-height:17px;color:#a34e38;font-size:10px;line-height:1.5;margin:9px 0}
+.cloud-circle-list{display:grid;gap:8px;margin:18px 0}
+.cloud-circle-choice{display:flex;align-items:center;gap:12px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.cloud-circle-choice>span:nth-child(2){display:grid;gap:3px;flex:1}
+.cloud-circle-choice small{font-size:10px;color:var(--muted)}
+.cloud-circle-choice>b{color:var(--green)}
+.cloud-circle-dot{width:34px;height:34px;border-radius:11px;background:var(--green-soft);display:grid;place-items:center;color:var(--green-dark)}
+.cloud-empty{font-size:11px;color:var(--muted);padding:13px;background:var(--surface-2);border-radius:10px}
+.cloud-divider,.cloud-or{display:flex;align-items:center;gap:12px;color:#a1a398;font-size:9px;margin:18px 0}
+.cloud-divider:before,.cloud-divider:after,.cloud-or span{content:'';height:1px;background:var(--line);flex:1}
+.cloud-inline{display:grid;grid-template-columns:1fr auto;align-items:end;gap:9px;margin:12px 0}
+.cloud-inline label{margin:0!important}.cloud-inline button{width:auto;white-space:nowrap}
+.cloud-signout{display:block;margin:14px auto 0}
+.cloud-gate button:disabled{opacity:.55;cursor:wait}
+.cloud-identity-wrap{padding:15px;margin:0 0 15px;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.cloud-identity-wrap[hidden]{display:none}
+.cloud-dp-row,.cloud-setup-avatar-row{display:flex;align-items:center;gap:14px;margin-bottom:17px}
+.cloud-dp-preview,.cloud-setup-avatar{width:66px;height:66px;flex:0 0 66px;overflow:hidden;display:grid;place-items:center;border:3px solid var(--surface);border-radius:24px;background:#e7eee3;color:#496b4f;font:800 23px Manrope;box-shadow:0 2px 12px rgba(30,45,30,.09)}
+.cloud-dp-preview img,.cloud-setup-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.cloud-dp-copy,.cloud-setup-avatar-row>div:last-child{display:grid;gap:5px}
+.cloud-dp-copy strong,.cloud-setup-avatar-row strong{font:700 11px Manrope;color:var(--ink)}
+.cloud-dp-copy small,.cloud-setup-avatar-row small{font-size:9px;line-height:1.45;color:var(--muted);max-width:230px}
+.cloud-upload-btn{display:inline-flex!important;width:max-content;cursor:pointer;color:var(--green-dark)!important;font-size:10px!important;font-weight:800!important;margin:2px 0 0!important}
+.cloud-file-input{position:absolute!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}
+.cloud-field-hint{font-size:9px;line-height:1.45;color:var(--muted);margin:-7px 0 8px}
+.cloud-optional{font-size:9px;color:var(--muted);font-weight:400}
+.cloud-setup-layout .cloud-panel{padding-top:42px;padding-bottom:42px}
+.cloud-setup-avatar-row{padding:13px;border:1px solid var(--line);border-radius:15px;background:var(--surface-2);margin:18px 0}
+.cloud-setup-avatar{width:74px;height:74px;flex-basis:74px;border-radius:25px}
+@media(max-width:760px){
+ .cloud-gate{padding:0;background:var(--surface);place-items:stretch}
+ .cloud-auth-layout{display:block;width:100%;min-height:100dvh;border:0;border-radius:0;box-shadow:none;background:var(--surface)}
+ .cloud-auth-story{display:none}
+ .cloud-panel{width:100%;max-width:500px;min-height:100dvh;padding:22px 25px 32px;margin:0 auto;display:flex;flex-direction:column;justify-content:center}
+ .cloud-mobile-brand{display:flex;align-items:center;gap:9px;margin-bottom:32px;font:800 19px Manrope;letter-spacing:-.6px}
+ .cloud-mobile-brand .brand-mark{width:32px;height:32px;font-size:19px;margin:0}
+ .cloud-panel-heading h1{font-size:30px}
+ .cloud-copy{margin-bottom:22px}
+ .cloud-panel form label{font-size:11px}
+ .cloud-panel input:not([type=file]){padding:14px;font-size:13px}
+ .cloud-primary,.cloud-google{padding:14px 15px}
+}
+@media(max-width:420px){
+ .cloud-panel{padding:18px 20px 28px;justify-content:flex-start;padding-top:24px}
+ .cloud-mobile-brand{margin-bottom:27px}
+ .cloud-panel-heading h1{font-size:28px}
+ .cloud-identity-wrap{padding:12px}
+ .cloud-dp-preview{width:58px;height:58px;flex-basis:58px;border-radius:21px}
+ .cloud-switch{margin-top:15px}
+}
+@media(min-width:761px) and (max-height:760px){
+ .cloud-auth-layout{min-height:650px}
+ .cloud-panel{padding-top:30px;padding-bottom:30px}
+ .cloud-story-copy{margin-top:42px}
+ .cloud-story-scene{height:170px}
+}
 
 /* Profile identity, theme modes and chat comfort. The warm/original palette stays the default. */
 .avatar img,.profile-large-avatar img,.profile-editor-top img{width:100%;height:100%;display:block;object-fit:cover;border-radius:inherit}
