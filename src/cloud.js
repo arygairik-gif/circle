@@ -1,7 +1,6 @@
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth';
 import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where } from 'firebase/firestore';
-import { auth, db, storage } from './firebase.js';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth, db } from './firebase.js';
 const dayKey=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const safeText=(v,n=1000)=>String(v??'').trim().slice(0,n);
 const dailyPrompts=['Show us one tiny thing that made today better.','What is a song that fits your mood this week?','Share one photo-worthy corner near you.','What is something small you are looking forward to?','What snack would you bring to a group hangout?','What is one thing you learned recently?','Describe today using only three words.','What is a place you want to revisit with the circle?','Share a harmless unpopular opinion.','What is one memory that still makes you smile?'];
@@ -37,7 +36,7 @@ async function openCircle(id){
  try{const c=await getDoc(doc(db,'circles',id)),m=await getDoc(doc(db,'circles',id,'members',user.uid));if(!c.exists()||!m.exists())throw new Error('Circle not found or membership is no longer active.');
  ui.state.circleName=c.data().name||'Your circle';ui.state.messages=[];ui.state.members=[];ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
  stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{const members=s.docs.map(d=>({id:d.id,...d.data(),status:d.data().status==='free'?'Free now':'Around',initial:(d.data().name||'?').slice(0,1).toUpperCase(),tone:''})),mine=members.find(x=>x.id===user.uid);if(mine){ui.state.me.mood=mine.mood||null;ui.state.me.free=mine.status==='Free now';ui.state.me.activity=mine.activity||''}ui.state.members=members;ui.render()},e=>ui.toast('Members could not load: '+e.code)));
- stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{if(firstMessageSnapshot){firstMessageSnapshot=false}else if(ui.state.settings?.browserNotifications&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})})}ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',image:x.imageUrl||(x.attachmentType==='image'?x.attachmentUrl:''),audio:x.attachmentType==='audio'?x.attachmentUrl:'',reactions:Object.entries(x.reactions||{}).map(([k,v])=>`${k} ${v.length}`)}});ui.render()},e=>ui.toast('Messages could not load: '+e.code)));
+ stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{if(firstMessageSnapshot){firstMessageSnapshot=false}else if(ui.state.settings?.browserNotifications&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})})}ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:Object.entries(x.reactions||{}).map(([k,v])=>`${k} ${v.length}`)}});ui.render()},e=>ui.toast('Messages could not load: '+e.code)));
  stops.push(onSnapshot(query(collection(db,'circles',id,'plans'),orderBy('createdAt','desc'),limit(50)),s=>{ui.state.plans=s.docs.map(d=>{const x=d.data();return{id:d.id,...x,options:x.options||[],votes:(x.votes||[]).map(a=>(a||[]).map(uid=>uid===user.uid?'you':uid)),rsvps:(x.rsvps||[]).map(uid=>uid===user.uid?'you':uid)}});ui.render()},e=>ui.toast('Plans could not load: '+e.code)));
  const p=await getDoc(doc(db,'users',user.uid));const el=$('.profile-name');if(el)el.textContent=p.data()?.displayName||user.displayName||'You';ui.state.members=ui.state.members||[];ui.render();
  const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);ui.render()},e=>ui.toast(name+' could not load: '+e.code)));
@@ -67,20 +66,48 @@ async function enableBrowserNotifications(){
  return true;
 }
 async function sendMessage(text){const value=safeText(text,1500);if(!value)return;if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');await addDoc(collection(db,'circles',circleId,'messages'),{uid:user.uid,displayName:user.displayName||user.email.split('@')[0],text:value,createdAt:serverTimestamp(),reactions:{}})}
-async function uploadCircleFile(file){
- if(!file||!(file.type.startsWith('image/')||file.type.startsWith('audio/')))throw new Error('Choose an image or audio file.');
- if(file.size>12*1024*1024)throw new Error('Files must be 12 MB or smaller.');
- const cleanName=safeText(file.name||'attachment',100).replace(/[^a-zA-Z0-9._-]/g,'_');
- const path=`circles/${circleId}/${user.uid}/${Date.now()}-${cleanName}`;
- const object=storageRef(storage,path);
- await uploadBytes(object,file,{contentType:file.type,customMetadata:{ownerUid:user.uid,circleId}});
- return {url:await getDownloadURL(object),path,type:file.type.startsWith('image/')?'image':'audio',name:cleanName,size:file.size};
+function readAsDataUrl(file){
+ return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read that file.'));reader.readAsDataURL(file)});
+}
+async function compactImage(file){
+ if(!file.type.startsWith('image/'))throw new Error('Choose an image file.');
+ if(file.size>10*1024*1024)throw new Error('Choose an image smaller than 10 MB before compression.');
+ let bitmap;
+ try{bitmap=await createImageBitmap(file)}catch{throw new Error('This image format could not be opened by your browser.')}
+ const scale=Math.min(1,720/Math.max(bitmap.width,bitmap.height));
+ let width=Math.max(1,Math.round(bitmap.width*scale)),height=Math.max(1,Math.round(bitmap.height*scale));
+ const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+ if(!ctx){bitmap.close?.();throw new Error('Image compression is unavailable in this browser.')}
+ let blob=null;
+ for(let attempt=0;attempt<7;attempt++){
+  canvas.width=width;canvas.height=height;ctx.clearRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
+  blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',Math.max(.42,.78-attempt*.06)));
+  if(blob&&blob.size<=300*1024)break;
+  width=Math.max(1,Math.round(width*.88));height=Math.max(1,Math.round(height*.88));
+ }
+ bitmap.close?.();
+ if(!blob||blob.size>300*1024)throw new Error('That image is still too large. Try a smaller or simpler picture.');
+ return new File([blob],(safeText(file.name||'circle-photo',70).replace(/\.[^.]+$/,'')||'circle-photo')+'.jpg',{type:'image/jpeg'});
 }
 async function sendAttachment(file){
- const uploaded=await uploadCircleFile(file);
- await addDoc(collection(db,'circles',circleId,'messages'),{uid:user.uid,displayName:user.displayName||user.email.split('@')[0],text:uploaded.type==='image'?'Shared a photo':'Shared a voice note',attachmentUrl:uploaded.url,attachmentType:uploaded.type,createdAt:serverTimestamp(),reactions:{}});
- await addRecord('memories',{type:uploaded.type==='image'?'photo':'voice',icon:uploaded.type==='image'?'▧':'♫',title:uploaded.type==='image'?'A shared photo':'A voice note',desc:uploaded.name,mediaUrl:uploaded.url,mediaType:uploaded.type,date:dayKey(),by:user.displayName||'You',color:uploaded.type});
- return uploaded;
+ if(!file)throw new Error('Choose a file first.');
+ let prepared,type;
+ if(file.type.startsWith('image/')){prepared=await compactImage(file);type='image'}
+ else if(file.type.startsWith('audio/')){if(file.size>300*1024)throw new Error('Voice notes must be under 300 KB. Try a shorter recording.');prepared=file;type='audio'}
+ else throw new Error('Only images and short audio recordings are supported.');
+ const dataUrl=await readAsDataUrl(prepared);
+ if(dataUrl.length>420000)throw new Error('This file is too large for the free Firestore attachment limit.');
+ const name=safeText(prepared.name||'attachment',100);
+ const message=await addDoc(collection(db,'circles',circleId,'messages'),{
+  uid:user.uid,displayName:user.displayName||user.email.split('@')[0],
+  text:type==='image'?'Shared a photo':'Shared a voice note',
+  attachmentDataUrl:dataUrl,attachmentType:type,attachmentName:name,
+  createdAt:serverTimestamp(),reactions:{}
+ });
+ await addRecord('memories',{type:type==='image'?'photo':'voice',icon:type==='image'?'▧':'♫',
+  title:type==='image'?'A shared photo':'A voice note',desc:name,mediaUrl:dataUrl,mediaType:type,
+  date:dayKey(),by:user.displayName||'You',color:type});
+ return {id:message.id,type,name,size:prepared.size};
 }
 const addRecord=async(name,data)=>addDoc(collection(db,'circles',circleId,name),{...data,uid:user.uid,createdAt:serverTimestamp()});
 async function addCommitment(d){return addRecord('commitments',{text:safeText(d.task,240),by:user.displayName||'You',when:safeText(d.when,80),done:false})}
