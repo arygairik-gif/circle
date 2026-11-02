@@ -5,6 +5,7 @@ Circle keeps the original warm, card-based design and now uses Firebase Authenti
 ## Live features
 - Email/password accounts and Google sign-in.
 - Create multiple private circles and switch between them.
+- Remember the last opened circle on this browser and restore it on the next visit; selecting Back to circles or signing out clears that selection.
 - Random invite codes; joining requires a valid code and creates a member record.
 - Live group chat across signed-in devices.
 - Firestore-backed message reactions.
