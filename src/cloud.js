@@ -334,17 +334,7 @@ async function addRitual(d){return addRecord('rituals',{title:safeText(d.title,1
 async function addQuest(d){return addRecord('quests',{title:safeText(d.title,100),desc:safeText(d.desc,300),icon:safeText(d.icon,8),done:false,people:1})}
 async function toggleQuest(id,done){return updateDoc(doc(db,'circles',circleId,'quests',String(id)),{done:!!done,updatedAt:serverTimestamp()})}
 async function addActivity(d){return addRecord('activities',{type:safeText(d.type,40),answer:safeText(d.answer,1500),unlock:safeText(d.unlock,40),title:safeText(d.title,100)})}
-async function addDropAnswer(answer,prompt){
- const value=safeText(answer,1000);if(!value)throw new Error('Write an answer first.');
- const answerRef=doc(db,'circles',circleId,'dailyDrops',dayKey(),'answers',user.uid);
- const existing=await getDoc(answerRef);if(existing.exists())throw new Error('You have already posted today.');
- await setDoc(answerRef,{uid:user.uid,date:dayKey(),prompt:safeText(prompt,300),answer:value,name:accountDisplayName(),createdAt:serverTimestamp()});
- const ui=window.CircleApp;ui.state.drop.posted=true;ui.state.drop.answer=value;
- stops.push(onSnapshot(collection(db,'circles',circleId,'dailyDrops',dayKey(),'answers'),s=>{
-  ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
- },e=>ui.toast('Daily Drop answers could not load: '+e.code)));
- ui.render();
-}
+
 async function addQuietReply(toUid,messageId,reply){if(!toUid||toUid==='you'||toUid===user.uid)throw new Error('Choose another circle member.');return addRecord('privateReplies',{fromUid:user.uid,toUid,messageId:String(messageId),reply:safeText(reply,1500)})}
 async function saveProfile(data){
  const displayName=validDisplayName(data.displayName,user?.email);
