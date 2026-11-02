@@ -12,6 +12,12 @@ const accountDisplayName=()=>validDisplayName(profileData.displayName,user?.emai
 const ACTIVE_CIRCLE_KEY='circle.activeCircle.v1';
 function getSavedCircleId(){try{return localStorage.getItem(ACTIVE_CIRCLE_KEY)||''}catch{return ''}}
 function saveActiveCircleId(id){try{if(id)localStorage.setItem(ACTIVE_CIRCLE_KEY,String(id));else localStorage.removeItem(ACTIVE_CIRCLE_KEY)}catch{}}
+async function persistActiveCircleId(id){
+ saveActiveCircleId(id);
+ if(!user?.uid||!id)return;
+ try{await setDoc(doc(db,'users',user.uid),{activeCircleId:String(id),activeCircleUpdatedAt:serverTimestamp()},{merge:true})}
+ catch(e){console.warn('Could not sync the active circle preference:',e?.code||e?.message)}
+}
 
 const dailyPrompts=['Show us one tiny thing that made today better.','What is a song that fits your mood this week?','Share one photo-worthy corner near you.','What is something small you are looking forward to?','What snack would you bring to a group hangout?','What is one thing you learned recently?','Describe today using only three words.','What is a place you want to revisit with the circle?','Share a harmless unpopular opinion.','What is one memory that still makes you smile?'];
 function dailyPrompt(){let n=0;for(const ch of dayKey())n=(n*31+ch.charCodeAt(0))>>>0;return dailyPrompts[n%dailyPrompts.length]}
@@ -199,7 +205,7 @@ async function openCircle(id){
   stage='loading circle details';
   const c=await getDoc(doc(db,'circles',id));
   if(!c.exists())throw new Error('This circle no longer exists.');
-  saveActiveCircleId(id);
+  await persistActiveCircleId(id);
   stage='opening circle interface';
   ui.state.circleName=c.data().name||'Your circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
@@ -422,7 +428,7 @@ async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id)
 const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
 async function setAvailability(free,activity=''){await updateDoc(memberRef(),{status:free?'free':'around',activity:String(activity).slice(0,80),lastSeen:serverTimestamp()})}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;saveActiveCircleId('');picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>{saveActiveCircleId('');return signOut(auth)},inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>signOut(auth),inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};authScreen();return}
@@ -432,9 +438,15 @@ onAuthStateChanged(auth,async u=>{
   profileData={...profileData,...saved,displayName:savedName||authName,email:u.email,photoURL:saved.photoURL||profileData.photoURL||u.photoURL||'',handle:saved.handle||profileData.handle||'',bio:saved.bio||profileData.bio||''};
   await setDoc(r,{displayName:profileData.displayName||'',email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
   if(!profileData.handle||!profileData.displayName){saveActiveCircleId('');profileSetupScreen();return}
-  const circles=await myCircles(),savedCircleId=getSavedCircleId(),savedCircle=circles.find(item=>item.id===savedCircleId);
-  if(savedCircle){const opened=await openCircle(savedCircle.id);if(opened)return;return}
-  if(savedCircleId&&!savedCircle)saveActiveCircleId('');
+  const circles=await myCircles();
+  const savedCircleId=saved.activeCircleId||getSavedCircleId();
+  const savedCircle=circles.find(item=>item.id===savedCircleId);
+  const mostRecentlyJoined=[...circles].sort((a,b)=>{
+   const stamp=value=>value?.toMillis?.()??(value?.seconds?value.seconds*1000:0);
+   return stamp(b.joinedAt)-stamp(a.joinedAt);
+  })[0];
+  const defaultCircle=savedCircle||mostRecentlyJoined;
+  if(defaultCircle){const opened=await openCircle(defaultCircle.id);if(opened)return;return}
   picker(circles);
  }catch(x){authScreen();error(`Firebase setup issue: ${x.code||x.message}. Enable Authentication and create a Firestore database.`)}
 });
