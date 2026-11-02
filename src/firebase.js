@@ -5,7 +5,6 @@ import { getFirestore } from 'firebase/firestore';
 const firebaseConfig = {
   apiKey: 'AIzaSyAwTHBN8jkgKR8oOngKh_UEJP6Oku67qr8',
   authDomain: 'circle-20c34.firebaseapp.com',
-  databaseURL: 'https://circle-20c34-default-rtdb.firebaseio.com',
   projectId: 'circle-20c34',
   storageBucket: 'circle-20c34.firebasestorage.app',
   messagingSenderId: '951127942121',
