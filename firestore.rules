@@ -31,7 +31,7 @@ service cloud.firestore {
      (request.resource.data.role=='member' && exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
       get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.circleId==cid));
     allow update:if signedIn() && request.auth.uid==uid && isMember(cid) && request.resource.data.uid==uid &&
-     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photoURL','status','lastSeen','mood','activity']);
+     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photoURL','status','lastSeen','mood','activity','support','supportPreference']);
     allow delete:if signedIn() && request.auth.uid==uid;
    }
    match /messages/{mid}{
