@@ -27,7 +27,7 @@ Open the Vite URL (normally http://localhost:5173). The Firebase web configurati
 2. In **Authentication → Sign-in method**, enable **Email/Password** and **Google**.
 3. In **Authentication → Settings → Authorized domains**, add `localhost` and the exact production hosting domain.
 4. In **Firestore Database**, create a database.
-5. Publish `firestore.rules` (Firestore → Rules).\n6. Enable Firebase Storage for this project and publish `storage.rules` (Storage → Rules).
+5. Publish `firestore.rules` (Firestore → Rules).\n6. Enable Firebase Storage for this project and publish `storage.rules` (Storage → Rules).\n7. Storage rule publishing may ask permission to let Storage Security Rules check circle membership in Cloud Firestore; allow that connection.
 6. Run Circle, create an account, then create a circle. Friends join using the generated invite code.
 
 ## Deploy
