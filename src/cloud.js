@@ -210,7 +210,7 @@ async function openCircle(id){
    else if(ui.state.settings?.browserNotifications&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
     s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})});
    }
-   ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:Object.entries(x.reactions||{}).map(([k,v])=>`${k} ${v.length}`)}});
+   ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',reply:x.reply||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',sticker:x.attachmentType==='sticker'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:x.reactions||{}}});
    ui.render();
   },e=>ui.toast('Messages could not load: '+e.code)));
   stops.push(onSnapshot(query(collection(db,'circles',id,'plans'),orderBy('createdAt','desc'),limit(50)),s=>{
@@ -256,7 +256,14 @@ async function enableBrowserNotifications(){
  window.CircleApp.render();
  return true;
 }
-async function sendMessage(text){const value=safeText(text,1500);if(!value)return;if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');await addDoc(collection(db,'circles',circleId,'messages'),{uid:user.uid,displayName:accountDisplayName(),text:value,createdAt:serverTimestamp(),reactions:{}})}
+async function sendMessage(text,reply=''){
+ const value=safeText(text,1500);if(!value)return false;
+ if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');
+ const payload={uid:user.uid,displayName:accountDisplayName(),text:value,createdAt:serverTimestamp(),reactions:{}};
+ const quoted=safeText(reply,320);if(quoted)payload.reply=quoted;
+ await addDoc(collection(db,'circles',circleId,'messages'),payload);
+ return true;
+}
 function readAsDataUrl(file){
  return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read that file.'));reader.readAsDataURL(file)});
 }
@@ -339,6 +346,8 @@ async function prepareSticker(file){
 async function saveSticker(name,dataUrl){
  const label=safeText(name,40)||'My sticker';
  if(typeof dataUrl!=='string'||!dataUrl.startsWith('data:image/')||dataUrl.length>180000)throw new Error('Choose a valid sticker image under the size limit.');
+ const existing=await getDocs(query(collection(db,'users',user.uid,'stickers'),limit(40)));
+ if(existing.size>=40)throw new Error('Your shelf is full. Remove a sticker before adding another.');
  const ref=await addDoc(collection(db,'users',user.uid,'stickers'),{uid:user.uid,name:label,dataUrl,createdAt:serverTimestamp()});
  return {id:ref.id,name:label,dataUrl};
 }
