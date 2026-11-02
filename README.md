@@ -47,17 +47,17 @@ firebase deploy --only firestore:rules,hosting
 - `users/{uid}`, `users/{uid}/circles/{circleId}` and private `users/{uid}/stickers/{stickerId}`
 - `circles/{circleId}`
 - `circles/{circleId}/members/{uid}`
-- `circles/{circleId}/messages/{messageId}`
+- `circles/{circleId}/messages/{messageId}` (including bounded reply previews and emoji reactions)
 - `circles/{circleId}/plans/{planId}`
 - `invites/{code}` (random code lookup; listing is denied)
 
 The rules deny circle reads/writes unless the signed-in user is a member. Invite documents allow direct lookup by code, not listing. Do not replace these rules with open access rules.
 
 ## Feature status and remaining setup
-- **Photos, voice notes and stickers:** compressed images and short audio clips are stored as data URLs in Firestore message/memory documents. Personal stickers are compressed to a small WebP image and stored in the owner's private sticker collection. This avoids Firebase Storage and a billing-plan upgrade, but it is only suitable for small, low-volume sharing. The Firestore document-size limit and daily quotas still apply. Browser microphone permission is requested only when recording starts.
+- **Photos, voice notes and stickers:** chat photos are compressed to a maximum of 240 KiB before encoding; short audio clips are limited to 300 KB. They are stored as data URLs in Firestore message/memory documents. Personal stickers are compressed to a small WebP image and stored in the owner's private collection (up to 40 stickers). This avoids Firebase Storage and a billing-plan upgrade, but it is only suitable for small, low-volume sharing. Firestore document-size limits and daily quotas still apply. Browser microphone permission is requested only when recording starts.
 - **Daily Drop:** prompts are consistent by local calendar date. Each member's answers are hidden from other members until that member has submitted their own answer; the Firestore rules enforce this.
 - **Catch-up panel:** uses recent messages, plans and open commitments. It is a data-driven summary, not an AI-generated summary.
-- **Group stats and awards:** counts are calculated from loaded circle data. Playlist and sticker activities currently save text contributions; they do not connect to a music service or generate sticker images.
+- **Group stats and awards:** counts are calculated from loaded circle data. Playlist suggestions are saved as text and do not sync with a music service. The Sticker Shelf stores images users upload; Circle does not generate sticker artwork.
 - **Browser alerts:** can show new-message alerts while Circle is open in a background tab. True push when the site is closed still needs Firebase Cloud Messaging, a VAPID public key, a service worker and a trusted sender backend.
 - **Voice/video rooms:** the room tile is still a preview. A real multi-person room needs a provider such as LiveKit and a server endpoint that issues signed room tokens. Never put media-provider API secrets in browser code.
 - **AI catch-up:** not connected. It needs a secure server-side AI integration and a provider key; do not paste a private API key into `src/` or the browser.
