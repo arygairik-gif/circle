@@ -39,7 +39,8 @@ service cloud.firestore {
     allow create:if isMember(cid) && request.resource.data.uid==request.auth.uid &&
      request.resource.data.text is string && request.resource.data.text.size()>0 &&
      request.resource.data.text.size()<=1500 &&
-     request.resource.data.keys().hasOnly(['uid','displayName','text','imageUrl','attachmentUrl','attachmentDataUrl','attachmentType','attachmentName','createdAt','reactions']) &&\n     (!('attachmentDataUrl' in request.resource.data) || (request.resource.data.attachmentDataUrl is string && request.resource.data.attachmentDataUrl.size()<=420000));
+     request.resource.data.keys().hasOnly(['uid','displayName','text','imageUrl','attachmentUrl','attachmentDataUrl','attachmentType','attachmentName','createdAt','reactions']) &&
+     (!('attachmentDataUrl' in request.resource.data) || (request.resource.data.attachmentDataUrl is string && request.resource.data.attachmentDataUrl.size()<=420000));
     allow update:if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
     allow delete:if isMember(cid) && resource.data.uid==request.auth.uid;
    }
@@ -47,7 +48,8 @@ service cloud.firestore {
    match /{feature}/{itemId} {
     function supportedFeature(){return feature in ['commitments','memories','rituals','quests','activities'];}
     allow read:if supportedFeature() && isMember(cid);
-    allow create:if supportedFeature() && isMember(cid) && request.resource.data.uid==request.auth.uid &&\n     (!('mediaUrl' in request.resource.data) || (request.resource.data.mediaUrl is string && request.resource.data.mediaUrl.size()<=420000));
+    allow create:if supportedFeature() && isMember(cid) && request.resource.data.uid==request.auth.uid &&
+     (!('mediaUrl' in request.resource.data) || (request.resource.data.mediaUrl is string && request.resource.data.mediaUrl.size()<=420000));
     allow update:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid && request.resource.data.uid==request.auth.uid;
     allow delete:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid;
    }
