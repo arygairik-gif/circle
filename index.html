@@ -402,8 +402,11 @@ async function startVoiceRecording(){
    if(voicePreviewUrl)URL.revokeObjectURL(voicePreviewUrl);
    voicePreviewUrl=URL.createObjectURL(voiceBlob);
    const preview=$('#voicePreview');if(preview){preview.src=voicePreviewUrl;preview.hidden=false}
-   const status=$('#voiceStatus');if(status)status.textContent='Recording ready. Listen before sharing it.';
-   const send=$('#voiceSend');if(send)send.hidden=false;
+   const status=$('#voiceStatus');
+   if(!voiceBlob.size){if(status)status.textContent='No audio was captured. Check microphone permission and try again.'}
+   else if(voiceBlob.size>300*1024){if(status)status.textContent='This recording is over the free 300 KB limit. Record a shorter note and try again.'}
+   else if(status)status.textContent='Recording ready. Listen before sharing it.';
+   const send=$('#voiceSend');if(send){send.hidden=!voiceBlob.size||voiceBlob.size>300*1024;send.disabled=false}
    const start=$('#voiceStart');if(start){start.hidden=false;start.disabled=false;start.textContent='Record again'}
    const stop=$('#voiceStop');if(stop)stop.disabled=true;
   };
@@ -411,7 +414,7 @@ async function startVoiceRecording(){
   $('#voiceStatus').textContent='Recording… the note will stop automatically after 8 seconds.';
   voiceLimitTimer=setTimeout(()=>{if(voiceRecorder?.state==='recording')voiceRecorder.stop()},8000);
   $('#voiceStart').disabled=true;$('#voiceStop').disabled=false;
- }catch(e){const status=$('#voiceStatus');if(status)status.textContent=e.message||'Could not access the microphone.'}
+ }catch(e){voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;const status=$('#voiceStatus');if(status)status.textContent=e.name==='NotAllowedError'?'Microphone permission was blocked. Allow microphone access in your browser settings and try again.':(e.message||'Could not access the microphone.')}
 }
 function stopVoiceRecording(){if(voiceRecorder&&voiceRecorder.state==='recording')voiceRecorder.stop()}
 async function sendVoiceNote(){
