@@ -3,6 +3,12 @@ import { addDoc, collection, doc, getDoc, getDocs, onSnapshot, orderBy, query, r
 import { auth, db } from './firebase.js';
 const dayKey=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const safeText=(v,n=1000)=>String(v??'').trim().slice(0,n);
+const validDisplayName=(value,email='')=>{
+ const name=safeText(value,40),address=String(email||'').trim().toLowerCase(),local=address.split('@')[0]||'';
+ if(!name||name.includes('@')||(local&&name.toLowerCase()===local))return '';
+ return name;
+};
+const accountDisplayName=()=>validDisplayName(profileData.displayName,user?.email)||validDisplayName(user?.displayName,user?.email)||'Friend';
 const dailyPrompts=['Show us one tiny thing that made today better.','What is a song that fits your mood this week?','Share one photo-worthy corner near you.','What is something small you are looking forward to?','What snack would you bring to a group hangout?','What is one thing you learned recently?','Describe today using only three words.','What is a place you want to revisit with the circle?','Share a harmless unpopular opinion.','What is one memory that still makes you smile?'];
 function dailyPrompt(){let n=0;for(const ch of dayKey())n=(n*31+ch.charCodeAt(0))>>>0;return dailyPrompts[n%dailyPrompts.length]}
 
@@ -105,7 +111,8 @@ function authScreen(){
   b.disabled=true;
   try{
    if(mode==='signup'){
-    const name=safeText(d.displayName||d.email.split('@')[0],40),handle=safeText(d.handle,24).toLowerCase();
+    const name=safeText(d.displayName,40),handle=safeText(d.handle,24).toLowerCase();
+    if(!validDisplayName(name,d.email))throw new Error('Please enter the name you want friends to see.');
     if(!/^[a-z0-9._]{3,24}$/.test(handle))throw new Error('Choose a username with 3–24 letters, numbers, dots or underscores.');
     profileData={displayName:name,handle,bio:'',photoURL:signupPhotoDataUrl||'',email:d.email.trim()};
     const c=await createUserWithEmailAndPassword(auth,d.email.trim(),d.password);
@@ -117,14 +124,14 @@ function authScreen(){
  };
  $('#cloudGoogle').onclick=async()=>{
   const b=$('#cloudGoogle');b.disabled=true;
-  try{const result=await signInWithPopup(auth,new GoogleAuthProvider());const photo=result.user.photoURL||'';const current=await getDoc(doc(db,'users',result.user.uid));profileData={...(current.data()||{}),displayName:current.data()?.displayName||result.user.displayName||result.user.email.split('@')[0],handle:current.data()?.handle||'',bio:current.data()?.bio||'',photoURL:current.data()?.photoURL||photo,email:result.user.email};}
+  try{const result=await signInWithPopup(auth,new GoogleAuthProvider());const photo=result.user.photoURL||'';const current=await getDoc(doc(db,'users',result.user.uid));profileData={...(current.data()||{}),displayName:validDisplayName(current.data()?.displayName,result.user.email)||validDisplayName(result.user.displayName,result.user.email),handle:current.data()?.handle||'',bio:current.data()?.bio||'',photoURL:current.data()?.photoURL||photo,email:result.user.email};}
   catch(x){error(explain(x))}
   finally{b.disabled=false}
  };
 }
 function profileSetupScreen(){
- const googlePhoto=profileData.photoURL||user?.photoURL||'',displayName=profileData.displayName||user?.displayName||user?.email?.split('@')[0]||'Friend';
- const defaultHandle=profileData.handle||suggestedHandle(displayName,user?.email||'');
+ const googlePhoto=profileData.photoURL||user?.photoURL||'',displayName=validDisplayName(profileData.displayName,user?.email)||validDisplayName(user?.displayName,user?.email)||'';
+ const defaultHandle=profileData.handle||suggestedHandle(displayName||'friend',user?.email||'');
  const photoMarkup=googlePhoto?`<img id="setupPhotoImg" src="${esc(googlePhoto)}" alt="Profile photo preview">`:`<span id="setupPhotoFallback">${esc(displayName.slice(0,1).toUpperCase())}</span>`;
  const panel=`<div class="cloud-mobile-brand"><span class="brand-mark">c</span><span>circle</span></div>
   <div class="cloud-panel-heading"><p class="cloud-kicker">ONE LAST LITTLE THING</p><h1>Make it yours.</h1><p class="cloud-copy">Your Google account is connected. Add a username and check your profile photo before joining your circle.</p></div>
@@ -165,10 +172,10 @@ function profileSetupScreen(){
 
 async function myCircles(){const s=await getDocs(collection(db,'users',user.uid,'circles'));return s.docs.map(d=>({id:d.id,...d.data()}))}
 function picker(items){
- gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">YOUR PEOPLE, IN ONE PLACE</p><h1>Welcome, ${esc(user.displayName||user.email.split('@')[0])}.</h1><p class="cloud-copy">Choose a circle or start a new one. Only invited members can see its conversations.</p>${items.length?`<div class="cloud-circle-list">${items.map(c=>`<button class="cloud-circle-choice" data-open-circle="${esc(c.id)}"><span class="cloud-circle-dot">✿</span><span><strong>${esc(c.name||'Your circle')}</strong><small>Open circle</small></span><b>→</b></button>`).join('')}</div>`:'<p class="cloud-empty">You haven’t joined a circle yet.</p>'}<div class="cloud-divider"><span>OR</span></div><form id="cloudCreateForm" class="cloud-inline"><label>Start a circle<input name="name" required maxlength="40" placeholder="e.g. The Usuals"></label><button class="cloud-primary">Create circle</button></form><form id="cloudJoinForm" class="cloud-inline"><label>Join with an invite code<input name="code" required maxlength="24" placeholder="Paste your invite code"></label><button class="cloud-secondary">Join circle</button></form><div class="cloud-error" id="cloudError" role="alert"></div><button class="cloud-signout" id="cloudSignOut">Sign out</button></section>`);
+ gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">YOUR PEOPLE, IN ONE PLACE</p><h1>Welcome, ${esc(accountDisplayName())}.</h1><p class="cloud-copy">Choose a circle or start a new one. Only invited members can see its conversations.</p>${items.length?`<div class="cloud-circle-list">${items.map(c=>`<button class="cloud-circle-choice" data-open-circle="${esc(c.id)}"><span class="cloud-circle-dot">✿</span><span><strong>${esc(c.name||'Your circle')}</strong><small>Open circle</small></span><b>→</b></button>`).join('')}</div>`:'<p class="cloud-empty">You haven’t joined a circle yet.</p>'}<div class="cloud-divider"><span>OR</span></div><form id="cloudCreateForm" class="cloud-inline"><label>Start a circle<input name="name" required maxlength="40" placeholder="e.g. The Usuals"></label><button class="cloud-primary">Create circle</button></form><form id="cloudJoinForm" class="cloud-inline"><label>Join with an invite code<input name="code" required maxlength="24" placeholder="Paste your invite code"></label><button class="cloud-secondary">Join circle</button></form><div class="cloud-error" id="cloudError" role="alert"></div><button class="cloud-signout" id="cloudSignOut">Sign out</button></section>`);
  $$('[data-open-circle]',gate).forEach(b=>b.onclick=()=>openCircle(b.dataset.openCircle));
- $('#cloudCreateForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const name=new FormData(e.currentTarget).get('name').trim(),code=makeCode(),r=await addDoc(collection(db,'circles'),{name,ownerUid:user.uid,inviteCode:code,createdAt:serverTimestamp()});await setDoc(doc(db,'circles',r.id,'members',user.uid),{uid:user.uid,name:profileData.displayName||user.displayName||user.email.split('@')[0],handle:profileData.handle||'',bio:profileData.bio||'',photoURL:profileData.photoURL||'',email:user.email,role:'owner',joinedAt:serverTimestamp()});await setDoc(doc(db,'users',user.uid,'circles',r.id),{name,role:'owner',joinedAt:serverTimestamp()});await setDoc(doc(db,'invites',code),{circleId:r.id,createdBy:user.uid,createdAt:serverTimestamp()});for(const q of [{title:'Share a tiny win',desc:'Tell the circle about one good thing from today.',icon:'✳'},{title:'Plan a low-key hangout',desc:'Suggest one simple thing to do together.',icon:'☕'},{title:'Send a throwback',desc:'Share a favourite moment from your group.',icon:'📷'}])await addDoc(collection(db,'circles',r.id,'quests'),{...q,uid:user.uid,done:false,people:1,createdAt:serverTimestamp()});await openCircle(r.id)}catch(x){error(explain(x))}finally{b.disabled=false}};
- $('#cloudJoinForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const code=String(new FormData(e.currentTarget).get('code')).trim().toUpperCase(),iv=await getDoc(doc(db,'invites',code));if(!iv.exists())throw new Error('Invite code not found. Ask a member for a current code.');const id=iv.data().circleId;await setDoc(doc(db,'circles',id,'members',user.uid),{uid:user.uid,name:profileData.displayName||user.displayName||user.email.split('@')[0],handle:profileData.handle||'',bio:profileData.bio||'',photoURL:profileData.photoURL||'',email:user.email,role:'member',inviteCode:code,joinedAt:serverTimestamp()});const c=await getDoc(doc(db,'circles',id));if(!c.exists())throw new Error('Circle not found.');await setDoc(doc(db,'users',user.uid,'circles',id),{name:c.data().name,role:'member',joinedAt:serverTimestamp()});await openCircle(id)}catch(x){error(x.message||explain(x))}finally{b.disabled=false}};
+ $('#cloudCreateForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const name=new FormData(e.currentTarget).get('name').trim(),code=makeCode(),r=await addDoc(collection(db,'circles'),{name,ownerUid:user.uid,inviteCode:code,createdAt:serverTimestamp()});await setDoc(doc(db,'circles',r.id,'members',user.uid),{uid:user.uid,name:accountDisplayName(),handle:profileData.handle||'',bio:profileData.bio||'',photoURL:profileData.photoURL||'',email:user.email,role:'owner',joinedAt:serverTimestamp()});await setDoc(doc(db,'users',user.uid,'circles',r.id),{name,role:'owner',joinedAt:serverTimestamp()});await setDoc(doc(db,'invites',code),{circleId:r.id,createdBy:user.uid,createdAt:serverTimestamp()});for(const q of [{title:'Share a tiny win',desc:'Tell the circle about one good thing from today.',icon:'✳'},{title:'Plan a low-key hangout',desc:'Suggest one simple thing to do together.',icon:'☕'},{title:'Send a throwback',desc:'Share a favourite moment from your group.',icon:'📷'}])await addDoc(collection(db,'circles',r.id,'quests'),{...q,uid:user.uid,done:false,people:1,createdAt:serverTimestamp()});await openCircle(r.id)}catch(x){error(explain(x))}finally{b.disabled=false}};
+ $('#cloudJoinForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const code=String(new FormData(e.currentTarget).get('code')).trim().toUpperCase(),iv=await getDoc(doc(db,'invites',code));if(!iv.exists())throw new Error('Invite code not found. Ask a member for a current code.');const id=iv.data().circleId;await setDoc(doc(db,'circles',id,'members',user.uid),{uid:user.uid,name:accountDisplayName(),handle:profileData.handle||'',bio:profileData.bio||'',photoURL:profileData.photoURL||'',email:user.email,role:'member',inviteCode:code,joinedAt:serverTimestamp()});const c=await getDoc(doc(db,'circles',id));if(!c.exists())throw new Error('Circle not found.');await setDoc(doc(db,'users',user.uid,'circles',id),{name:c.data().name,role:'member',joinedAt:serverTimestamp()});await openCircle(id)}catch(x){error(x.message||explain(x))}finally{b.disabled=false}};
  $('#cloudSignOut').onclick=()=>signOut(auth);
 }
 function makeCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',a=crypto.getRandomValues(new Uint8Array(10));return [...a].map(x=>chars[x%chars.length]).join('')}
@@ -179,7 +186,7 @@ async function openCircle(id){
  stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{const members=s.docs.map(d=>({id:d.id,...d.data(),status:d.data().status==='free'?'Free now':(d.data().status||'Around'),initial:(d.data().name||'?').slice(0,1).toUpperCase(),tone:'',photoURL:d.data().photoURL||'',handle:d.data().handle||'',bio:d.data().bio||''})),mine=members.find(x=>x.id===user.uid);if(mine){ui.state.me.mood=mine.mood||null;ui.state.me.free=mine.status==='Free now';ui.state.me.activity=mine.activity||''}ui.state.members=members;ui.render()},e=>ui.toast('Members could not load: '+e.code)));
  stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{if(firstMessageSnapshot){firstMessageSnapshot=false}else if(ui.state.settings?.browserNotifications&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})})}ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:Object.entries(x.reactions||{}).map(([k,v])=>`${k} ${v.length}`)}});ui.render()},e=>ui.toast('Messages could not load: '+e.code)));
  stops.push(onSnapshot(query(collection(db,'circles',id,'plans'),orderBy('createdAt','desc'),limit(50)),s=>{ui.state.plans=s.docs.map(d=>{const x=d.data();return{id:d.id,...x,options:x.options||[],votes:(x.votes||[]).map(a=>(a||[]).map(uid=>uid===user.uid?'you':uid)),rsvps:(x.rsvps||[]).map(uid=>uid===user.uid?'you':uid)}});ui.render()},e=>ui.toast('Plans could not load: '+e.code)));
- const p=await getDoc(doc(db,'users',user.uid));profileData=p.data()||profileData||{};ui.state.me.displayName=profileData.displayName||user.displayName||'You';ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.me.email=user.email||'';
+ const p=await getDoc(doc(db,'users',user.uid));profileData=p.data()||profileData||{};ui.state.me.displayName=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.me.email=user.email||'';
  const oldMember=m.data()||{},memberProfile={name:ui.state.me.displayName,handle:ui.state.me.handle,bio:ui.state.me.bio,photoURL:ui.state.me.photoURL};
  if(Object.keys(memberProfile).some(key=>(oldMember[key]||'')!==(memberProfile[key]||'')))await updateDoc(doc(db,'circles',id,'members',user.uid),memberProfile);
  ui.state.members=ui.state.members||[];ui.render();
@@ -209,7 +216,7 @@ async function enableBrowserNotifications(){
  window.CircleApp.render();
  return true;
 }
-async function sendMessage(text){const value=safeText(text,1500);if(!value)return;if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');await addDoc(collection(db,'circles',circleId,'messages'),{uid:user.uid,displayName:profileData.displayName||user.displayName||user.email.split('@')[0],text:value,createdAt:serverTimestamp(),reactions:{}})}
+async function sendMessage(text){const value=safeText(text,1500);if(!value)return;if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');await addDoc(collection(db,'circles',circleId,'messages'),{uid:user.uid,displayName:accountDisplayName(),text:value,createdAt:serverTimestamp(),reactions:{}})}
 function readAsDataUrl(file){
  return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read that file.'));reader.readAsDataURL(file)});
 }
@@ -246,21 +253,21 @@ async function sendAttachment(file){
  const memoryRef=doc(collection(db,'circles',circleId,'memories'));
  const batch=writeBatch(db);
  batch.set(messageRef,{
-  uid:user.uid,displayName:user.displayName||user.email.split('@')[0],
+  uid:user.uid,displayName:accountDisplayName(),
   text:type==='image'?'Shared a photo':'Shared a voice note',
   attachmentDataUrl:dataUrl,attachmentType:type,attachmentName:name,
   createdAt:serverTimestamp(),reactions:{}
  });
  batch.set(memoryRef,{uid:user.uid,type:type==='image'?'photo':'voice',icon:type==='image'?'▧':'♫',
   title:type==='image'?'A shared photo':'A voice note',desc:name,mediaUrl:dataUrl,mediaType:type,
-  date:dayKey(),by:user.displayName||'You',color:type,createdAt:serverTimestamp()});
+  date:dayKey(),by:accountDisplayName(),color:type,createdAt:serverTimestamp()});
  await batch.commit();
  return {id:messageRef.id,type,name,size:prepared.size};
 }
 const addRecord=async(name,data)=>addDoc(collection(db,'circles',circleId,name),{...data,uid:user.uid,createdAt:serverTimestamp()});
-async function addCommitment(d){return addRecord('commitments',{text:safeText(d.task,240),by:user.displayName||'You',when:safeText(d.when,80),done:false})}
+async function addCommitment(d){return addRecord('commitments',{text:safeText(d.task,240),by:accountDisplayName(),when:safeText(d.when,80),done:false})}
 async function toggleCommitment(id,done){return updateDoc(doc(db,'circles',circleId,'commitments',String(id)),{done:!!done,updatedAt:serverTimestamp()})}
-async function addMemory(d){return addRecord('memories',{type:safeText(d.type,30),icon:safeText(d.icon,8),title:safeText(d.title,100),desc:safeText(d.desc,1200),date:dayKey(),by:user.displayName||'You',color:safeText(d.color,20),unlockAt:d.unlockAt||null})}
+async function addMemory(d){return addRecord('memories',{type:safeText(d.type,30),icon:safeText(d.icon,8),title:safeText(d.title,100),desc:safeText(d.desc,1200),date:dayKey(),by:accountDisplayName(),color:safeText(d.color,20),unlockAt:d.unlockAt||null})}
 async function addRitual(d){return addRecord('rituals',{title:safeText(d.title,100),day:safeText(d.day,3),detail:safeText(d.detail,240)})}
 async function addQuest(d){return addRecord('quests',{title:safeText(d.title,100),desc:safeText(d.desc,300),icon:safeText(d.icon,8),done:false,people:1})}
 async function toggleQuest(id,done){return updateDoc(doc(db,'circles',circleId,'quests',String(id)),{done:!!done,updatedAt:serverTimestamp()})}
@@ -269,7 +276,7 @@ async function addDropAnswer(answer,prompt){
  const value=safeText(answer,1000);if(!value)throw new Error('Write an answer first.');
  const answerRef=doc(db,'circles',circleId,'dailyDrops',dayKey(),'answers',user.uid);
  const existing=await getDoc(answerRef);if(existing.exists())throw new Error('You have already posted today.');
- await setDoc(answerRef,{uid:user.uid,date:dayKey(),prompt:safeText(prompt,300),answer:value,name:user.displayName||'You',createdAt:serverTimestamp()});
+ await setDoc(answerRef,{uid:user.uid,date:dayKey(),prompt:safeText(prompt,300),answer:value,name:accountDisplayName(),createdAt:serverTimestamp()});
  const ui=window.CircleApp;ui.state.drop.posted=true;ui.state.drop.answer=value;
  stops.push(onSnapshot(collection(db,'circles',circleId,'dailyDrops',dayKey(),'answers'),s=>{
   ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
@@ -278,8 +285,8 @@ async function addDropAnswer(answer,prompt){
 }
 async function addQuietReply(toUid,messageId,reply){if(!toUid||toUid==='you'||toUid===user.uid)throw new Error('Choose another circle member.');return addRecord('privateReplies',{fromUid:user.uid,toUid,messageId:String(messageId),reply:safeText(reply,1500)})}
 async function saveProfile(data){
- const displayName=safeText(data.displayName,40);
- if(!displayName)throw new Error('Add a display name first.');
+ const displayName=validDisplayName(data.displayName,user?.email);
+ if(!displayName)throw new Error('Add a display name that is not your email address.');
  const handle=safeText(data.handle,24).replace(/[^a-zA-Z0-9._]/g,'');
  const bio=safeText(data.bio,160);
  const photoURL=typeof data.photoURL==='string'?data.photoURL:(profileData.photoURL||'');
@@ -307,10 +314,11 @@ onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};authScreen();return}
  try{
-  const r=doc(db,'users',u.uid),p=await getDoc(r),saved=p.data()||{},fallbackName=u.displayName||u.email.split('@')[0];
-  profileData={...profileData,...saved,displayName:saved.displayName||u.displayName||fallbackName,email:u.email,photoURL:saved.photoURL||profileData.photoURL||u.photoURL||'',handle:saved.handle||profileData.handle||'',bio:saved.bio||profileData.bio||''};
-  await setDoc(r,{displayName:profileData.displayName,email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
-  if(!profileData.handle){profileSetupScreen();return}
+  const r=doc(db,'users',u.uid),p=await getDoc(r),saved=p.data()||{};
+  const savedName=validDisplayName(saved.displayName,u.email),authName=validDisplayName(u.displayName,u.email);
+  profileData={...profileData,...saved,displayName:savedName||authName,email:u.email,photoURL:saved.photoURL||profileData.photoURL||u.photoURL||'',handle:saved.handle||profileData.handle||'',bio:saved.bio||profileData.bio||''};
+  await setDoc(r,{displayName:profileData.displayName||'',email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
+  if(!profileData.handle||!profileData.displayName){profileSetupScreen();return}
   picker(await myCircles());
  }catch(x){authScreen();error(`Firebase setup issue: ${x.code||x.message}. Enable Authentication and create a Firestore database.`)}
 });
