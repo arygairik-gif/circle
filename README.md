@@ -27,7 +27,7 @@ Open the Vite URL (normally http://localhost:5173). The Firebase web configurati
 2. In **Authentication → Sign-in method**, enable **Email/Password** and **Google**.
 3. In **Authentication → Settings → Authorized domains**, add `localhost` and the exact production hosting domain.
 4. In **Firestore Database**, create a database.
-5. Publish `firestore.rules` (Firestore → Rules).\n6. Enable Firebase Storage for this project and publish `storage.rules` (Storage → Rules).\n7. Storage rule publishing may ask permission to let Storage Security Rules check circle membership in Cloud Firestore; allow that connection.
+5. Publish `firestore.rules` (Firestore → Rules). No Cloud Storage bucket or billing upgrade is required for the small-media mode.
 6. Run Circle, create an account, then create a circle. Friends join using the generated invite code.
 
 ## Deploy
@@ -36,7 +36,7 @@ npm install -g firebase-tools
 firebase login
 firebase use circle-20c34
 npm run build
-firebase deploy --only firestore,storage,hosting
+firebase deploy --only firestore:rules,hosting
 ```
 
 `firebase.json` publishes Vite's `dist/` folder.
@@ -52,7 +52,7 @@ firebase deploy --only firestore,storage,hosting
 The rules deny circle reads/writes unless the signed-in user is a member. Invite documents allow direct lookup by code, not listing. Do not replace these rules with open access rules.
 
 ## Feature status and remaining setup
-- **Photos and voice notes:** upload from chat to Firebase Storage and appear in chat and Memory Vault. Enable the Storage bucket and publish `storage.rules` before using them. Browser microphone permission is requested only when recording starts.
+- **Photos and voice notes:** compressed images (up to 300 KB before encoding) and short audio clips (up to 300 KB) are stored as data URLs in Firestore message/memory documents. This avoids Firebase Storage and a billing-plan upgrade, but it is only suitable for small, low-volume sharing. The Firestore document-size limit and daily quotas still apply. Browser microphone permission is requested only when recording starts.
 - **Daily Drop:** prompts are consistent by local calendar date. Each member's answers are hidden from other members until that member has submitted their own answer; the Firestore rules enforce this.
 - **Catch-up panel:** uses recent messages, plans and open commitments. It is a data-driven summary, not an AI-generated summary.
 - **Group stats and awards:** counts are calculated from loaded circle data. Playlist and sticker activities currently save text contributions; they do not connect to a music service or generate sticker images.
