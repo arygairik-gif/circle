@@ -356,7 +356,7 @@ onAuthStateChanged(auth,async u=>{
   await setDoc(r,{displayName:profileData.displayName||'',email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
   if(!profileData.handle||!profileData.displayName){saveActiveCircleId('');profileSetupScreen();return}
   const circles=await myCircles(),savedCircleId=getSavedCircleId(),savedCircle=circles.find(item=>item.id===savedCircleId);
-  if(savedCircle&&await openCircle(savedCircle.id))return;
+  if(savedCircle){const opened=await openCircle(savedCircle.id);if(opened)return;return}
   if(savedCircleId&&!savedCircle)saveActiveCircleId('');
   picker(circles);
  }catch(x){authScreen();error(`Firebase setup issue: ${x.code||x.message}. Enable Authentication and create a Firestore database.`)}
