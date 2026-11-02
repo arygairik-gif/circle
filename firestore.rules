@@ -39,9 +39,22 @@ service cloud.firestore {
     allow create:if isMember(cid) && request.resource.data.uid==request.auth.uid &&
      request.resource.data.text is string && request.resource.data.text.size()>0 &&
      request.resource.data.text.size()<=1500 &&
-     request.resource.data.keys().hasOnly(['uid','displayName','text','createdAt','reactions']);
+     request.resource.data.keys().hasOnly(['uid','displayName','text','imageUrl','createdAt','reactions']);
     allow update:if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
     allow delete:if isMember(cid) && resource.data.uid==request.auth.uid;
+   }
+
+   match /{feature}/{itemId} {
+    function supportedFeature(){return feature in ['commitments','memories','rituals','quests','activities','dropAnswers'];}
+    allow read:if supportedFeature() && isMember(cid);
+    allow create:if supportedFeature() && isMember(cid) && request.resource.data.uid==request.auth.uid;
+    allow update:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid && request.resource.data.uid==request.auth.uid;
+    allow delete:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid;
+   }
+   match /privateReplies/{replyId} {
+    allow create:if isMember(cid) && request.resource.data.fromUid==request.auth.uid && request.resource.data.toUid is string && request.resource.data.reply is string && request.resource.data.reply.size()<=1500;
+    allow read:if isMember(cid) && (resource.data.fromUid==request.auth.uid || resource.data.toUid==request.auth.uid);
+    allow update,delete:if false;
    }
    match /plans/{pid}{
     allow read:if isMember(cid);
