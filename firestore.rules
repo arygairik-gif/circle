@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+ match /databases/{database}/documents {
+  function signedIn(){return request.auth != null;}
+  function isMember(cid){return signedIn() && exists(/databases/$(database)/documents/circles/$(cid)/members/$(request.auth.uid));}
+  function isOwner(cid){return isMember(cid) && get(/databases/$(database)/documents/circles/$(cid)).data.ownerUid == request.auth.uid;}
+  match /users/{uid}{
+   allow read,create,update:if signedIn() && request.auth.uid==uid;
+   allow delete:if false;
+   match /circles/{cid}{
+    allow read:if signedIn() && request.auth.uid==uid;
+    allow create:if signedIn() && request.auth.uid==uid && exists(/databases/$(database)/documents/circles/$(cid)/members/$(uid));
+    allow delete:if signedIn() && request.auth.uid==uid;
+    allow update:if false;
+   }
+  }
+  match /invites/{code}{
+   allow get:if true; allow list:if false;
+   allow create:if signedIn() && request.resource.data.createdBy==request.auth.uid && exists(/databases/$(database)/documents/circles/$(request.resource.data.circleId)/members/$(request.auth.uid));
+   allow update,delete:if signedIn() && resource.data.createdBy==request.auth.uid;
+  }
+  match /circles/{cid}{
+   allow create:if signedIn() && request.resource.data.ownerUid==request.auth.uid;
+   allow read:if isMember(cid);
+   allow update:if isOwner(cid) && request.resource.data.ownerUid==resource.data.ownerUid;
+   allow delete:if isOwner(cid);
+   match /members/{uid}{
+    allow read:if isMember(cid);
+    allow create:if signedIn() && request.auth.uid==uid && (
+     get(/databases/$(database)/documents/circles/$(cid)).data.ownerUid==uid ||
+     (request.resource.data.role=='member' && exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
+      get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.circleId==cid));
+    allow update:if signedIn() && request.auth.uid==uid && isMember(cid) && request.resource.data.uid==uid &&
+     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photoURL','status','lastSeen','mood','activity']);
+    allow delete:if signedIn() && request.auth.uid==uid;
+   }
+   match /messages/{mid}{
+    allow read:if isMember(cid);
+    allow create:if isMember(cid) && request.resource.data.uid==request.auth.uid &&
+     request.resource.data.text is string && request.resource.data.text.size()>0 &&
+     request.resource.data.text.size()<=1500 &&
+     request.resource.data.keys().hasOnly(['uid','displayName','text','createdAt','reactions']);
+    allow update:if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
+    allow delete:if isMember(cid) && resource.data.uid==request.auth.uid;
+   }
+   match /plans/{pid}{
+    allow read:if isMember(cid);
+    allow create:if isMember(cid) && request.resource.data.createdBy==request.auth.uid &&
+     request.resource.data.title is string && request.resource.data.title.size()>0 && request.resource.data.title.size()<=100;
+    allow update:if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes','rsvps','title','description','date','time','place']);
+    allow delete:if isMember(cid) && resource.data.createdBy==request.auth.uid;
+   }
+  }
+ }
+}
