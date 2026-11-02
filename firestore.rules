@@ -25,7 +25,8 @@ service cloud.firestore {
    allow update:if isOwner(cid) && request.resource.data.ownerUid==resource.data.ownerUid;
    allow delete:if isOwner(cid);
    match /members/{uid}{
-    allow read:if isMember(cid);
+    allow get:if signedIn() && (request.auth.uid==uid || isMember(cid));
+    allow list:if isMember(cid);
     allow create:if signedIn() && request.auth.uid==uid && (
      get(/databases/$(database)/documents/circles/$(cid)).data.ownerUid==uid ||
      (request.resource.data.role=='member' && exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
