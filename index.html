@@ -469,7 +469,7 @@ function render(){
  const oldChat=$('#chatScroll');
  const wasNearBottom=oldChat?oldChat.scrollHeight-oldChat.scrollTop-oldChat.clientHeight<90:true;
  const oldScrollTop=oldChat?.scrollTop||0;
- $$('.nav-link[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));$$('.mobile-nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));
+ $('.nav-link[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));$('.mobile-nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));$('.mobile-nav [data-action="mobile-more"]')?.classList.toggle('active',['memories','activities','circle','profile','settings'].includes(state.view));
  $('#freeLabel').textContent=state.me.free?'Free for a bit':'I’m free';
  document.querySelector('.app')?.classList.toggle('chat-view-active',state.view==='chat');
  const view=$('#view');const rail=$('#rightRail');
