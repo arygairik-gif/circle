@@ -59,6 +59,12 @@ service cloud.firestore {
      exists(/databases/$(database)/documents/circles/$(cid)/dailyDrops/$(date)/answers/$(request.auth.uid)));
     allow update, delete: if false;
    }
+   match /commitments/{itemId} {
+    allow update: if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done','updatedAt']);
+   }
+   match /quests/{itemId} {
+    allow update: if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done','updatedAt']);
+   }
    match /privateReplies/{replyId} {
     allow create:if isMember(cid) && request.resource.data.fromUid==request.auth.uid && request.resource.data.toUid is string && exists(/databases/$(database)/documents/circles/$(cid)/members/$(request.resource.data.toUid)) && request.resource.data.reply is string && request.resource.data.reply.size()<=1500;
     allow read:if isMember(cid) && (resource.data.fromUid==request.auth.uid || resource.data.toUid==request.auth.uid);
