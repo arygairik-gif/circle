@@ -52,6 +52,6 @@ firebase deploy --only firestore:rules,hosting
 The rules deny circle reads/writes unless the signed-in user is a member. Invite documents allow direct lookup by code, not listing. Do not replace these rules with open access rules.
 
 ## Still not live
-Memory Vault, Daily Drop, commitments, friend quests, rituals, most activities, private replies, image/file uploads, voice notes, voice/video rooms, push notifications and AI catch-up are not yet synchronized or implemented as live services. Some remaining UI interactions are local/demo behavior. Image uploads need Firebase Storage setup and appropriate billing/security rules. Voice/video needs a separate real-time media service. Notifications need a service worker and web-push setup.
+Image/file uploads and voice notes still need Firebase Storage plus recording/playback UI. Voice/video rooms need a separate real-time media service such as LiveKit. Push notifications need FCM setup, a service worker and web-push configuration. AI catch-up needs a secure server-side AI integration. Some decorative counters, awards, sample prompts and room UI remain demo content.
 
 **Security:** Firebase Auth + Firestore rules provide authenticated access control, not end-to-end encryption. Do not describe Circle as E2EE. Add App Check, abuse controls, rate limits, retention/deletion workflows and a security review before wider use.
