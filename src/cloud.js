@@ -256,7 +256,7 @@ async function sendMessage(text){const value=safeText(text,1500);if(!value)retur
 function readAsDataUrl(file){
  return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result||''));reader.onerror=()=>reject(new Error('Could not read that file.'));reader.readAsDataURL(file)});
 }
-async function compactImage(file){
+async function compactImage(file,maxBytes=240*1024){
  if(!file.type.startsWith('image/'))throw new Error('Choose an image file.');
  if(file.size>10*1024*1024)throw new Error('Choose an image smaller than 10 MB before compression.');
  let bitmap;
@@ -269,36 +269,62 @@ async function compactImage(file){
  for(let attempt=0;attempt<7;attempt++){
   canvas.width=width;canvas.height=height;ctx.clearRect(0,0,width,height);ctx.drawImage(bitmap,0,0,width,height);
   blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',Math.max(.42,.78-attempt*.06)));
-  if(blob&&blob.size<=300*1024)break;
+  if(blob&&blob.size<=maxBytes)break;
   width=Math.max(1,Math.round(width*.88));height=Math.max(1,Math.round(height*.88));
  }
  bitmap.close?.();
- if(!blob||blob.size>300*1024)throw new Error('That image is still too large. Try a smaller or simpler picture.');
+ if(!blob||blob.size>maxBytes)throw new Error('That image is still too large. Try a smaller or simpler picture.');
  return new File([blob],(safeText(file.name||'circle-photo',70).replace(/\.[^.]+$/,'')||'circle-photo')+'.jpg',{type:'image/jpeg'});
 }
 async function sendAttachment(file){
  if(!file)throw new Error('Choose a file first.');
  let prepared,type;
- if(file.type.startsWith('image/')){prepared=await compactImage(file);type='image'}
+ if(file.type.startsWith('image/')){prepared=await compactImage(file,240*1024);type='image'}
  else if(file.type.startsWith('audio/')){if(file.size>300*1024)throw new Error('Voice notes must be under 300 KB. Try a shorter recording.');prepared=file;type='audio'}
  else throw new Error('Only images and short audio recordings are supported.');
  const dataUrl=await readAsDataUrl(prepared);
- if(dataUrl.length>420000)throw new Error('This file is too large for the free Firestore attachment limit.');
+ const maxDataUrl=type==='image'?360000:420000;
+ if(dataUrl.length>maxDataUrl)throw new Error('This file is too large for the free Firestore attachment limit. Try a smaller photo or shorter audio clip.');
  const name=safeText(prepared.name||'attachment',100);
- const messageRef=doc(collection(db,'circles',circleId,'messages'));
- const memoryRef=doc(collection(db,'circles',circleId,'memories'));
- const batch=writeBatch(db);
- batch.set(messageRef,{
+ const messageRef=await addDoc(collection(db,'circles',circleId,'messages'),{
   uid:user.uid,displayName:accountDisplayName(),
   text:type==='image'?'Shared a photo':'Shared a voice note',
   attachmentDataUrl:dataUrl,attachmentType:type,attachmentName:name,
   createdAt:serverTimestamp(),reactions:{}
  });
- batch.set(memoryRef,{uid:user.uid,type:type==='image'?'photo':'voice',icon:type==='image'?'▧':'♫',
-  title:type==='image'?'A shared photo':'A voice note',desc:name,mediaUrl:dataUrl,mediaType:type,
-  date:dayKey(),by:accountDisplayName(),color:type,createdAt:serverTimestamp()});
- await batch.commit();
- return {id:messageRef.id,type,name,size:prepared.size};
+ let memorySaved=true;
+ try{
+  await addDoc(collection(db,'circles',circleId,'memories'),{
+   uid:user.uid,type:type==='image'?'photo':'voice',icon:type==='image'?'▧':'♫',
+   title:type==='image'?'A shared photo':'A voice note',desc:name,mediaUrl:dataUrl,mediaType:type,
+   date:dayKey(),by:accountDisplayName(),color:type,createdAt:serverTimestamp()
+  });
+ }catch(memoryError){
+  memorySaved=false;
+  console.warn('Circle message sent, but Memory Vault copy was denied:',memoryError?.code||memoryError?.message);
+ }
+ return {id:messageRef.id,type,name,size:prepared.size,memorySaved};
+}
+async function prepareDailyDropPhoto(file){
+ const prepared=await compactImage(file,140*1024);
+ const dataUrl=await readAsDataUrl(prepared);
+ if(dataUrl.length>200000)throw new Error('Choose a smaller photo for Today’s Drop.');
+ return dataUrl;
+}
+async function addDropAnswer(answer,prompt,photoDataUrl=''){
+ const value=safeText(answer,1000),photo=typeof photoDataUrl==='string'?photoDataUrl:'';
+ if(!value&&!photo)throw new Error('Write an answer or add a photo first.');
+ if(photo&&(!photo.startsWith('data:image/')||photo.length>200000))throw new Error('That Daily Drop photo is not valid or is too large.');
+ const answerRef=doc(db,'circles',circleId,'dailyDrops',dayKey(),'answers',user.uid);
+ const existing=await getDoc(answerRef);if(existing.exists())throw new Error('You have already posted today.');
+ const payload={uid:user.uid,date:dayKey(),prompt:safeText(prompt,300),answer:value,name:accountDisplayName(),createdAt:serverTimestamp()};
+ if(photo)payload.photoDataUrl=photo;
+ await setDoc(answerRef,payload);
+ const ui=window.CircleApp;ui.state.drop.posted=true;ui.state.drop.answer=value;ui.state.drop.photoDataUrl=photo;
+ stops.push(onSnapshot(collection(db,'circles',circleId,'dailyDrops',dayKey(),'answers'),s=>{
+  ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
+ },e=>ui.toast('Daily Drop answers could not load: '+e.code)));
+ ui.render();
 }
 const addRecord=async(name,data)=>addDoc(collection(db,'circles',circleId,name),{...data,uid:user.uid,createdAt:serverTimestamp()});
 async function addCommitment(d){return addRecord('commitments',{text:safeText(d.task,240),by:accountDisplayName(),when:safeText(d.when,80),done:false})}
@@ -345,7 +371,7 @@ async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id)
 const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
 async function setAvailability(free,activity=''){await updateDoc(memberRef(),{status:free?'free':'around',activity:String(activity).slice(0,80),lastSeen:serverTimestamp()})}
-window.CircleCloud={saveProfile,prepareProfilePhoto,backToCircles:async()=>{stop();circleId=null;saveActiveCircleId('');picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>{saveActiveCircleId('');return signOut(auth)},inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,backToCircles:async()=>{stop();circleId=null;saveActiveCircleId('');picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>{saveActiveCircleId('');return signOut(auth)},inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};authScreen();return}
