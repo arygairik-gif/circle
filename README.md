@@ -17,10 +17,12 @@ Circle keeps the original warm, card-based design and now uses Firebase Authenti
 ## Run locally
 Requires Node.js 20.19+ or 22.12+.
 
-```bash
-npm install
-npm run dev
+```powershell
+npm.cmd install
+npm.cmd run dev
 ```
+
+On macOS/Linux, use `npm install` and `npm run dev` instead.
 
 Open the Vite URL (normally http://localhost:5173). The Firebase web configuration for `circle-20c34` is in `src/firebase.js`. Firebase web config is public client configuration, not a server credential. Never commit a service-account JSON file or Admin SDK private key.
 
