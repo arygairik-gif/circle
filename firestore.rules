@@ -149,9 +149,17 @@ service cloud.firestore {
        request.resource.data.freeUntil is timestamp) &&
       (!('lastSeen' in request.resource.data) ||
        request.resource.data.lastSeen == request.time);
-    allow delete: if signedIn() && (request.auth.uid == uid || (isOwner(cid) && uid != get(circlePath(cid)).data.ownerUid));
-
-    }
+    allow delete: if signedIn() && (
+      (request.auth.uid == uid && get(circlePath(cid)).data.ownerUid != uid) ||
+      (isOwner(cid) && uid != get(circlePath(cid)).data.ownerUid)
+     );
+    // The owner can remove legacy email fields from public member documents.
+    // New member documents keep email only in the private users/{uid} document.
+    allow update: if isOwner(cid) &&
+     resource.data.keys().hasAny(['email']) &&
+     !request.resource.data.keys().hasAny(['email']) &&
+     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['email']);
+   }
     match /messages/{mid} {
      allow read: if isMember(cid);
      allow create: if isMember(cid) &&
@@ -173,6 +181,9 @@ service cloud.firestore {
       (!('reply' in request.resource.data) ||
        (request.resource.data.reply is string &&
         request.resource.data.reply.size() <= 320)) &&
+      (!('replyTo' in request.resource.data) ||
+       (request.resource.data.replyTo is string &&
+        request.resource.data.replyTo.size() <= 128)) &&
       (!('attachmentType' in request.resource.data) ||
        request.resource.data.attachmentType in ['image','audio','sticker']) &&
       (!('attachmentName' in request.resource.data) ||
