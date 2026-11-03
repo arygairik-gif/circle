@@ -1,103 +1,414 @@
 rules_version = '2';
 service cloud.firestore {
  match /databases/{database}/documents {
-  function signedIn(){return request.auth != null;}
-  function isMember(cid){return signedIn() && exists(/databases/$(database)/documents/circles/$(cid)/members/$(request.auth.uid));}
-  function isOwner(cid){return isMember(cid) && get(/databases/$(database)/documents/circles/$(cid)).data.ownerUid == request.auth.uid;}
-  match /users/{uid}{
-   allow read,create,update:if signedIn() && request.auth.uid==uid;
-   match /stickers/{sid}{
-    allow read:if signedIn() && request.auth.uid==uid;
-    allow create:if signedIn() && request.auth.uid==uid && request.resource.data.uid==uid &&
-     request.resource.data.name is string && request.resource.data.name.size()>0 && request.resource.data.name.size()<=40 &&
-     request.resource.data.dataUrl is string && request.resource.data.dataUrl.size()>0 &&
-     request.resource.data.dataUrl.size()<=180000 && request.resource.data.dataUrl.matches('^data:image/.*');
-    allow update:if false;
-    allow delete:if signedIn() && request.auth.uid==uid && resource.data.uid==uid;
-   }
-   allow delete:if false;
-   match /circles/{cid}{
-    allow read:if signedIn() && request.auth.uid==uid;
-    allow create:if signedIn() && request.auth.uid==uid && exists(/databases/$(database)/documents/circles/$(cid)/members/$(uid));
-    allow delete:if signedIn() && request.auth.uid==uid;
-    allow update:if false;
-   }
+  function signedIn(){ return request.auth != null; }
+  function memberPath(cid,uid){ return /databases/$(database)/documents/circles/$(cid)/members/$(uid); }
+  function circlePath(cid){ return /databases/$(database)/documents/circles/$(cid); }
+  function invitePath(code){ return /databases/$(database)/documents/invites/$(code); }
+  function isMember(cid){
+   return signedIn() && exists(memberPath(cid,request.auth.uid));
   }
-  match /invites/{code}{
-   allow get:if true; allow list:if false;
-   allow create:if signedIn() && request.resource.data.createdBy==request.auth.uid && exists(/databases/$(database)/documents/circles/$(request.resource.data.circleId)/members/$(request.auth.uid));
-   allow update,delete:if signedIn() && resource.data.createdBy==request.auth.uid;
+  function isMemberAfter(cid){
+   return signedIn() && existsAfter(memberPath(cid,request.auth.uid));
   }
-  match /circles/{cid}{
-   allow create:if signedIn() && request.resource.data.ownerUid==request.auth.uid;
-   allow read:if isMember(cid);
-   allow update:if isOwner(cid) && request.resource.data.ownerUid==resource.data.ownerUid;
-   allow delete:if isOwner(cid);
-   match /members/{uid}{
-    allow get:if signedIn() && (request.auth.uid==uid || isMember(cid));
-    allow list:if isMember(cid);
-    allow create:if signedIn() && request.auth.uid==uid && (
-     get(/databases/$(database)/documents/circles/$(cid)).data.ownerUid==uid ||
-     (request.resource.data.role=='member' && exists(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)) &&
-      get(/databases/$(database)/documents/invites/$(request.resource.data.inviteCode)).data.circleId==cid));
-    allow update:if signedIn() && request.auth.uid==uid && isMember(cid) && request.resource.data.uid==uid &&
-     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','photoURL','handle','bio','status','lastSeen','mood','activity','support','supportPreference']) && (!('photoURL' in request.resource.data) || (request.resource.data.photoURL is string && request.resource.data.photoURL.size()<=220000));
-    allow delete:if signedIn() && request.auth.uid==uid;
-   }
-   match /messages/{mid}{
-    allow read:if isMember(cid);
-    allow create:if isMember(cid) && request.resource.data.uid==request.auth.uid &&
-     request.resource.data.text is string && request.resource.data.text.size()>0 &&
-     request.resource.data.text.size()<=1500 &&
-     request.resource.data.keys().hasOnly(['uid','displayName','text','reply','imageUrl','attachmentUrl','attachmentDataUrl','attachmentType','attachmentName','createdAt','reactions']) &&
-     (!('reply' in request.resource.data) || (request.resource.data.reply is string && request.resource.data.reply.size()<=320)) &&
-     (!('attachmentType' in request.resource.data) || request.resource.data.attachmentType in ['image','audio','sticker']) &&
-     (!('attachmentName' in request.resource.data) || (request.resource.data.attachmentName is string && request.resource.data.attachmentName.size()<=100)) &&
-     (!('attachmentDataUrl' in request.resource.data) || (request.resource.data.attachmentDataUrl is string && request.resource.data.attachmentDataUrl.size()<=420000));
-    allow update:if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions']);
-    allow delete:if isMember(cid) && resource.data.uid==request.auth.uid;
+  function isOwner(cid){
+   return isMember(cid) && get(circlePath(cid)).data.ownerUid == request.auth.uid;
+  }
+  function validInvite(cid,code){
+   return code is string && exists(invitePath(code)) &&
+    get(invitePath(code)).data.circleId == cid &&
+    !('revokedAt' in get(invitePath(code)).data) &&
+    (!('expiresAt' in get(invitePath(code)).data) ||
+      get(invitePath(code)).data.expiresAt > request.time);
+  }
+  function validMemberFields(uid){
+   return request.resource.data.keys().hasOnly([
+     'uid','name','handle','bio','photoURL','role','status','joinedAt','inviteCode'
+    ]) &&
+    request.resource.data.keys().hasAll([
+     'uid','name','handle','bio','photoURL','role','status','joinedAt'
+    ]) &&
+    request.resource.data.uid == uid &&
+    request.resource.data.name is string &&
+    request.resource.data.name.size() > 0 &&
+    request.resource.data.name.size() <= 40 &&
+    request.resource.data.handle is string &&
+    request.resource.data.handle.size() <= 24 &&
+    request.resource.data.bio is string &&
+    request.resource.data.bio.size() <= 160 &&
+    request.resource.data.photoURL is string &&
+    request.resource.data.photoURL.size() <= 220000 &&
+    request.resource.data.role in ['owner','member'] &&
+    request.resource.data.status in ['around','free'] &&
+    request.resource.data.joinedAt == request.time;
+  }
+  function validText(data,key,max,min){
+   return data[key] is string && data[key].size() >= min && data[key].size() <= max;
+  }
+  function validMedia(data){
+   return (!('mediaUrl' in data) ||
+     (data.mediaUrl is string && data.mediaUrl.size() <= 420000)) &&
+    (!('mediaType' in data) || data.mediaType in ['image','audio']);
+  }
+
+  match /users/{uid} {
+   allow read,create,update: if signedIn() && request.auth.uid == uid;
+   allow delete: if false;
+
+   match /circles/{cid} {
+    allow read: if signedIn() && request.auth.uid == uid;
+    allow create: if signedIn() && request.auth.uid == uid &&
+      existsAfter(memberPath(cid,uid));
+    allow update: if false;
+    allow delete: if signedIn() && request.auth.uid == uid;
    }
 
-   match /{feature}/{itemId} {
-    function supportedFeature(){return feature in ['commitments','memories','rituals','quests','activities'];}
-    allow read:if supportedFeature() && isMember(cid);
-    allow create:if supportedFeature() && isMember(cid) && request.resource.data.uid==request.auth.uid &&
-     (!('mediaUrl' in request.resource.data) || (request.resource.data.mediaUrl is string && request.resource.data.mediaUrl.size()<=420000));
-    allow update:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid && request.resource.data.uid==request.auth.uid;
-    allow delete:if supportedFeature() && isMember(cid) && resource.data.uid==request.auth.uid;
+   match /stickers/{sid} {
+    allow read: if signedIn() && request.auth.uid == uid;
+    allow create: if signedIn() && request.auth.uid == uid &&
+      request.resource.data.uid == uid &&
+      request.resource.data.createdAt == request.time &&
+      request.resource.data.keys().hasOnly(['uid','name','dataUrl','createdAt']) &&
+      validText(request.resource.data,'name',40,1) &&
+      request.resource.data.dataUrl is string &&
+      request.resource.data.dataUrl.size() > 0 &&
+      request.resource.data.dataUrl.size() <= 180000 &&
+      request.resource.data.dataUrl.matches('^data:image/.*');
+    allow update: if false;
+    allow delete: if signedIn() && request.auth.uid == uid &&
+      resource.data.uid == uid;
    }
-   match /dailyDrops/{date}/answers/{uid} {
-    allow create: if isMember(cid) && request.auth.uid==uid &&
-     request.resource.data.uid==uid && request.resource.data.date==date &&
-     (
-      ('answer' in request.resource.data && request.resource.data.answer is string &&
-       request.resource.data.answer.size()>0 && request.resource.data.answer.size()<=1000) ||
-      ('photoDataUrl' in request.resource.data && request.resource.data.photoDataUrl is string &&
-       request.resource.data.photoDataUrl.size()>0 && request.resource.data.photoDataUrl.size()<=200000)
-     ) &&
-     (!('photoDataUrl' in request.resource.data) ||
-      (request.resource.data.photoDataUrl is string && request.resource.data.photoDataUrl.size()<=200000));
-    allow get, list: if isMember(cid) && (request.auth.uid==uid ||
-     exists(/databases/$(database)/documents/circles/$(cid)/dailyDrops/$(date)/answers/$(request.auth.uid)));
-    allow update, delete: if false;
-   }
-   match /commitments/{itemId} {
-    allow update: if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done','updatedAt']);
-   }
-   match /quests/{itemId} {
-    allow update: if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done','updatedAt']);
-   }
-   match /privateReplies/{replyId} {
-    allow create:if isMember(cid) && request.resource.data.fromUid==request.auth.uid && request.resource.data.toUid is string && exists(/databases/$(database)/documents/circles/$(cid)/members/$(request.resource.data.toUid)) && request.resource.data.reply is string && request.resource.data.reply.size()<=1500;
-    allow read:if isMember(cid) && (resource.data.fromUid==request.auth.uid || resource.data.toUid==request.auth.uid);
-    allow update,delete:if false;
-   }
-   match /plans/{pid}{
-    allow read:if isMember(cid);
-    allow create:if isMember(cid) && request.resource.data.createdBy==request.auth.uid &&
-     request.resource.data.title is string && request.resource.data.title.size()>0 && request.resource.data.title.size()<=100;
-    allow update:if isMember(cid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['votes','rsvps','title','description','date','time','place']);
-    allow delete:if isMember(cid) && resource.data.createdBy==request.auth.uid;
+  }
+
+  match /invites/{code} {
+   // Invite codes are high-entropy, but only their exact document can be fetched.
+   allow get: if true;
+   allow list: if false;
+   allow create: if signedIn() &&
+    request.resource.data.createdBy == request.auth.uid &&
+    request.resource.data.createdAt == request.time &&
+    request.resource.data.expiresAt is timestamp &&
+    request.resource.data.expiresAt > request.time &&
+    request.resource.data.keys().hasOnly(['circleId','createdBy','createdAt','expiresAt']) &&
+    existsAfter(memberPath(request.resource.data.circleId,request.auth.uid));
+   allow update: if signedIn() &&
+    resource.data.createdBy == request.auth.uid &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['revokedAt']) &&
+    request.resource.data.revokedAt == request.time;
+   allow delete: if signedIn() && resource.data.createdBy == request.auth.uid;
+  }
+
+  match /circles/{cid} {
+   allow create: if signedIn() &&
+    request.resource.data.ownerUid == request.auth.uid &&
+    request.resource.data.createdAt == request.time &&
+    request.resource.data.keys().hasOnly(['name','ownerUid','inviteCode','createdAt']) &&
+    validText(request.resource.data,'name',40,1) &&
+    validText(request.resource.data,'inviteCode',24,8);
+   allow read: if isMember(cid);
+   allow update: if isOwner(cid) &&
+    request.resource.data.ownerUid == resource.data.ownerUid &&
+    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','inviteCode','updatedAt']) &&
+    (!('name' in request.resource.data) || validText(request.resource.data,'name',40,1)) &&
+    (!('inviteCode' in request.resource.data) || validText(request.resource.data,'inviteCode',24,8));
+   allow delete: if isOwner(cid);
+
+   match /members/{uid} {
+    allow get: if signedIn() &&
+      (request.auth.uid == uid || isMember(cid));
+    allow list: if isMember(cid);
+    allow create: if signedIn() && request.auth.uid == uid &&
+      validMemberFields(uid) &&
+      (
+       (getAfter(circlePath(cid)).data.ownerUid == uid &&
+        request.resource.data.role == 'owner') ||
+       (request.resource.data.role == 'member' &&
+        'inviteCode' in request.resource.data &&
+        validInvite(cid,request.resource.data.inviteCode))
+      );
+    allow update: if signedIn() && request.auth.uid == uid &&
+      isMember(cid) &&
+      request.resource.data.uid == uid &&
+      request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+       'name','photoURL','handle','bio','status','freeUntil','lastSeen',
+       'mood','activity','support','supportPreference','email'
+      ]) &&
+      (!('email' in request.resource.data) ||
+       request.resource.data.email == resource.data.email) &&
+      (!('name' in request.resource.data) || validText(request.resource.data,'name',40,1)) &&
+      (!('handle' in request.resource.data) ||
+       (request.resource.data.handle is string && request.resource.data.handle.size() <= 24)) &&
+      (!('bio' in request.resource.data) ||
+       (request.resource.data.bio is string && request.resource.data.bio.size() <= 160)) &&
+      (!('photoURL' in request.resource.data) ||
+       (request.resource.data.photoURL is string && request.resource.data.photoURL.size() <= 220000)) &&
+      (!('status' in request.resource.data) ||
+       request.resource.data.status in ['around','free']) &&
+      (!('freeUntil' in request.resource.data) ||
+       request.resource.data.freeUntil == null ||
+       request.resource.data.freeUntil is timestamp) &&
+      (!('lastSeen' in request.resource.data) ||
+       request.resource.data.lastSeen == request.time);
+    allow delete: if signedIn() && request.auth.uid == uid;
+
+    match /messages/{mid} {
+     allow read: if isMember(cid);
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly([
+       'uid','displayName','text','reply','attachmentDataUrl',
+       'attachmentType','attachmentName','createdAt'
+      ]) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.displayName ==
+       get(memberPath(cid,request.auth.uid)).data.name &&
+      validText(request.resource.data,'displayName',40,1) &&
+      validText(request.resource.data,'text',1500,1) &&
+      request.resource.data.createdAt == request.time &&
+      (!('reply' in request.resource.data) ||
+       (request.resource.data.reply is string &&
+        request.resource.data.reply.size() <= 320)) &&
+      (!('attachmentType' in request.resource.data) ||
+       request.resource.data.attachmentType in ['image','audio','sticker']) &&
+      (!('attachmentName' in request.resource.data) ||
+       (request.resource.data.attachmentName is string &&
+        request.resource.data.attachmentName.size() <= 100)) &&
+      (!('attachmentDataUrl' in request.resource.data) ||
+       (request.resource.data.attachmentDataUrl is string &&
+        request.resource.data.attachmentDataUrl.size() <= 420000 &&
+        request.resource.data.attachmentDataUrl.matches('^data:(image|audio)/.*')));
+     allow update: if isMember(cid) &&
+      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactionsByUser']) &&
+      request.resource.data.reactionsByUser is map &&
+      request.resource.data.reactionsByUser
+       .diff(resource.data.get('reactionsByUser',{}))
+       .affectedKeys().hasOnly([request.auth.uid]) &&
+      (!(request.auth.uid in request.resource.data.reactionsByUser) ||
+       (request.resource.data.reactionsByUser[request.auth.uid] is list &&
+        request.resource.data.reactionsByUser[request.auth.uid].size() <= 32 &&
+        request.resource.data.reactionsByUser[request.auth.uid].hasOnly([
+         '❤️','😂','😍','🥹','😭','😮','😡','👍','👎','🙌','👏','🔥',
+         '🎉','✨','💯','🫶','🤝','👀','🥳','💀','😎','🤔','🙏','💚',
+         '🤍','💛','🫡','🥰','😅','💖','🧡','💜'
+        ])));
+     allow delete: if isMember(cid) &&
+      resource.data.uid == request.auth.uid;
+    }
+
+    match /commitments/{itemId} {
+     allow read: if isMember(cid);
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly(['uid','createdAt','text','by','when','done']) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.createdAt == request.time &&
+      validText(request.resource.data,'text',240,1) &&
+      validText(request.resource.data,'by',40,1) &&
+      request.resource.data.when is string &&
+      request.resource.data.when.size() <= 80 &&
+      request.resource.data.done is bool;
+     allow update: if isMember(cid) &&
+      resource.data.uid == request.auth.uid &&
+      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['done','updatedAt']) &&
+      request.resource.data.done is bool &&
+      request.resource.data.updatedAt == request.time;
+     allow delete: if isMember(cid) && resource.data.uid == request.auth.uid;
+    }
+
+    match /memories/{itemId} {
+     allow read: if isMember(cid);
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly([
+       'uid','createdAt','type','icon','title','desc','date','by','color',
+       'unlockAt','mediaUrl','mediaType'
+      ]) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.createdAt == request.time &&
+      request.resource.data.type in ['photo','voice','link','milestone'] &&
+      validText(request.resource.data,'icon',8,0) &&
+      validText(request.resource.data,'title',100,1) &&
+      validText(request.resource.data,'desc',1200,0) &&
+      request.resource.data.date is string &&
+      request.resource.data.date.size() <= 10 &&
+      validText(request.resource.data,'by',40,1) &&
+      request.resource.data.color is string &&
+      request.resource.data.color.size() <= 20 &&
+      (!('unlockAt' in request.resource.data) ||
+       request.resource.data.unlockAt == null ||
+       (request.resource.data.unlockAt is string &&
+        request.resource.data.unlockAt.size() <= 40)) &&
+      validMedia(request.resource.data);
+     allow update: if false;
+     allow delete: if isMember(cid) && resource.data.uid == request.auth.uid;
+    }
+
+    match /rituals/{itemId} {
+     allow read: if isMember(cid);
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly(['uid','createdAt','title','day','detail']) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.createdAt == request.time &&
+      validText(request.resource.data,'title',100,1) &&
+      validText(request.resource.data,'day',3,1) &&
+      request.resource.data.detail is string &&
+      request.resource.data.detail.size() <= 240;
+     allow update: if false;
+     allow delete: if isMember(cid) && resource.data.uid == request.auth.uid;
+    }
+
+    match /quests/{itemId} {
+     allow read: if isMember(cid);
+     allow create: if isMemberAfter(cid) &&
+      request.resource.data.keys().hasOnly([
+       'uid','createdAt','title','desc','icon','doneBy'
+      ]) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.createdAt == request.time &&
+      validText(request.resource.data,'title',100,1) &&
+      request.resource.data.desc is string &&
+      request.resource.data.desc.size() <= 300 &&
+      request.resource.data.icon is string &&
+      request.resource.data.icon.size() <= 8 &&
+      request.resource.data.doneBy is map &&
+      request.resource.data.doneBy.size() == 0;
+     allow update: if isMember(cid) &&
+      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['doneBy']) &&
+      request.resource.data.doneBy is map &&
+      request.resource.data.doneBy
+       .diff(resource.data.doneBy)
+       .affectedKeys().hasOnly([request.auth.uid]) &&
+      (!(request.auth.uid in request.resource.data.doneBy) ||
+       request.resource.data.doneBy[request.auth.uid] == true);
+     allow delete: if isMember(cid) && resource.data.uid == request.auth.uid;
+    }
+
+    match /activities/{itemId} {
+     allow read: if isMember(cid);
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly([
+       'uid','createdAt','type','answer','unlock','title'
+      ]) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.createdAt == request.time &&
+      validText(request.resource.data,'type',40,1) &&
+      request.resource.data.answer is string &&
+      request.resource.data.answer.size() <= 1500 &&
+      request.resource.data.unlock is string &&
+      request.resource.data.unlock.size() <= 40 &&
+      validText(request.resource.data,'title',100,1);
+     allow update: if false;
+     allow delete: if isMember(cid) && resource.data.uid == request.auth.uid;
+    }
+
+    match /plans/{pid} {
+     allow read: if isMember(cid);
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly([
+       'title','description','date','time','place','options','votes','rsvps',
+       'status','createdBy','createdAt'
+      ]) &&
+      request.resource.data.createdBy == request.auth.uid &&
+      request.resource.data.createdAt == request.time &&
+      validText(request.resource.data,'title',100,1) &&
+      request.resource.data.description is string &&
+      request.resource.data.description.size() <= 500 &&
+      request.resource.data.date is string &&
+      request.resource.data.date.size() <= 10 &&
+      request.resource.data.time is string &&
+      request.resource.data.time.size() <= 40 &&
+      request.resource.data.place is string &&
+      request.resource.data.place.size() <= 120 &&
+      request.resource.data.options is list &&
+      request.resource.data.options.size() >= 1 &&
+      request.resource.data.options.size() <= 8 &&
+      request.resource.data.votes is map &&
+      request.resource.data.votes.size() == 0 &&
+      request.resource.data.rsvps is map &&
+      request.resource.data.rsvps.size() == 0 &&
+      request.resource.data.status == 'Voting open';
+     allow update: if isMember(cid) && (
+      (
+       resource.data.createdBy == request.auth.uid &&
+       request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['title','description','date','time','place','status']) &&
+       validText(request.resource.data,'title',100,1) &&
+       request.resource.data.description is string &&
+       request.resource.data.description.size() <= 500 &&
+       request.resource.data.date is string &&
+       request.resource.data.date.size() <= 10 &&
+       request.resource.data.time is string &&
+       request.resource.data.time.size() <= 40 &&
+       request.resource.data.place is string &&
+       request.resource.data.place.size() <= 120
+      ) ||
+      (
+       request.resource.data.diff(resource.data).affectedKeys()
+        .hasOnly(['votes','rsvps']) &&
+       request.resource.data.votes is map &&
+       request.resource.data.rsvps is map &&
+       request.resource.data.votes.diff(resource.data.votes)
+        .affectedKeys().hasOnly([request.auth.uid]) &&
+       request.resource.data.rsvps.diff(resource.data.rsvps)
+        .affectedKeys().hasOnly([request.auth.uid]) &&
+       (!(request.auth.uid in request.resource.data.votes) ||
+        (request.resource.data.votes[request.auth.uid] is int &&
+         request.resource.data.votes[request.auth.uid] >= 0 &&
+         request.resource.data.votes[request.auth.uid] < resource.data.options.size())) &&
+       (!(request.auth.uid in request.resource.data.rsvps) ||
+        request.resource.data.rsvps[request.auth.uid] is bool)
+      )
+     );
+     allow delete: if isMember(cid) && resource.data.createdBy == request.auth.uid;
+    }
+
+    match /privateReplies/{replyId} {
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly([
+       'uid','createdAt','fromUid','toUid','messageId','reply'
+      ]) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.fromUid == request.auth.uid &&
+      request.resource.data.toUid is string &&
+      request.resource.data.toUid != request.auth.uid &&
+      exists(memberPath(cid,request.resource.data.toUid)) &&
+      request.resource.data.createdAt == request.time &&
+      request.resource.data.messageId is string &&
+      validText(request.resource.data,'reply',1500,1);
+     allow read: if isMember(cid) &&
+      (resource.data.fromUid == request.auth.uid ||
+       resource.data.toUid == request.auth.uid);
+     allow update,delete: if false;
+    }
+
+    match /dailyDrops/{date}/answers/{uid} {
+     allow create: if isMember(cid) &&
+      request.auth.uid == uid &&
+      request.resource.data.keys().hasOnly([
+       'uid','date','prompt','answer','name','createdAt','photoDataUrl'
+      ]) &&
+      request.resource.data.uid == uid &&
+      request.resource.data.date == date &&
+      request.resource.data.name ==
+       get(memberPath(cid,request.auth.uid)).data.name &&
+      request.resource.data.createdAt == request.time &&
+      request.resource.data.prompt is string &&
+      request.resource.data.prompt.size() <= 300 &&
+      request.resource.data.answer is string &&
+      request.resource.data.answer.size() <= 1000 &&
+      (
+       request.resource.data.answer.size() > 0 ||
+       ('photoDataUrl' in request.resource.data &&
+        request.resource.data.photoDataUrl is string &&
+        request.resource.data.photoDataUrl.size() > 0)
+      ) &&
+      (!('photoDataUrl' in request.resource.data) ||
+       (request.resource.data.photoDataUrl is string &&
+        request.resource.data.photoDataUrl.size() <= 200000));
+     allow get: if isMember(cid) &&
+      (request.auth.uid == uid ||
+       exists(/databases/$(database)/documents/circles/$(cid)/dailyDrops/$(date)/answers/$(request.auth.uid)));
+     allow list: if isMember(cid) &&
+      exists(/databases/$(database)/documents/circles/$(cid)/dailyDrops/$(date)/answers/$(request.auth.uid));
+     allow update,delete: if false;
+    }
    }
   }
  }
