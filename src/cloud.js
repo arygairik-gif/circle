@@ -316,7 +316,7 @@ async function sendAttachment(file){
   uid:user.uid,displayName:accountDisplayName(),
   text:type==='image'?'Shared a photo':'Shared a voice note',
   attachmentDataUrl:dataUrl,attachmentType:type,attachmentName:name,
-  createdAt:serverTimestamp(),reactions:{}
+  createdAt:serverTimestamp()
  });
  let memorySaved=true;
  try{
@@ -376,7 +376,7 @@ async function sendSticker(id){
  await addDoc(collection(db,'circles',circleId,'messages'),{
   uid:user.uid,displayName:accountDisplayName(),text:'Sticker',
   attachmentDataUrl:sticker.dataUrl,attachmentType:'sticker',attachmentName:safeText(sticker.name,40),
-  createdAt:serverTimestamp(),reactions:{}
+  createdAt:serverTimestamp()
  });
 }
 async function addDropAnswer(answer,prompt,photoDataUrl=''){
