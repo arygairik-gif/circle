@@ -155,6 +155,10 @@ try {
     'signed-in users can fetch a known invite code',
     getDoc(doc(memberDb, 'invites', inviteCode))
   );
+  await allowed(
+    'members can read existing messages at the circle messages path',
+    getDoc(doc(memberDb, 'circles', circleId, 'messages', 'message-one'))
+  );
 
   await allowed(
     'members can create messages with their own name and server timestamp',
