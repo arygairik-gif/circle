@@ -1,7 +1,7 @@
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
-const dayKey=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
+const dayKey=()=>new Date().toISOString().slice(0,10);
 const safeText=(v,n=1000)=>String(v??'').trim().slice(0,n);
 const validDisplayName=(value,email='')=>{
  const name=safeText(value,40),address=String(email||'').trim().toLowerCase(),local=address.split('@')[0]||'';
@@ -273,7 +273,7 @@ async function enableBrowserNotifications(){
 async function sendMessage(text,reply=''){
  const value=safeText(text,1500);if(!value)return false;
  if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');
- const payload={uid:user.uid,displayName:accountDisplayName(),text:value,createdAt:serverTimestamp(),reactions:{}};
+ const payload={uid:user.uid,displayName:accountDisplayName(),text:value,createdAt:serverTimestamp()};
  const quoted=safeText(reply,320);if(quoted)payload.reply=quoted;
  await addDoc(collection(db,'circles',circleId,'messages'),payload);
  return true;
@@ -398,11 +398,11 @@ async function addCommitment(d){return addRecord('commitments',{text:safeText(d.
 async function toggleCommitment(id,done){return updateDoc(doc(db,'circles',circleId,'commitments',String(id)),{done:!!done,updatedAt:serverTimestamp()})}
 async function addMemory(d){return addRecord('memories',{type:safeText(d.type,30),icon:safeText(d.icon,8),title:safeText(d.title,100),desc:safeText(d.desc,1200),date:dayKey(),by:accountDisplayName(),color:safeText(d.color,20),unlockAt:d.unlockAt||null})}
 async function addRitual(d){return addRecord('rituals',{title:safeText(d.title,100),day:safeText(d.day,3),detail:safeText(d.detail,240)})}
-async function addQuest(d){return addRecord('quests',{title:safeText(d.title,100),desc:safeText(d.desc,300),icon:safeText(d.icon,8),done:false,people:1})}
-async function toggleQuest(id,done){return updateDoc(doc(db,'circles',circleId,'quests',String(id)),{done:!!done,updatedAt:serverTimestamp()})}
+async function addQuest(d){return addRecord('quests',{title:safeText(d.title,100),desc:safeText(d.desc,300),icon:safeText(d.icon,8),doneBy:{}})}
+async function toggleQuest(id,done){const ref=doc(db,'circles',circleId,'quests',String(id));await runTransaction(db,async tx=>{const snap=await tx.get(ref);if(!snap.exists())throw new Error('Quest no longer exists.');const doneBy={...(snap.data().doneBy||{})};if(done)doneBy[user.uid]=true;else delete doneBy[user.uid];tx.update(ref,{doneBy})})}
 async function addActivity(d){return addRecord('activities',{type:safeText(d.type,40),answer:safeText(d.answer,1500),unlock:safeText(d.unlock,40),title:safeText(d.title,100)})}
 
-async function addQuietReply(toUid,messageId,reply){if(!toUid||toUid==='you'||toUid===user.uid)throw new Error('Choose another circle member.');return addRecord('privateReplies',{fromUid:user.uid,toUid,messageId:String(messageId),reply:safeText(reply,1500)})}
+async function addQuietReply(toUid,messageId,reply){if(!toUid||toUid==='you'||toUid===user.uid)throw new Error('Quiet replies can only be sent to another circle member.');return addRecord('privateReplies',{fromUid:user.uid,toUid,messageId:String(messageId),reply:safeText(reply,1500)})}
 async function saveProfile(data){
  const displayName=validDisplayName(data.displayName,user?.email);
  if(!displayName)throw new Error('Add a display name that is not your email address.');
@@ -421,13 +421,13 @@ async function saveProfile(data){
  return profileData;
 }
 async function setSupport(enabled,preference=''){return updateDoc(memberRef(),{support:!!enabled,supportPreference:safeText(preference,100),lastSeen:serverTimestamp()})}
-async function createPlan(d){const options=String(d.options||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);await addDoc(collection(db,'circles',circleId,'plans'),{title:String(d.title).slice(0,100),description:String(d.description||'').slice(0,500),date:d.date||'',time:options[0]||'',place:String(d.place||'').slice(0,120),options,votes:options.map(()=>[]),rsvps:[],status:'Voting open',createdBy:user.uid,createdAt:serverTimestamp()})}
-async function react(id,emoji){const r=doc(db,'circles',circleId,'messages',String(id));await runTransaction(db,async tx=>{const s=await tx.get(r);if(!s.exists())return;const all={...(s.data().reactions||{})},a=Array.isArray(all[emoji])?[...all[emoji]]:[],i=a.indexOf(user.uid);if(i>=0)a.splice(i,1);else a.push(user.uid);all[emoji]=a;tx.update(r,{reactions:all})})}
-async function votePlan(id,n){const r=doc(db,'circles',circleId,'plans',String(id));await runTransaction(db,async tx=>{const s=await tx.get(r);if(!s.exists())throw new Error('Plan no longer exists.');const d=s.data(),v=(d.votes||[]).map(a=>[...(a||[])]);while(v.length<(d.options||[]).length)v.push([]);v.forEach(a=>{const i=a.indexOf(user.uid);if(i>=0)a.splice(i,1)});if(!v[n])throw new Error('Option unavailable.');v[n].push(user.uid);const rs=[...(d.rsvps||[])];if(!rs.includes(user.uid))rs.push(user.uid);tx.update(r,{votes:v,rsvps:rs})})}
-async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id));await runTransaction(db,async tx=>{const s=await tx.get(r);if(!s.exists())throw new Error('Plan no longer exists.');const rs=[...(s.data().rsvps||[])],i=rs.indexOf(user.uid);if(i>=0)rs.splice(i,1);else rs.push(user.uid);tx.update(r,{rsvps:rs})})}
+async function createPlan(d){const options=String(d.options||'').split(',').map(x=>x.trim()).filter(Boolean).slice(0,8);if(!options.length)options.push('Let’s decide together');await addDoc(collection(db,'circles',circleId,'plans'),{title:safeText(d.title,100),description:safeText(d.description,500),date:safeText(d.date,10),time:options[0]||'',place:safeText(d.place,120),options,votes:{},rsvps:{},status:'Voting open',createdBy:user.uid,createdAt:serverTimestamp()})}
+async function react(id,emoji){const allowed=['❤️','😂','😍','🥹','😭','😮','😡','👍','👎','🙌','👏','🔥','🎉','✨','💯','🫶','🤝','👀','🥳','💀','😎','🤔','🙏','💚','🤍','💛','🫡','🥰','😅','💖','🧡','💜'];if(!allowed.includes(emoji))throw new Error('That reaction is not available.');const r=doc(db,'circles',circleId,'messages',String(id));await runTransaction(db,async tx=>{const s=await tx.get(r);if(!s.exists())return;const all={...(s.data().reactionsByUser||{})},mine=Array.isArray(all[user.uid])?[...all[user.uid]]:[],i=mine.indexOf(emoji);if(i>=0)mine.splice(i,1);else mine.push(emoji);if(mine.length)all[user.uid]=mine;else delete all[user.uid];tx.update(r,{reactionsByUser:all})})}
+async function votePlan(id,n){const r=doc(db,'circles',circleId,'plans',String(id));await runTransaction(db,async tx=>{const s=await tx.get(r);if(!s.exists())throw new Error('Plan no longer exists.');const d=s.data();if(!Number.isInteger(n)||n<0||n>=(d.options||[]).length)throw new Error('Option unavailable.');const votes={...(d.votes&&typeof d.votes==='object'&&!Array.isArray(d.votes)?d.votes:{})};votes[user.uid]=n;const rsvps={...(d.rsvps&&typeof d.rsvps==='object'&&!Array.isArray(d.rsvps)?d.rsvps:{})};rsvps[user.uid]=true;tx.update(r,{votes,rsvps})})}
+async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id));await runTransaction(db,async tx=>{const s=await tx.get(r);if(!s.exists())throw new Error('Plan no longer exists.');const rs={...(s.data().rsvps&&typeof s.data().rsvps==='object'&&!Array.isArray(s.data().rsvps)?s.data().rsvps:{})};rs[user.uid]=!rs[user.uid];tx.update(r,{rsvps:rs})})}
 const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
-async function setAvailability(free,activity=''){await updateDoc(memberRef(),{status:free?'free':'around',activity:String(activity).slice(0,80),lastSeen:serverTimestamp()})}
+async function setAvailability(free,activity='',duration='2'){let freeUntil=null;if(free){const now=new Date(),hours=duration==='today'?Math.max(1,(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).getTime()-now.getTime())/3600000):Math.max(1,Math.min(3,Number(duration)||2));freeUntil=new Date(now.getTime()+hours*3600000)}await updateDoc(memberRef(),{status:free?'free':'around',freeUntil,activity:safeText(activity,80),lastSeen:serverTimestamp()})}
 window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>signOut(auth),inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
