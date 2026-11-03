@@ -151,6 +151,7 @@ service cloud.firestore {
        request.resource.data.lastSeen == request.time);
     allow delete: if signedIn() && (request.auth.uid == uid || (isOwner(cid) && uid != get(circlePath(cid)).data.ownerUid));
 
+    }
     match /messages/{mid} {
      allow read: if isMember(cid);
      allow create: if isMember(cid) &&
@@ -413,7 +414,6 @@ service cloud.firestore {
       exists(/databases/$(database)/documents/circles/$(cid)/dailyDrops/$(date)/answers/$(request.auth.uid));
      allow update,delete: if false;
     }
-   }
   }
  }
 }
