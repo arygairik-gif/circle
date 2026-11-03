@@ -1,4 +1,4 @@
-name: Circle build check
+name: Circle build and security checks
 
 on:
   push:
@@ -19,8 +19,27 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24.12.0
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Build production site
         run: npm run build
+
+  firestore-rules-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.12.0
+      - name: Set up Java for Firestore Emulator
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run Firestore rules tests in emulator
+        run: npx --yes firebase-tools@latest emulators:exec --only firestore --project demo-circle-rules "npm run test:rules"
