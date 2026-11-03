@@ -241,7 +241,7 @@ async function openCircle(id){
   // Profile changes are synced by saveProfile(). Opening a circle is read-only so stale
   // member metadata cannot block the entire circle from opening.
   const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);ui.render()},e=>ui.toast(name+' could not load: '+e.code)));
-  watch('commitments','commitments');watch('memories','memories');watch('rituals','rituals');watch('quests','quests',d=>{const x=d.data();return{id:d.id,...x,done:!!x.doneBy?.[user.uid]}});watch('activities','activities');
+  watch('commitments','commitments');stops.push(onSnapshot(query(collection(db,'circles',id,'memories'),where('type','!=','time-capsule')),snap=>{ui.state.memories=snap.docs.map(d=>({id:d.id,...d.data()}));ui.render()},e=>ui.toast('Memories could not load: '+e.code)));watch('rituals','rituals');watch('quests','quests',d=>{const x=d.data();return{id:d.id,...x,done:!!x.doneBy?.[user.uid]}});watch('activities','activities');
   async function listenDailyDropAnswers(targetCircleId,targetDay=dayKey()){
    if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}
    const ownRef=doc(db,'circles',targetCircleId,'dailyDrops',targetDay,'answers',user.uid);
