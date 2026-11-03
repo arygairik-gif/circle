@@ -429,10 +429,11 @@ async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id)
 const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
 async function setAvailability(free,activity='',duration='2'){let freeUntil=null;if(free){const now=new Date(),hours=duration==='today'?Math.max(1,(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).getTime()-now.getTime())/3600000):Math.max(1,Math.min(3,Number(duration)||2));freeUntil=new Date(now.getTime()+hours*3600000)}await updateDoc(memberRef(),{status:free?'free':'around',freeUntil,activity:safeText(activity,80),lastSeen:serverTimestamp()})}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:()=>signOut(auth),inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}await signOut(auth)}
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
- if(!u){profileData={};authScreen();return}
+ if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}authScreen();return}
  try{
   const r=doc(db,'users',u.uid),p=await getDoc(r),saved=p.data()||{};
   const savedName=validDisplayName(saved.displayName,u.email),authName=validDisplayName(u.displayName,u.email);
