@@ -144,6 +144,9 @@ try {
   const memberDb = testEnv.authenticatedContext('member').firestore();
   const ownerDb = testEnv.authenticatedContext('owner').firestore();
 
+  await allowed('members can read their own membership record', getDoc(doc(memberDb, 'circles', circleId, 'members', 'member')));
+  await allowed('members can read the circle document', getDoc(doc(memberDb, 'circles', circleId)));
+
   await denied(
     'invite documents are not readable to signed-out visitors',
     getDoc(doc(anonymousDb, 'invites', inviteCode))
