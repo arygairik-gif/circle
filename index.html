@@ -382,30 +382,30 @@ button:active{transform:scale(.98)}
   <div class="brand"><div class="brand-mark">c</div><div class="brand-copy"><div class="brand-name">circle</div><div class="brand-tag">closer, together</div></div></div>
   <div class="section-label">Your space</div>
   <div class="nav-list">
-   <button class="nav-link" data-view="today"><span class="nav-icon">◷</span><span class="nav-label">Today</span></button>
-   <button class="nav-link active" data-view="chat"><span class="nav-icon">▤</span><span class="nav-label">Messages</span></button>
-   <button class="nav-link" data-view="stickers"><span class="nav-icon">✧</span><span class="nav-label">Sticker shelf</span></button>
-   <button class="nav-link" data-view="plans"><span class="nav-icon">▦</span><span class="nav-label">Plans board</span></button>
-   <button class="nav-link" data-view="memories"><span class="nav-icon">▧</span><span class="nav-label">Memory vault</span></button>
-   <button class="nav-link" data-view="activities"><span class="nav-icon">✳</span><span class="nav-label">Activities</span></button>
+   <button class="nav-link" data-view="today"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="nav-label">Today</span></button>
+   <button class="nav-link active" data-view="chat"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/><path d="M8 10h8M8 14h5"/></svg></span><span class="nav-label">Messages</span></button>
+   <button class="nav-link" data-view="stickers"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3Z"/></svg></span><span class="nav-label">Sticker shelf</span></button>
+   <button class="nav-link" data-view="plans"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h3"/></svg></span><span class="nav-label">Plans board</span></button>
+   <button class="nav-link" data-view="memories"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l1 4H3l1-4Z"/><path d="M5 8v12h14V8M9 12h6"/></svg></span><span class="nav-label">Memory vault</span></button>
+   <button class="nav-link" data-view="activities"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span><span class="nav-label">Activities</span></button>
   </div>
   <div class="section-label" style="margin-top:17px">Your circles</div>
-  <div class="circle-mini" data-view="circle"><div class="circle-avatars" id="sidebarCircleAvatars"></div><div class="circle-copy"><div class="circle-name" id="sidebarCircleName">Your circle</div><div class="circle-meta">Loading members…</div></div><div class="circle-more">···</div></div>
-  <button class="nav-link" data-action="new-circle" style="margin-top:7px"><span class="nav-icon">＋</span><span class="nav-label">Create a circle</span></button>
+  <button type="button" class="circle-mini" data-view="circle" aria-label="Open circle details"><div class="circle-avatars" id="sidebarCircleAvatars"></div><div class="circle-copy"><div class="circle-name" id="sidebarCircleName">Connecting…</div><div class="circle-meta">Connecting to your people…</div></div><span class="circle-more" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></button>
+  <button class="nav-link" data-action="new-circle" style="margin-top:7px"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></span><span class="nav-label">Create a circle</span></button>
   <div class="sidebar-spacer"></div>
   <div class="sidebar-note"><div class="note-kicker">A little reminder</div><p>Good friendships are made of small, ordinary moments.</p><button class="text-btn" data-view="activities">Find a moment →</button></div>
-  <button class="nav-link" data-view="profile"><span class="nav-icon">◎</span><span class="nav-label">My profile</span></button>
-  <button class="nav-link" data-view="settings"><span class="nav-icon">⚙</span><span class="nav-label">Settings</span></button>
-  <div class="profile"><div class="avatar" id="sidebarProfileAvatar">Y</div><div class="profile-copy"><div class="profile-name">You</div><div class="profile-status">Personal profile</div></div><button class="profile-menu" data-view="profile" aria-label="Open profile">···</button></div>
+  <button class="nav-link" data-view="profile"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-3.1 3.2-5 7-5s6.3 1.9 7 5"/></svg></span><span class="nav-label">My profile</span></button>
+  <button class="nav-link" data-view="settings"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l-1.8 1.8a1.7 1.7 0 0 0-2-.4 1.7 1.7 0 0 0-1 1.6h-2.6a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-2 .4l-1.8-1.8a1.7 1.7 0 0 0 .4-2 1.7 1.7 0 0 0-1.6-1v-2.6a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.4-2l1.8-1.8a1.7 1.7 0 0 0 2 .4 1.7 1.7 0 0 0 1-1.6h2.6a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 2-.4l1.8 1.8a1.7 1.7 0 0 0-.4 2 1.7 1.7 0 0 0 1.6 1v2.6a1.7 1.7 0 0 0-1.6 1Z"/></svg></span><span class="nav-label">Settings</span></button>
+  <div class="profile"><div class="avatar" id="sidebarProfileAvatar">•</div><div class="profile-copy"><div class="profile-name">Loading profile…</div><div class="profile-status">Checking account…</div></div><button class="profile-menu" data-view="profile" aria-label="Open profile"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></div>
  </aside>
  <div class="main-shell">
   <header class="topbar">
    <div class="mobile-brand"><div class="brand-mark">c</div>circle</div>
-   <form class="searchbox" id="globalSearchForm" role="search"><span aria-hidden="true">⌕</span><input id="globalSearch" type="search" aria-label="Search messages, photos and memories" placeholder="Search messages, photos, memories…"><button type="submit" class="search-submit" aria-label="Search" title="Search">↵</button><span class="search-shortcut">⌘ K</span></form>
+   <form class="searchbox" id="globalSearchForm" role="search"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"/><path d="m16 16 5 5"/></svg><input id="globalSearch" type="search" aria-label="Search messages, photos and memories" placeholder="Search messages, photos, memories…"><button type="submit" class="search-submit" aria-label="Search" title="Search">↵</button><span class="search-shortcut">⌘ K</span></form>
    <div class="top-spacer"></div>
    <button class="top-status" data-action="free"><span class="pulse-dot"></span><span id="freeLabel">I'm free</span></button>
-   <button class="icon-btn" title="Notification settings" aria-label="Notification settings" data-action="notifications">♧</button>
-   <button class="primary-btn" data-action="invite">＋ Invite</button>
+   <button class="icon-btn" title="Notification settings" aria-label="Notification settings" data-action="notifications"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></svg></button>
+   <button class="primary-btn" data-action="invite"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> Invite</button>
   </header>
   <div class="content-grid">
    <main class="main-column" id="view"></main>
@@ -414,14 +414,14 @@ button:active{transform:scale(.98)}
  </div>
 </div>
 <nav class="mobile-nav" aria-label="Main navigation">
- <button data-view="today"><span>◷</span>Today</button><button class="active" data-view="chat"><span>▤</span>Chat</button><button data-view="stickers"><span>✧</span>Stickers</button><button data-view="plans"><span>▦</span>Plans</button><button data-action="mobile-more" aria-haspopup="dialog"><span>···</span>More</button>
+ <button data-view="today"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Today</button><button class="active" data-view="chat"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/><path d="M8 10h8M8 14h5"/></svg></span>Chat</button><button data-view="stickers"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3Z"/></svg></span>Stickers</button><button data-view="plans"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>Plans</button><button data-action="mobile-more" aria-haspopup="dialog"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span>More</button>
 </nav>
 <div id="modalRoot"></div><div class="toast" id="toast"></div>
 <script>
 const $=(s,root=document)=>root.querySelector(s);const $$=(s,root=document)=>[...root.querySelectorAll(s)];
 const now=new Date();const localDate=(value)=>new Date(`${value||''}T12:00:00`);const fmt=(d)=>{const date=localDate(d);return Number.isNaN(date.getTime())?'Date to decide':new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(date)};const todayLong=()=>new Intl.DateTimeFormat('en',{weekday:'long',month:'long',day:'numeric'}).format(new Date());const todayISO=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const seed={
- view:'chat',circleName:'The Usuals',circleSymbol:'✿',quietReplies:[],me:{name:'You',free:false,freeUntil:null,activity:'Just hanging out',mood:null,support:false},
+ view:'chat',circleName:'The Usuals',circleSymbol:'✿',membersLoaded:false,membersError:false,quietReplies:[],me:{name:'You',free:false,freeUntil:null,activity:'Just hanging out',mood:null,support:false},
  members:[{id:'you',name:'You',initial:'Y',tone:'',status:'Around'},{id:'maya',name:'Maya',initial:'M',tone:'a2',status:'Online'},{id:'ari',name:'Ari',initial:'A',tone:'',status:'Online'},{id:'ria',name:'Ria',initial:'R',tone:'a3',status:'Online'},{id:'sam',name:'Sam',initial:'S',tone:'a4',status:'Away'},{id:'leo',name:'Leo',initial:'L',tone:'a2',status:'Offline'}],
  messages:[
   {id:1,from:'maya',time:'10:42',text:'okay important question: are we actually doing something this weekend or are we just saying that again 😭',reactions:['😂 3','🙋 2']},
@@ -465,16 +465,16 @@ let state=hydrateState();
 let replyTo=null, memoryFilter='all', memoryQuery='', toastTimer=null, pendingChatBottom=true, lastModalFocus=null,pendingProfilePhoto='',openReactionMessageId=null,pendingStickerData='';
 function save(){if(!circleStorage){if(!storageNoticeShown){toast('This preview cannot save between visits in this browser. Use Export to keep a copy.');storageNoticeShown=true}return true}try{circleStorage.setItem('circle_demo_v1',JSON.stringify(state));return true}catch(e){console.warn('Could not save this change locally',e);if(!storageNoticeShown){toast('Browser storage is full. Export your Circle data before adding more media.');storageNoticeShown=true}return false}}
 function person(id){const uid=window.CircleCloud?.user?.uid,lookup=id==='you'?uid:id,found=state.members.find(m=>m.id===lookup);if(id==='you')return{...state.me,...(found||{}),name:found?.name||state.me.displayName||'You',initial:(state.me.displayName||found?.name||'You').slice(0,1).toUpperCase(),photoURL:found?.photoURL||state.me.photoURL||''};if(found)return found;return{name:id,initial:'?',tone:''}}
-function circleName(){return escapeHtml(state.circleName||'The Usuals')}
+function circleName(){return escapeHtml(state.circleName||'Untitled circle')}
 function avatar(id,small=false){const p=person(id),face=p.photoURL?'<img src="'+escapeAttr(p.photoURL)+'" alt="">':escapeHtml(p.initial||String(p.name||'?').slice(0,1).toUpperCase());return `<div class="avatar ${escapeAttr(p.tone||'')} ${small?'small':''}" title="${escapeAttr(p.name)}">${face}</div>`}
 function applyTheme(){const root=document.documentElement;root.dataset.theme=state.settings.theme==='dark'?'dark':'light';root.dataset.style=['warm','minimal','neo','glass'].includes(state.settings.style)?state.settings.style:'warm';const meta=$('meta[name="theme-color"]');if(meta)meta.content=state.settings.theme==='dark'?'#171c18':'#f5f4ee'}
 function updateSidebar(){
  const meId=window.CircleCloud?.user?.uid,others=state.members.filter(m=>m.id!==meId),freeNow=others.filter(m=>m.status==='Free now'||m.status==='free').length;
- const name=$('#sidebarCircleName');if(name)name.textContent=state.circleName||'Your circle';
- const meta=$('.circle-mini .circle-meta');if(meta)meta.textContent=`${others.length} friends · ${freeNow} free now`;
+ const name=$('#sidebarCircleName');if(name)name.textContent=state.circleName||'Untitled circle';
+ const meta=$('.circle-mini .circle-meta');if(meta)meta.textContent=!state.membersLoaded?'Connecting to your people…':state.membersError?'People are temporarily unavailable':others.length?`${others.length} friends · ${freeNow} free now`:'Just you for now · invite friends';
  const faces=$('#sidebarCircleAvatars');if(faces){const visible=others.length?others.slice(0,4):state.members.filter(m=>m.id===meId).slice(0,1);faces.innerHTML=visible.map(m=>avatar(m.id,true)).join('')}
- const profileName=state.me.displayName||state.members.find(m=>m.id===meId)?.name||'You',pn=$('.profile-name'),ps=$('.profile-status'),pa=$('#sidebarProfileAvatar');
- if(pn)pn.textContent=profileName;if(ps)ps.textContent=state.me.handle?'@'+state.me.handle:'Personal profile';
+ const profileName=state.me.displayName||state.members.find(m=>m.id===meId)?.name||'Your profile',pn=$('.profile-name'),ps=$('.profile-status'),pa=$('#sidebarProfileAvatar');
+ if(pn)pn.textContent=profileName;if(ps)ps.textContent=state.me.handle?'@'+state.me.handle:'Circle member';
  if(pa){pa.innerHTML=state.me.photoURL?'<img src="'+escapeAttr(state.me.photoURL)+'" alt="">':escapeHtml(profileName.slice(0,1).toUpperCase())}
 }
 function toast(msg){const el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2300)}
@@ -507,7 +507,7 @@ function renderChat(){
  const openTasks=state.commitments.filter(x=>!x.done).slice(0,2).map(x=>escapeHtml(x.text)).join(' · ');
  const catchupText=[latestMessages||'No messages yet. Start the conversation.',nextPlan,openTasks?'<strong>Little promises:</strong> '+openTasks:''].filter(Boolean).join('<br>');
  return `
- <div class="chat-head"><div class="chat-group-icon">${escapeHtml(state.circleSymbol||'✿')}</div><div class="chat-heading"><h1>${circleName()}</h1><p>${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid).length} friends · ${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid&&(m.status==='Free now'||m.status==='free')).length} free now · private circle</p></div><div class="head-actions"><div class="stack">${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid).slice(0,4).map(m=>avatar(m.id,true)).join('')}</div><button class="soft-btn" data-action="hangout">◉ Start a hangout</button><button class="icon-btn" data-action="circle-info">···</button></div></div>
+ <div class="chat-head"><div class="chat-group-icon">${escapeHtml(state.circleSymbol||'✿')}</div><div class="chat-heading"><h1>${circleName()}</h1><p>${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid).length} friends · ${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid&&(m.status==='Free now'||m.status==='free')).length} free now · private circle</p></div><div class="head-actions"><div class="stack">${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid).slice(0,4).map(m=>avatar(m.id,true)).join('')}</div><button class="soft-btn" data-action="hangout">◉ Start a hangout</button><button class="icon-btn" data-action="circle-info" aria-label="Circle options" title="Circle options"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></div></div>
  <div class="catchup"><div class="catchup-icon">✦</div><div class="catchup-content"><div class="catchup-top"><strong>Your circle catch-up</strong><span>shared updates</span></div><p>${catchupText}</p><div class="catchup-actions"><button data-view="plans">See plans ↗</button><button data-view="plans">Open plans board →</button></div></div></div>
  <section class="chat-area"><div class="chat-scroll" id="chatScroll"><div class="date-divider">Today · ${todayLong()}</div>${state.messages.map(renderMessage).join('')}</div><div class="chat-composer">${replyTo?`<div class="replying-to"><span>Replying to ${person(state.messages.find(m=>m.id===replyTo)?.from||'maya').name}</span><button data-action="cancel-reply">✕</button></div>`:''}<div class="composer-row"><div class="composer-tools"><button type="button" title="Choose a photo" aria-label="Choose a photo" data-action="attach">▧</button><button type="button" title="Send a voice note" aria-label="Send a voice note" data-action="voice-note">♫</button><button type="button" title="Choose a sticker" aria-label="Choose a sticker" data-action="sticker-picker">✧</button><button type="button" title="Add emoji" aria-label="Add emoji" data-action="emoji">☺</button></div><textarea class="composer-input" id="messageInput" rows="1" placeholder="Message your circle…" maxlength="1500" aria-label="Message your circle"></textarea><button class="send-btn" data-action="send-message" title="Send">➤</button></div><div class="composer-hint">Enter to send · Shift + Enter for a new line · good vibes only</div><input type="file" id="attachmentInput" accept="image/*,audio/*" hidden></div></section>
  `}
@@ -647,12 +647,12 @@ function renderProfile(){
 }
 function openMobileMoreMenu(){
  openModal('More in Circle','The rest of your space is one tap away.',`<div class="mobile-more-list">
- <button class="mobile-more-link" data-view="memories"><span>▧</span><span><strong>Memory Vault</strong><small>Photos, voice notes and saved moments</small></span><b>→</b></button>
- <button class="mobile-more-link" data-view="activities"><span>✳</span><span><strong>Activities</strong><small>Daily Drop, rituals and group activities</small></span><b>→</b></button>
- <button class="mobile-more-link" data-view="circle"><span>◉</span><span><strong>Your circle</strong><small>Members and invite details</small></span><b>→</b></button>
- <button class="mobile-more-link" data-view="profile"><span>◎</span><span><strong>My profile</strong><small>Your name, photo and bio</small></span><b>→</b></button>
- <button class="mobile-more-link" data-action="switch-circle"><span>⇄</span><span><strong>Switch circle</strong><small>Choose another group</small></span><b>→</b></button>
- <button class="mobile-more-link" data-view="settings"><span>⚙</span><span><strong>Settings</strong><small>Appearance, quiet hours and alerts</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="memories"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l1 4H3l1-4Z"/><path d="M5 8v12h14V8M9 12h6"/></svg></span><span><strong>Memory Vault</strong><small>Photos, voice notes and saved moments</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="activities"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span><span><strong>Activities</strong><small>Daily Drop, rituals and group activities</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="circle"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg></span><span><strong>Your circle</strong><small>Members and invite details</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="profile"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-3.1 3.2-5 7-5s6.3 1.9 7 5"/></svg></span><span><strong>My profile</strong><small>Your name, photo and bio</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-action="switch-circle"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></span><span><strong>Switch circle</strong><small>Choose another group</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="settings"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l-1.8 1.8a1.7 1.7 0 0 0-2-.4 1.7 1.7 0 0 0-1 1.6h-2.6a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-2 .4l-1.8-1.8a1.7 1.7 0 0 0 .4-2 1.7 1.7 0 0 0-1.6-1v-2.6a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.4-2l1.8-1.8a1.7 1.7 0 0 0 2 .4 1.7 1.7 0 0 0 1-1.6h2.6a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 2-.4l1.8 1.8a1.7 1.7 0 0 0-.4 2 1.7 1.7 0 0 0 1.6 1v2.6a1.7 1.7 0 0 0-1.6 1Z"/></svg></span><span><strong>Settings</strong><small>Appearance, quiet hours and alerts</small></span><b>→</b></button>
  </div>`);
 }
 function renderSettings(){
