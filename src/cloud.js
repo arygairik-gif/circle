@@ -197,6 +197,7 @@ function picker(items){
  $('#cloudSignOut').onclick=()=>signOut(auth);
 }
 function makeCode(){const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',a=crypto.getRandomValues(new Uint8Array(10));return [...a].map(x=>chars[x%chars.length]).join('')}
+async function backToPickerAfterAccessLoss(){stop();circleId=null;saveActiveCircleId('');try{picker(await myCircles())}catch(e){authScreen();error('Could not reload your circles: '+(e.code||e.message))}}
 async function openCircle(id){
  stop();circleId=id;firstMessageSnapshot=true;
  const ui=window.CircleApp;let stage='checking circle membership';
@@ -213,9 +214,10 @@ async function openCircle(id){
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
    const members=s.docs.map(d=>{const data=d.data(),until=data.freeUntil?.toDate?.()||null,isFree=data.status==='free'&&until&&until.getTime()>Date.now();return{id:d.id,...data,status:isFree?'Free now':'Around',initial:(data.name||'?').slice(0,1).toUpperCase(),tone:'',photoURL:data.photoURL||'',handle:data.handle||'',bio:data.bio||''}});
    const mine=members.find(x=>x.id===user.uid);
-   if(mine){ui.state.me.mood=mine.mood||null;ui.state.me.free=mine.status==='Free now';ui.state.me.activity=mine.activity||''}
+   if(!mine){backToPickerAfterAccessLoss();return}
+   ui.state.me.mood=mine.mood||null;ui.state.me.free=mine.status==='Free now';ui.state.me.activity=mine.activity||'';
    ui.state.members=members;ui.state.membersLoaded=true;ui.state.membersError=false;ui.render();
-  },e=>{ui.state.membersLoaded=true;ui.state.membersError=true;ui.render();ui.toast('Members could not load: '+e.code)}));
+  },e=>{if(e.code==='permission-denied'){backToPickerAfterAccessLoss();return}ui.state.membersLoaded=true;ui.state.membersError=true;ui.render();ui.toast('Members could not load: '+e.code)}));
   stops.push(onSnapshot(collection(db,'users',user.uid,'stickers'),s=>{
    ui.state.stickers=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
    if(ui.state.view==='stickers')ui.render();
