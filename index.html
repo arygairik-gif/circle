@@ -428,7 +428,7 @@ button:active{transform:scale(.98)}
 <div id="modalRoot"></div><div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <script>
 const $=(s,root=document)=>root.querySelector(s);const $$=(s,root=document)=>[...root.querySelectorAll(s)];
-const now=new Date();const localDate=(value)=>new Date(`${value||''}T12:00:00`);const fmt=(d)=>{const date=localDate(d);return Number.isNaN(date.getTime())?'Date to decide':new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(date)};const todayLong=()=>new Intl.DateTimeFormat('en',{weekday:'long',month:'long',day:'numeric'}).format(new Date());const todayISO=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const now=new Date();const localDate=(value)=>new Date(`${value||''}T12:00:00`);const fmt=(d)=>{const date=localDate(d);return Number.isNaN(date.getTime())?'Date to decide':new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(date)};const todayLong=()=>new Intl.DateTimeFormat('en',{weekday:'long',month:'long',day:'numeric'}).format(new Date());const todayISO=()=>new Date().toISOString().slice(0,10);
 const seed={
  view:'chat',circleName:'The Usuals',circleSymbol:'✿',membersLoaded:false,membersError:false,quietReplies:[],me:{name:'You',free:false,freeUntil:null,activity:'Just hanging out',mood:null,support:false},
  members:[{id:'you',name:'You',initial:'Y',tone:'',status:'Around'},{id:'maya',name:'Maya',initial:'M',tone:'a2',status:'Online'},{id:'ari',name:'Ari',initial:'A',tone:'',status:'Online'},{id:'ria',name:'Ria',initial:'R',tone:'a3',status:'Online'},{id:'sam',name:'Sam',initial:'S',tone:'a4',status:'Away'},{id:'leo',name:'Leo',initial:'L',tone:'a2',status:'Offline'}],
