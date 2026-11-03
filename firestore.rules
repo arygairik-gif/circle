@@ -60,7 +60,7 @@ service cloud.firestore {
     allow create: if signedIn() && request.auth.uid == uid &&
       existsAfter(memberPath(cid,uid));
     allow update: if false;
-    allow delete: if signedIn() && (request.auth.uid == uid || (isOwner(cid) && uid != get(circlePath(cid)).data.ownerUid));
+    allow delete: if signedIn() && ((request.auth.uid == uid && get(circlePath(cid)).data.ownerUid != uid) || (isOwner(cid) && uid != get(circlePath(cid)).data.ownerUid));
    }
 
    match /stickers/{sid} {
@@ -111,7 +111,7 @@ service cloud.firestore {
     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','inviteCode','updatedAt']) &&
     (!('name' in request.resource.data) || validText(request.resource.data,'name',40,1)) &&
     (!('inviteCode' in request.resource.data) || validText(request.resource.data,'inviteCode',24,8));
-   allow delete: if isOwner(cid);
+   allow delete: if false;
 
    match /members/{uid} {
     allow get: if signedIn() &&
@@ -214,7 +214,7 @@ service cloud.firestore {
     }
 
     match /memories/{itemId} {
-     allow read: if isMember(cid);
+     allow read: if isMember(cid) && resource.data.type != 'time-capsule';
      allow create: if isMember(cid) &&
       request.resource.data.keys().hasOnly([
        'uid','createdAt','type','icon','title','desc','date','by','color',
