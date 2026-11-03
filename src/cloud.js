@@ -31,11 +31,11 @@ function isQuietNow(settings={}){
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const gate=$('#cloudGate'), shell=$('.app');
-let user=null,circleId=null,stops=[],firstMessageSnapshot=true,profileData={},signupPhotoDataUrl='';
+let user=null,circleId=null,stops=[],firstMessageSnapshot=true,profileData={},signupPhotoDataUrl='',dailyDropTimer=null,dropAnswerStop=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const error=m=>{const el=$('#cloudError');if(el)el.textContent=m};
 const explain=e=>({'auth/email-already-in-use':'That email already has an account. Sign in instead.','auth/invalid-credential':'Email or password is incorrect.','auth/weak-password':'Use at least 6 characters.','auth/unauthorized-domain':'Add this website in Firebase Authentication → Authorized domains.'}[e.code]||`Firebase error: ${e.code||e.message}`);
-function stop(){stops.forEach(f=>f());stops=[]}
+function stop(){if(dailyDropTimer){clearInterval(dailyDropTimer);dailyDropTimer=null}if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}stops.forEach(f=>f());stops=[]}
 function gateView(html){gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
 function showApp(){gate.hidden=true;shell.style.display=''}
 async function prepareProfilePhoto(file){
@@ -210,7 +210,7 @@ async function openCircle(id){
   if(!c.exists())throw new Error('This circle no longer exists.');
   await persistActiveCircleId(id);
   stage='opening circle interface';
-  ui.state.circleName=c.data().name||'Untitled circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
+  ui.state.circleName=c.data().name||'Untitled circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),dayKey:dayKey(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
    const members=s.docs.map(d=>{const data=d.data(),until=data.freeUntil?.toDate?.()||null,isFree=data.status==='free'&&until&&until.getTime()>Date.now();return{id:d.id,...data,status:isFree?'Free now':'Around',initial:(data.name||'?').slice(0,1).toUpperCase(),tone:'',photoURL:data.photoURL||'',handle:data.handle||'',bio:data.bio||''}});
    const mine=members.find(x=>x.id===user.uid);
@@ -242,16 +242,26 @@ async function openCircle(id){
   // member metadata cannot block the entire circle from opening.
   const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);ui.render()},e=>ui.toast(name+' could not load: '+e.code)));
   watch('commitments','commitments');watch('memories','memories');watch('rituals','rituals');watch('quests','quests',d=>{const x=d.data();return{id:d.id,...x,done:!!x.doneBy?.[user.uid]}});watch('activities','activities');
-  async function listenDailyDropAnswers(targetCircleId){
-   const ownRef=doc(db,'circles',targetCircleId,'dailyDrops',dayKey(),'answers',user.uid);
+  async function listenDailyDropAnswers(targetCircleId,targetDay=dayKey()){
+   if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}
+   const ownRef=doc(db,'circles',targetCircleId,'dailyDrops',targetDay,'answers',user.uid);
    const own=await getDoc(ownRef);
+   if(ui.state.drop.dayKey!==targetDay)return;
    ui.state.drop.posted=own.exists();ui.state.drop.answer=own.data()?.answer||'';ui.state.drop.photoDataUrl=own.data()?.photoDataUrl||'';
-   if(own.exists())stops.push(onSnapshot(collection(db,'circles',targetCircleId,'dailyDrops',dayKey(),'answers'),s=>{
-    ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
-   },e=>ui.toast('Daily Drop answers could not load: '+e.code)));
+   if(own.exists())dropAnswerStop=onSnapshot(collection(db,'circles',targetCircleId,'dailyDrops',targetDay,'answers'),snap=>{
+    if(ui.state.drop.dayKey!==targetDay)return;
+    ui.state.drop.entries=snap.docs.map(d=>({id:d.id,...d.data()}));ui.render()
+   },e=>ui.toast('Daily Drop answers could not load: '+e.code));
    ui.render();
   }
   listenDailyDropAnswers(id).catch(e=>ui.toast('Daily Drop could not load: '+e.code));
+  dailyDropTimer=setInterval(()=>{
+   const currentDay=dayKey();
+   if(ui.state.drop.dayKey===currentDay)return;
+   ui.state.drop={prompt:dailyPrompt(),dayKey:currentDay,posted:false,answer:'',photoDataUrl:'',entries:[]};
+   ui.render();
+   listenDailyDropAnswers(id,currentDay).catch(e=>ui.toast('Daily Drop could not refresh: '+e.code));
+  },30000);
   let sentReplies=[],receivedReplies=[];
   const renderReplies=()=>{ui.state.quietReplies=[...sentReplies,...receivedReplies].filter((x,i,a)=>a.findIndex(y=>y.id===x.id)===i);ui.render()};
   stops.push(onSnapshot(query(collection(db,'circles',id,'privateReplies'),where('fromUid','==',user.uid)),s=>{sentReplies=s.docs.map(d=>({id:d.id,...d.data()}));renderReplies()},e=>ui.toast('Sent private replies could not load: '+e.code)));
@@ -386,15 +396,18 @@ async function addDropAnswer(answer,prompt,photoDataUrl=''){
  const value=safeText(answer,1000),photo=typeof photoDataUrl==='string'?photoDataUrl:'';
  if(!value&&!photo)throw new Error('Write an answer or add a photo first.');
  if(photo&&(!photo.startsWith('data:image/')||photo.length>200000))throw new Error('That Daily Drop photo is not valid or is too large.');
- const answerRef=doc(db,'circles',circleId,'dailyDrops',dayKey(),'answers',user.uid);
+ const targetDay=dayKey(),answerRef=doc(db,'circles',circleId,'dailyDrops',targetDay,'answers',user.uid);
  const existing=await getDoc(answerRef);if(existing.exists())throw new Error('You have already posted today.');
- const payload={uid:user.uid,date:dayKey(),prompt:safeText(prompt,300),answer:value,name:accountDisplayName(),createdAt:serverTimestamp()};
+ const payload={uid:user.uid,date:targetDay,prompt:safeText(prompt,300),answer:value,name:accountDisplayName(),createdAt:serverTimestamp()};
  if(photo)payload.photoDataUrl=photo;
  await setDoc(answerRef,payload);
- const ui=window.CircleApp;ui.state.drop.posted=true;ui.state.drop.answer=value;ui.state.drop.photoDataUrl=photo;
- stops.push(onSnapshot(collection(db,'circles',circleId,'dailyDrops',dayKey(),'answers'),s=>{
-  ui.state.drop.entries=s.docs.map(d=>({id:d.id,...d.data()}));ui.render()
- },e=>ui.toast('Daily Drop answers could not load: '+e.code)));
+ const ui=window.CircleApp;ui.state.drop.dayKey=targetDay;ui.state.drop.posted=true;ui.state.drop.answer=value;ui.state.drop.photoDataUrl=photo;
+ if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}
+ dropAnswerStop=onSnapshot(collection(db,'circles',circleId,'dailyDrops',targetDay,'answers'),snap=>{
+  if(ui.state.drop.dayKey!==targetDay)return;
+  ui.state.drop.entries=snap.docs.map(d=>({id:d.id,...d.data()}));ui.render()
+ },e=>ui.toast('Daily Drop answers could not load: '+e.code));
+ ui.render();
  ui.render();
 }
 const addRecord=async(name,data)=>addDoc(collection(db,'circles',circleId,name),{...data,uid:user.uid,createdAt:serverTimestamp()});
