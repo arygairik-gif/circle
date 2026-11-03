@@ -112,6 +112,7 @@ function authScreen(){
   if(signup){paintAuthAvatar(signupPhotoDataUrl,$('#cloudAuthForm').elements.displayName.value||'Y')}
   else{signupPhotoDataUrl='';paintAuthAvatar('','Y')}
  };
+ setMode('signin');
  $('#cloudSwitch').onclick=()=>setMode(mode==='signin'?'signup':'signin');
  $('#cloudAuthForm').addEventListener('input',e=>{
   if(e.target.name==='displayName'&&!signupPhotoDataUrl)paintAuthAvatar('',e.target.value||'Y');
@@ -435,9 +436,10 @@ onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}authScreen();return}
  try{
+  try{localStorage.removeItem('circle_demo_v1')}catch{}
   const r=doc(db,'users',u.uid),p=await getDoc(r),saved=p.data()||{};
-  const savedName=validDisplayName(saved.displayName,u.email),authName=validDisplayName(u.displayName,u.email);
-  profileData={...profileData,...saved,displayName:savedName||authName,email:u.email,photoURL:saved.photoURL||profileData.photoURL||u.photoURL||'',handle:saved.handle||profileData.handle||'',bio:saved.bio||profileData.bio||''};
+  const savedName=validDisplayName(saved.displayName,u.email),authName=validDisplayName(u.displayName,u.email),sessionName=validDisplayName(profileData.displayName,u.email);
+  profileData={...profileData,...saved,displayName:savedName||authName||sessionName,email:u.email,photoURL:saved.photoURL||profileData.photoURL||u.photoURL||'',handle:saved.handle||profileData.handle||'',bio:saved.bio||profileData.bio||''};
   await setDoc(r,{displayName:profileData.displayName||'',email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
   if(!profileData.handle||!profileData.displayName){saveActiveCircleId('');profileSetupScreen();return}
   const circles=await myCircles();
