@@ -94,7 +94,7 @@ try {
       time: '18:00',
       place: 'Home',
       options: ['18:00', '19:00'],
-      votes: [['member'], []],
+      votes: ['member'],
       rsvps: ['member'],
       status: 'Voting open',
       createdBy: 'owner',
