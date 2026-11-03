@@ -208,10 +208,16 @@ async function openCircle(id){
   stage='loading circle details';
   const c=await getDoc(doc(db,'circles',id));
   if(!c.exists())throw new Error('This circle no longer exists.');
+  const isCircleOwner=c.data().ownerUid===user.uid;
   await persistActiveCircleId(id);
   stage='opening circle interface';
   ui.state.circleName=c.data().name||'Untitled circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),dayKey:dayKey(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
+   if(isCircleOwner){
+    s.docs.filter(d=>Object.prototype.hasOwnProperty.call(d.data(),'email')).forEach(d=>{
+     updateDoc(d.ref,{email:deleteField()}).catch(e=>console.warn('Legacy member email cleanup failed:',e?.code||e?.message));
+    });
+   }
    const members=s.docs.map(d=>{const data=d.data(),until=data.freeUntil?.toDate?.()||null,isFree=data.status==='free'&&until&&until.getTime()>Date.now();return{id:d.id,...data,status:isFree?'Free now':'Around',initial:(data.name||'?').slice(0,1).toUpperCase(),tone:'',photoURL:data.photoURL||'',handle:data.handle||'',bio:data.bio||''}});
    const mine=members.find(x=>x.id===user.uid);
    if(!mine){backToPickerAfterAccessLoss();return}
@@ -284,11 +290,11 @@ async function enableBrowserNotifications(){
  window.CircleApp.render();
  return true;
 }
-async function sendMessage(text,reply=''){
+async function sendMessage(text,reply='',replyToId=''){
  const value=safeText(text,1500);if(!value)return false;
  if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');
  const payload={uid:user.uid,displayName:accountDisplayName(),text:value,createdAt:serverTimestamp()};
- const quoted=safeText(reply,320);if(quoted)payload.reply=quoted;
+ const quoted=safeText(reply,320),parentId=safeText(replyToId,128);if(quoted)payload.reply=quoted;if(parentId)payload.replyTo=parentId;
  await addDoc(collection(db,'circles',circleId,'messages'),payload);
  return true;
 }
@@ -482,7 +488,7 @@ async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try
 window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
- if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}authScreen();return}
+ if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
  try{
   try{localStorage.removeItem('circle_demo_v1')}catch{}
   const r=doc(db,'users',u.uid),p=await getDoc(r),saved=p.data()||{};
