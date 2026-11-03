@@ -36,7 +36,7 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const error=m=>{const el=$('#cloudError');if(el)el.textContent=m};
 const explain=e=>({'auth/email-already-in-use':'That email already has an account. Sign in instead.','auth/invalid-credential':'Email or password is incorrect.','auth/weak-password':'Use at least 6 characters.','auth/unauthorized-domain':'Add this website in Firebase Authentication → Authorized domains.'}[e.code]||`Firebase error: ${e.code||e.message}`);
 function stop(){stops.forEach(f=>f());stops=[]}
-function gateView(html){gate.innerHTML=html;gate.hidden=false;shell.style.display='none'}
+function gateView(html){gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
 function showApp(){gate.hidden=true;shell.style.display=''}
 async function prepareProfilePhoto(file){
  if(!file||!file.type.startsWith('image/'))throw new Error('Choose an image file.');
@@ -80,7 +80,7 @@ function paintAuthAvatar(imageUrl,initial){
 }
 function authScreen(){
  const panel=`<div class="cloud-mobile-brand"><span class="brand-mark">c</span><span>circle</span></div>
-  <div class="cloud-panel-heading"><p class="cloud-kicker">CIRCLE · FRIENDS ONLY</p><h1>Closer, together.</h1><p class="cloud-copy">A private space for your chats, plans and favourite people.</p></div>
+  <div class="cloud-panel-heading"><p class="cloud-kicker">CIRCLE · FRIENDS ONLY</p><h1>Closer, together.</h1><p class="cloud-copy">A private space for your chats, plans and favourite people.</p><p class="cloud-feature-line">Private group chats · shared plans · moments worth keeping</p></div>
   <div class="cloud-auth-tabs"><span id="cloudModeLabel">Welcome back</span><span class="cloud-auth-secure">Private by design</span></div>
   <form id="cloudAuthForm" novalidate>
    <label>Email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="you@example.com"></label>
@@ -107,7 +107,7 @@ function authScreen(){
   $('#cloudModeLabel').textContent=signup?'Make your space':'Welcome back';
   $('#cloudSubmit').textContent=signup?'Create account':'Sign in';
   $('#cloudSwitchText').textContent=signup?'Already have an account?':'New to Circle?';
-  $('#cloudSwitch').textContent=signup?'Sign in':'Create account';
+  $('#cloudSwitch').textContent=signup?'Back to sign in':'Get started';
   error('');
   if(signup){paintAuthAvatar(signupPhotoDataUrl,$('#cloudAuthForm').elements.displayName.value||'Y')}
   else{signupPhotoDataUrl='';paintAuthAvatar('','Y')}
@@ -189,7 +189,7 @@ function profileSetupScreen(){
 
 async function myCircles(){const s=await getDocs(collection(db,'users',user.uid,'circles'));return s.docs.map(d=>({id:d.id,...d.data()}))}
 function picker(items){
- gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">YOUR PEOPLE, IN ONE PLACE</p><h1>Welcome, ${esc(accountDisplayName())}.</h1><p class="cloud-copy">Choose a circle or start a new one. Only invited members can see its conversations.</p>${items.length?`<div class="cloud-circle-list">${items.map(c=>`<button class="cloud-circle-choice" data-open-circle="${esc(c.id)}"><span class="cloud-circle-dot">✿</span><span><strong>${esc(c.name||'Your circle')}</strong><small>Open circle</small></span><b>→</b></button>`).join('')}</div>`:'<p class="cloud-empty">You haven’t joined a circle yet.</p>'}<div class="cloud-divider"><span>OR</span></div><form id="cloudCreateForm" class="cloud-inline"><label>Start a circle<input name="name" required maxlength="40" placeholder="e.g. The Usuals"></label><button class="cloud-primary">Create circle</button></form><form id="cloudJoinForm" class="cloud-inline"><label>Join with an invite code<input name="code" required maxlength="24" placeholder="Paste your invite code"></label><button class="cloud-secondary">Join circle</button></form><div class="cloud-error" id="cloudError" role="alert"></div><button class="cloud-signout" id="cloudSignOut">Sign out</button></section>`);
+ gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">YOUR PEOPLE, IN ONE PLACE</p><h1>Welcome, ${esc(accountDisplayName())}.</h1><p class="cloud-copy">Choose a circle or start a new one. Only invited members can see its conversations.</p>${items.length?`<div class="cloud-circle-list">${items.map(c=>`<button class="cloud-circle-choice" data-open-circle="${esc(c.id)}"><span class="cloud-circle-dot">✿</span><span><strong>${esc(c.name||'Your circle')}</strong><small>Open circle</small></span><b>→</b></button>`).join('')}</div>`:'<div class="cloud-empty"><strong>You’re not in a circle yet.</strong><span>Create one for your group, or join a friend using their invite code below.</span></div>'}<div class="cloud-divider"><span>OR</span></div><form id="cloudCreateForm" class="cloud-inline"><label>Start a circle<input name="name" required maxlength="40" placeholder="e.g. The Usuals"></label><button class="cloud-primary">Create circle</button></form><form id="cloudJoinForm" class="cloud-inline"><label>Join with an invite code<input name="code" required maxlength="24" placeholder="Paste your invite code"></label><button class="cloud-secondary">Join circle</button></form><div class="cloud-error" id="cloudError" role="alert"></div><button class="cloud-signout" id="cloudSignOut">Sign out</button></section>`);
  $$('[data-open-circle]',gate).forEach(b=>b.onclick=()=>openCircle(b.dataset.openCircle));
  $('#cloudCreateForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const name=new FormData(e.currentTarget).get('name').trim(),code=makeCode(),r=await addDoc(collection(db,'circles'),{name,ownerUid:user.uid,inviteCode:code,createdAt:serverTimestamp()});await setDoc(doc(db,'circles',r.id,'members',user.uid),{uid:user.uid,name:accountDisplayName(),handle:profileData.handle||'',bio:profileData.bio||'',photoURL:profileData.photoURL||'',email:user.email,role:'owner',joinedAt:serverTimestamp()});await setDoc(doc(db,'users',user.uid,'circles',r.id),{name,role:'owner',joinedAt:serverTimestamp()});await setDoc(doc(db,'invites',code),{circleId:r.id,createdBy:user.uid,createdAt:serverTimestamp()});for(const q of [{title:'Share a tiny win',desc:'Tell the circle about one good thing from today.',icon:'✳'},{title:'Plan a low-key hangout',desc:'Suggest one simple thing to do together.',icon:'☕'},{title:'Send a throwback',desc:'Share a favourite moment from your group.',icon:'📷'}])await addDoc(collection(db,'circles',r.id,'quests'),{...q,uid:user.uid,done:false,people:1,createdAt:serverTimestamp()});await openCircle(r.id)}catch(x){error(explain(x))}finally{b.disabled=false}};
  $('#cloudJoinForm').onsubmit=async e=>{e.preventDefault();const b=e.submitter;b.disabled=true;try{const code=String(new FormData(e.currentTarget).get('code')).trim().toUpperCase(),iv=await getDoc(doc(db,'invites',code));if(!iv.exists())throw new Error('Invite code not found. Ask a member for a current code.');const id=iv.data().circleId;await setDoc(doc(db,'circles',id,'members',user.uid),{uid:user.uid,name:accountDisplayName(),handle:profileData.handle||'',bio:profileData.bio||'',photoURL:profileData.photoURL||'',email:user.email,role:'member',inviteCode:code,joinedAt:serverTimestamp()});const c=await getDoc(doc(db,'circles',id));if(!c.exists())throw new Error('Circle not found.');await setDoc(doc(db,'users',user.uid,'circles',id),{name:c.data().name,role:'member',joinedAt:serverTimestamp()});await openCircle(id)}catch(x){error(x.message||explain(x))}finally{b.disabled=false}};
@@ -207,13 +207,13 @@ async function openCircle(id){
   if(!c.exists())throw new Error('This circle no longer exists.');
   await persistActiveCircleId(id);
   stage='opening circle interface';
-  ui.state.circleName=c.data().name||'Your circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
+  ui.state.circleName=c.data().name||'Untitled circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
    const members=s.docs.map(d=>({id:d.id,...d.data(),status:d.data().status==='free'?'Free now':(d.data().status||'Around'),initial:(d.data().name||'?').slice(0,1).toUpperCase(),tone:'',photoURL:d.data().photoURL||'',handle:d.data().handle||'',bio:d.data().bio||''}));
    const mine=members.find(x=>x.id===user.uid);
    if(mine){ui.state.me.mood=mine.mood||null;ui.state.me.free=mine.status==='Free now';ui.state.me.activity=mine.activity||''}
-   ui.state.members=members;ui.render();
-  },e=>ui.toast('Members could not load: '+e.code)));
+   ui.state.members=members;ui.state.membersLoaded=true;ui.state.membersError=false;ui.render();
+  },e=>{ui.state.membersLoaded=true;ui.state.membersError=true;ui.render();ui.toast('Members could not load: '+e.code)}));
   stops.push(onSnapshot(collection(db,'users',user.uid,'stickers'),s=>{
    ui.state.stickers=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
    if(ui.state.view==='stickers')ui.render();
