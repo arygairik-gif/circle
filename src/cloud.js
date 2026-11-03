@@ -430,8 +430,41 @@ async function rsvpPlan(id){const r=doc(db,'circles',circleId,'plans',String(id)
 const memberRef=()=>doc(db,'circles',circleId,'members',user.uid);
 async function setMood(mood){await updateDoc(memberRef(),{mood:String(mood).slice(0,8),lastSeen:serverTimestamp()})}
 async function setAvailability(free,activity='',duration='2'){let freeUntil=null;if(free){const now=new Date(),hours=duration==='today'?Math.max(1,(new Date(now.getFullYear(),now.getMonth(),now.getDate()+1).getTime()-now.getTime())/3600000):Math.max(1,Math.min(3,Number(duration)||2));freeUntil=new Date(now.getTime()+hours*3600000)}await updateDoc(memberRef(),{status:free?'free':'around',freeUntil,activity:safeText(activity,80),lastSeen:serverTimestamp()})}
+async function leaveCircle(){
+ if(!circleId)throw new Error('No circle is open.');
+ const circleSnap=await getDoc(doc(db,'circles',circleId));
+ if(circleSnap.data()?.ownerUid===user.uid)throw new Error('The owner cannot leave yet. Transfer ownership first.');
+ const batch=writeBatch(db);
+ batch.delete(doc(db,'circles',circleId,'members',user.uid));
+ batch.delete(doc(db,'users',user.uid,'circles',circleId));
+ await batch.commit();
+ stop();circleId=null;saveActiveCircleId('');
+ picker(await myCircles());
+}
+async function removeMember(targetUid){
+ if(!circleId||!targetUid||targetUid===user.uid)throw new Error('Choose another circle member.');
+ const circleSnap=await getDoc(doc(db,'circles',circleId));
+ if(circleSnap.data()?.ownerUid!==user.uid)throw new Error('Only the circle owner can remove members.');
+ const memberSnap=await getDoc(doc(db,'circles',circleId,'members',targetUid));
+ if(!memberSnap.exists())throw new Error('That member is no longer in this circle.');
+ const batch=writeBatch(db);
+ batch.delete(doc(db,'circles',circleId,'members',targetUid));
+ batch.delete(doc(db,'users',targetUid,'circles',circleId));
+ await batch.commit();
+}
+async function rotateInvite(){
+ if(!circleId)throw new Error('No circle is open.');
+ const circleRef=doc(db,'circles',circleId),circleSnap=await getDoc(circleRef);
+ if(circleSnap.data()?.ownerUid!==user.uid)throw new Error('Only the circle owner can replace its invite code.');
+ const oldCode=circleSnap.data()?.inviteCode||'',newCode=makeCode(),batch=writeBatch(db);
+ if(oldCode){const oldRef=doc(db,'invites',oldCode),oldSnap=await getDoc(oldRef);if(oldSnap.exists())batch.update(oldRef,{revokedAt:serverTimestamp()})}
+ batch.update(circleRef,{inviteCode:newCode,updatedAt:serverTimestamp()});
+ batch.set(doc(db,'invites',newCode),{circleId,createdBy:user.uid,createdAt:serverTimestamp(),expiresAt:new Date(Date.now()+7*24*60*60*1000)});
+ await batch.commit();
+ return newCode;
+}
 async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}await signOut(auth)}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}authScreen();return}
