@@ -158,11 +158,16 @@ service cloud.firestore {
        'uid','displayName','text','reply','attachmentDataUrl',
        'attachmentType','attachmentName','createdAt'
       ]) &&
+      request.resource.data.keys().hasAll(['uid','displayName','text','createdAt']) &&
       request.resource.data.uid == request.auth.uid &&
-      request.resource.data.displayName ==
-       get(memberPath(cid,request.auth.uid)).data.name &&
-      validText(request.resource.data,'displayName',40,1) &&
-      validText(request.resource.data,'text',1500,1) &&
+      request.resource.data.displayName is string &&
+      request.resource.data.displayName.size() > 0 &&
+      request.resource.data.displayName.size() <= 40 &&
+      request.resource.data.displayName == get(memberPath(cid,request.auth.uid)).data.name &&
+      request.resource.data.text is string &&
+      request.resource.data.text.size() > 0 &&
+      request.resource.data.text.size() <= 1500 &&
+      request.resource.data.createdAt is timestamp &&
       request.resource.data.createdAt == request.time &&
       (!('reply' in request.resource.data) ||
        (request.resource.data.reply is string &&
