@@ -834,7 +834,7 @@ function homeActivityItems(){
  });
  (Array.isArray(state.plans)?state.plans:[]).forEach(p=>{
   const stamp=homeStamp(p.createdAt);
-  items.push({view:'plans',stamp,actor:'Your circle',title:'has a plan in the works',detail:p.title||'A new group plan',when:stamp?new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(new Date(stamp)):'Plan',icon:'▦'});
+  items.push({view:'plans',stamp,actor:person(p.uid).name||'Your circle',title:'added a plan',detail:p.title||'A new group plan',when:stamp?new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(new Date(stamp)):'Plan',icon:'▦'});
  });
  (Array.isArray(state.memories)?state.memories:[]).forEach(m=>{
   const stamp=homeStamp(m.createdAt)||homeStamp(m.date);
@@ -842,7 +842,7 @@ function homeActivityItems(){
  });
  (Array.isArray(state.activities)?state.activities:[]).forEach(a=>{
   const stamp=homeStamp(a.createdAt);
-  items.push({view:'activities',stamp,actor:person(a.uid).name||'A member',title:'shared an update',detail:a.title||a.answer||a.type||'Circle activity',when:stamp?new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(new Date(stamp)):'Activity',icon:'✳'});
+  items.push({view:'activities',stamp,actor:person(a.uid).name||'A member',title:a.type==='daily-drop'?'answered the Daily Drop':'shared an update',detail:a.title||a.answer||a.type||'Circle activity',when:stamp?new Intl.DateTimeFormat('en',{month:'short',day:'numeric'}).format(new Date(stamp)):'Activity',icon:'✳'});
  });
  return items.sort((a,b)=>b.stamp-a.stamp).slice(0,4);
 }
