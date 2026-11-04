@@ -412,6 +412,15 @@ try {
     'the new owner can read the circle after ownership transfer',
     getDoc(doc(successorDb, 'circles', circleId))
   );
+  await allowed(
+    'the former owner can leave after transferring ownership',
+    (async () => {
+      const batch = writeBatch(ownerDb);
+      batch.delete(doc(ownerDb, 'circles', circleId, 'members', 'owner'));
+      batch.delete(doc(ownerDb, 'users', 'owner', 'circles', circleId));
+      await batch.commit();
+    })()
+  );
 
   console.log(`\nFirestore rules checks passed: ${passed}`);
 } finally {
