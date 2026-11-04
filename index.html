@@ -798,7 +798,7 @@ function header(eyebrow,title,subtitle,actions=''){return `<div class="page-head
 function setView(v){if(v==='chat')pendingChatBottom=true;openReactionMessageId=null;state.view=v;save();render();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'smooth'}))}
 function render(){
  applyTheme();updateSidebar();
- const cookieLayer=$('#cookieConsent');if(cookieLayer)cookieLayer.remove();
+
  const profileDraft=state.view==='profile'?{displayName:$('#profileDisplayName')?.value,handle:$('#profileHandle')?.value,bio:$('#profileBio')?.value}:null;
  const oldInput=state.view==='chat'?$('#messageInput'):null;
  const chatDraft=oldInput?oldInput.value:null,chatHasFocus=!!oldInput&&document.activeElement===oldInput;
@@ -1315,10 +1315,9 @@ function clearSessionState(){
 }
 window.CircleApp={clearSession:clearSessionState,get state(){return state},set state(v){state=v},render,toast,setView,save,escapeHtml,escapeAttr};
 render();
-const cookieRoot=$('#cookieConsentRoot');if(cookieRoot)cookieRoot.innerHTML=renderCookieConsent();
+document.body.insertAdjacentHTML('beforeend',renderCookieConsent());
 </script>
 <script type="module" src="/src/cloud.js"></script>
 <script type="module" src="/src/music.js"></script>
-<div id="cookieConsentRoot"></div>
 </body>
 </html>
