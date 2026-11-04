@@ -59,7 +59,9 @@ service cloud.firestore {
     allow read: if signedIn() && request.auth.uid == uid;
     allow create: if signedIn() && request.auth.uid == uid &&
       existsAfter(memberPath(cid,uid));
-    allow update: if false;
+    allow update: if isOwner(cid) &&
+      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']) &&
+      request.resource.data.role == (getAfter(circlePath(cid)).data.ownerUid == uid ? 'owner' : 'member');
     allow delete: if signedIn() && ((request.auth.uid == uid && get(circlePath(cid)).data.ownerUid != uid) || (isOwner(cid) && uid != get(circlePath(cid)).data.ownerUid));
    }
 
@@ -107,11 +109,22 @@ service cloud.firestore {
     validText(request.resource.data,'name',40,1) &&
     validText(request.resource.data,'inviteCode',24,8);
    allow read: if isMember(cid);
-   allow update: if isOwner(cid) &&
-    request.resource.data.ownerUid == resource.data.ownerUid &&
-    request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','inviteCode','updatedAt']) &&
-    (!('name' in request.resource.data) || validText(request.resource.data,'name',40,1)) &&
-    (!('inviteCode' in request.resource.data) || validText(request.resource.data,'inviteCode',24,8));
+   allow update: if isOwner(cid) && (
+    (
+     request.resource.data.ownerUid == resource.data.ownerUid &&
+     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name','inviteCode','updatedAt']) &&
+     (!('name' in request.resource.data) || validText(request.resource.data,'name',40,1)) &&
+     (!('inviteCode' in request.resource.data) || validText(request.resource.data,'inviteCode',24,8))
+    ) || (
+     request.resource.data.ownerUid is string &&
+     request.resource.data.ownerUid != resource.data.ownerUid &&
+     existsAfter(memberPath(cid,request.resource.data.ownerUid)) &&
+     getAfter(memberPath(cid,request.resource.data.ownerUid)).data.role == 'owner' &&
+     getAfter(memberPath(cid,request.auth.uid)).data.role == 'member' &&
+     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ownerUid','updatedAt']) &&
+     request.resource.data.updatedAt == request.time
+    )
+   );
    allow delete: if false;
 
    match /members/{uid} {
@@ -150,6 +163,9 @@ service cloud.firestore {
        request.resource.data.freeUntil is timestamp) &&
       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastSeen']) ||
        request.resource.data.lastSeen == request.time);
+    allow update: if isOwner(cid) &&
+      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['role']) &&
+      request.resource.data.role == (getAfter(circlePath(cid)).data.ownerUid == uid ? 'owner' : 'member');
     allow delete: if signedIn() && (
       (request.auth.uid == uid && get(circlePath(cid)).data.ownerUid != uid) ||
       (isOwner(cid) && uid != get(circlePath(cid)).data.ownerUid)
