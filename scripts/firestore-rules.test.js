@@ -293,6 +293,18 @@ try {
     'a member can update their own plan vote and RSVP keys',
     updateDoc(planRef, { votes: { member: 1 }, rsvps: { member: true } })
   );
+  await allowed(
+    'the plan creator can finalize voting',
+    updateDoc(planRef, { status: 'Finalized' })
+  );
+  await denied(
+    'members cannot change votes after a plan is finalized',
+    updateDoc(planRef, { votes: { member: 0 } })
+  );
+  await allowed(
+    'members can still update their RSVP after a plan is finalized',
+    updateDoc(planRef, { rsvps: { member: false } })
+  );
   await denied(
     'a member cannot forge another person’s vote',
     updateDoc(planRef, { votes: { member: 1, owner: 0 }, rsvps: { member: true } })
