@@ -89,7 +89,8 @@ service cloud.firestore {
     request.resource.data.createdAt == request.time &&
     request.resource.data.expiresAt is timestamp &&
     request.resource.data.expiresAt > request.time &&
-    request.resource.data.keys().hasOnly(['circleId','createdBy','createdAt','expiresAt']) &&
+    request.resource.data.keys().hasOnly(['circleId','circleName','createdBy','createdAt','expiresAt']) &&
+    validText(request.resource.data,'circleName',40,1) &&
     existsAfter(memberPath(request.resource.data.circleId,request.auth.uid));
    allow update: if signedIn() &&
     resource.data.createdBy == request.auth.uid &&
@@ -147,7 +148,7 @@ service cloud.firestore {
       (!('freeUntil' in request.resource.data) ||
        request.resource.data.freeUntil == null ||
        request.resource.data.freeUntil is timestamp) &&
-      (!('lastSeen' in request.resource.data) ||
+      (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastSeen']) ||
        request.resource.data.lastSeen == request.time);
     allow delete: if signedIn() && (
       (request.auth.uid == uid && get(circlePath(cid)).data.ownerUid != uid) ||
