@@ -858,7 +858,7 @@ function renderToday(){
  const events=homeActivityItems();
  const sourceState=state.homeSourcesLoaded||{};
  const sourceErrors=state.homeSourceErrors||{};
- const homeStillLoading=['messages','plans','memories','activities'].some(key=>!sourceState[key]);
+ const homeStillLoading=!!window.CircleCloud?.user&&['messages','plans','memories','activities'].some(key=>!sourceState[key]);
  const homeHasErrors=Object.values(sourceErrors).some(Boolean);
  const memories=[...(Array.isArray(state.memories)?state.memories:[])].sort((a,b)=>homeStamp(b.createdAt||b.date)-homeStamp(a.createdAt||a.date)).slice(0,3);
  const faces=members.slice(0,5).map(m=>avatar(m.id,true)).join('');
