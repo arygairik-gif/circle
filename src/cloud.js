@@ -316,7 +316,13 @@ async function sendMessage(text,reply='',replyToId=''){
  if(value.length>1500)throw new Error('Messages are limited to 1,500 characters.');
  const payload={uid:user.uid,displayName:accountDisplayName(),text:value,createdAt:serverTimestamp()};
  const quoted=safeText(reply,320),parentId=safeText(replyToId,128);if(quoted)payload.reply=quoted;if(parentId)payload.replyTo=parentId;
- await addDoc(collection(db,'circles',circleId,'messages'),payload);
+ const pendingWrite=addDoc(collection(db,'circles',circleId,'messages'),payload);
+ // Firestore applies the write to its local snapshot immediately. Do not hold
+ // the composer open while the server acknowledges it; report a later rejection.
+ pendingWrite.catch(error=>{
+  console.warn('Circle message write failed:',error?.code||error?.message);
+  window.CircleApp?.toast?.('Message could not be synced: '+(error?.code||error?.message||'Check your connection.'));
+ });
  return true;
 }
 function readAsDataUrl(file){
