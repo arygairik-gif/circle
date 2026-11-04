@@ -101,10 +101,10 @@ service cloud.firestore {
     validText(request.resource.data,'circleName',40,1) &&
     existsAfter(memberPath(request.resource.data.circleId,request.auth.uid));
    allow update: if signedIn() &&
-    resource.data.createdBy == request.auth.uid &&
+    isOwner(resource.data.circleId) &&
     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['revokedAt']) &&
     request.resource.data.revokedAt == request.time;
-   allow delete: if signedIn() && resource.data.createdBy == request.auth.uid;
+   allow delete: if signedIn() && isOwner(resource.data.circleId);
   }
 
   match /circles/{cid} {
