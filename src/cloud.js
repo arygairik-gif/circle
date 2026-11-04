@@ -211,7 +211,7 @@ async function openCircle(id){
   const isCircleOwner=c.data().ownerUid===user.uid;
   await persistActiveCircleId(id);
   stage='opening circle interface';
-  ui.state.circleName=c.data().name||'Untitled circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),dayKey:dayKey(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
+  ui.state.circleName=c.data().name||'Untitled circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),dayKey:dayKey(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.tracks=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
    if(isCircleOwner){
     s.docs.filter(d=>Object.prototype.hasOwnProperty.call(d.data(),'email')).forEach(d=>{
@@ -247,7 +247,7 @@ async function openCircle(id){
   // Profile changes are synced by saveProfile(). Opening a circle is read-only so stale
   // member metadata cannot block the entire circle from opening.
   const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);ui.render()},e=>ui.toast(name+' could not load: '+e.code)));
-  watch('commitments','commitments');stops.push(onSnapshot(query(collection(db,'circles',id,'memories'),where('type','!=','time-capsule')),snap=>{ui.state.memories=snap.docs.map(d=>({id:d.id,...d.data()}));ui.render()},e=>ui.toast('Memories could not load: '+e.code)));watch('rituals','rituals');watch('quests','quests',d=>{const x=d.data();return{id:d.id,...x,done:!!x.doneBy?.[user.uid]}});watch('activities','activities');
+  watch('commitments','commitments');stops.push(onSnapshot(query(collection(db,'circles',id,'memories'),where('type','!=','time-capsule')),snap=>{ui.state.memories=snap.docs.map(d=>({id:d.id,...d.data()}));ui.render()},e=>ui.toast('Memories could not load: '+e.code)));watch('rituals','rituals');watch('quests','quests',d=>{const x=d.data();return{id:d.id,...x,done:!!x.doneBy?.[user.uid]}});watch('activities','activities');watch('tracks','tracks');
   async function listenDailyDropAnswers(targetCircleId,targetDay=dayKey()){
    if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}
    const ownRef=doc(db,'circles',targetCircleId,'dailyDrops',targetDay,'answers',user.uid);
@@ -424,6 +424,13 @@ async function addRitual(d){return addRecord('rituals',{title:safeText(d.title,1
 async function addQuest(d){return addRecord('quests',{title:safeText(d.title,100),desc:safeText(d.desc,300),icon:safeText(d.icon,8),doneBy:{}})}
 async function toggleQuest(id,done){const ref=doc(db,'circles',circleId,'quests',String(id));await runTransaction(db,async tx=>{const snap=await tx.get(ref);if(!snap.exists())throw new Error('Quest no longer exists.');const doneBy={...(snap.data().doneBy||{})};if(done)doneBy[user.uid]=true;else delete doneBy[user.uid];tx.update(ref,{doneBy})})}
 async function addActivity(d){return addRecord('activities',{type:safeText(d.type,40),answer:safeText(d.answer,1500),unlock:safeText(d.unlock,40),title:safeText(d.title,100)})}
+async function addTrack(d){
+ const providerId=safeText(d.providerId,40),title=safeText(d.title,160),artist=safeText(d.artist,160);
+ if(!providerId||!title||!artist)throw new Error('Track information is incomplete.');
+ const tracks=await getDocs(query(collection(db,'circles',circleId,'tracks'),where('providerId','==',providerId),limit(1)));
+ if(!tracks.empty)throw new Error('That song is already in the shared playlist.');
+ return addRecord('tracks',{providerId,title,artist,album:safeText(d.album,160),artwork:safeText(d.artwork,1000),previewUrl:safeText(d.previewUrl,1000),trackUrl:safeText(d.trackUrl,1000),source:'itunes',durationMs:Math.max(0,Math.min(3600000,Number(d.durationMs)||0))});
+}
 
 async function addQuietReply(toUid,messageId,reply){if(!toUid||toUid==='you'||toUid===user.uid)throw new Error('Quiet replies can only be sent to another circle member.');return addRecord('privateReplies',{fromUid:user.uid,toUid,messageId:String(messageId),reply:safeText(reply,1500)})}
 async function saveProfile(data){
@@ -485,7 +492,7 @@ async function rotateInvite(){
  return newCode;
 }
 async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}await signOut(auth)}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
