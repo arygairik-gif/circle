@@ -71,12 +71,14 @@ try {
     await setDoc(doc(db, 'users', 'target', 'circles', circleId), { name: 'Test circle', role: 'member' });
     await setDoc(doc(db, 'invites', inviteCode), {
       circleId,
+      circleName: 'Test circle',
       createdBy: 'owner',
       createdAt: Timestamp.now(),
       expiresAt: future
     });
     await setDoc(doc(db, 'invites', 'EXPIRED123'), {
       circleId,
+      circleName: 'Test circle',
       createdBy: 'owner',
       createdAt: Timestamp.now(),
       expiresAt: Timestamp.fromMillis(Date.now() - 1000)
