@@ -481,6 +481,23 @@ async function removeMember(targetUid){
  batch.delete(doc(db,'users',targetUid,'circles',circleId));
  await batch.commit();
 }
+async function transferOwnership(targetUid){
+ if(!circleId||!targetUid||targetUid===user.uid)throw new Error('Choose another circle member.');
+ const circleRef=doc(db,'circles',circleId),circleSnap=await getDoc(circleRef);
+ if(!circleSnap.exists()||circleSnap.data().ownerUid!==user.uid)throw new Error('Only the current owner can transfer ownership.');
+ const nextMemberRef=doc(db,'circles',circleId,'members',targetUid),nextMember=await getDoc(nextMemberRef);
+ if(!nextMember.exists())throw new Error('That person is no longer in this circle.');
+ const currentMemberRef=memberRef(),currentIndexRef=doc(db,'users',user.uid,'circles',circleId),nextIndexRef=doc(db,'users',targetUid,'circles',circleId);
+ const currentIndex=await getDoc(currentIndexRef),nextIndex=await getDoc(nextIndexRef);
+ if(!currentIndex.exists()||!nextIndex.exists())throw new Error('Circle membership records are incomplete. Refresh the circle and try again.');
+ const batch=writeBatch(db);
+ batch.update(circleRef,{ownerUid:targetUid,updatedAt:serverTimestamp()});
+ batch.update(currentMemberRef,{role:'member'});
+ batch.update(nextMemberRef,{role:'owner'});
+ batch.update(currentIndexRef,{role:'member'});
+ batch.update(nextIndexRef,{role:'owner'});
+ await batch.commit();
+}
 async function rotateInvite(){
  if(!circleId)throw new Error('No circle is open.');
  const circleRef=doc(db,'circles',circleId),circleSnap=await getDoc(circleRef);
@@ -493,7 +510,7 @@ async function rotateInvite(){
  return newCode;
 }
 async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}await signOut(auth)}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addTrack,removeTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,transferOwnership,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addTrack,removeTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
