@@ -151,7 +151,7 @@ service cloud.firestore {
       request.resource.data.uid == uid &&
       request.resource.data.diff(resource.data).affectedKeys().hasOnly([
        'name','photoURL','handle','bio','status','freeUntil','lastSeen',
-       'mood','activity','support','supportPreference','email'
+       'mood','activity','support','supportPreference','listeningTrackTitle','listeningArtist','listeningArtwork','listeningAt','email'
       ]) &&
       (!('email' in request.resource.data) ||
        request.resource.data.email == resource.data.email) &&
@@ -160,6 +160,10 @@ service cloud.firestore {
        (request.resource.data.handle is string && request.resource.data.handle.size() <= 24)) &&
       (!('bio' in request.resource.data) ||
        (request.resource.data.bio is string && request.resource.data.bio.size() <= 160)) &&
+      (!('listeningTrackTitle' in request.resource.data) || validText(request.resource.data,'listeningTrackTitle',160,0)) &&
+      (!('listeningArtist' in request.resource.data) || validText(request.resource.data,'listeningArtist',160,0)) &&
+      (!('listeningArtwork' in request.resource.data) || (request.resource.data.listeningArtwork is string && request.resource.data.listeningArtwork.size() <= 1000)) &&
+      (!('listeningAt' in request.resource.data) || request.resource.data.listeningAt == null || request.resource.data.listeningAt == request.time) &&
       (!('photoURL' in request.resource.data) ||
        (request.resource.data.photoURL is string && request.resource.data.photoURL.size() <= 220000 &&
         (request.resource.data.photoURL.size() == 0 ||
