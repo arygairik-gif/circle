@@ -43,7 +43,7 @@ function withStartupTimeout(promise,label,ms=18000){
  return Promise.race([Promise.resolve(promise),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after 18 seconds. Check your connection and retry.')),ms)})]).finally(()=>clearTimeout(timer));
 }
 function startupRecovery(message){
- gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">CIRCLE · CONNECTION CHECK</p><h1>Circle is taking longer than expected.</h1><p class="cloud-copy" id="startupError">${esc(message)}</p><p class="cloud-field-hint">Your account and circle data are still on Firebase. Retry the connection, or sign out and try again later.</p><div class="cloud-auth-actions"><button class="cloud-primary" id="startupRetry">Retry connection</button><button class="cloud-secondary" id="startupSignOut">Sign out</button></div></section>`);
+ gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">CIRCLE · CONNECTION CHECK</p><h1>Circle is taking longer than expected.</h1><p class="cloud-copy" id="startupError">${esc(message)}</p><p class="cloud-field-hint">Your account and circle data are still on Firebase. Retry the connection, or sign out and try again later.</p><div class="modal-actions"><button class="cloud-primary" id="startupRetry">Retry connection</button><button class="cloud-secondary" id="startupSignOut">Sign out</button></div></section>`);
  $('#startupRetry').onclick=()=>window.location.reload();
  $('#startupSignOut').onclick=()=>signOut(auth).catch(e=>{const note=$('#startupError');if(note)note.textContent=explain(e)});
 }
