@@ -294,7 +294,7 @@ async function enableBrowserNotifications(){
  window.CircleApp.render();
  return true;
 }
-function messageFromDoc(d){const x=d.data(),date=x.createdAt?.toDate?.()||null;return{id:d.id,from:x.uid===user.uid?'you':x.uid,senderName:x.displayName||'Member',day:date?date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0'):'',time:date?.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',reply:x.reply||'',replyTo:x.replyTo||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',sticker:x.attachmentType==='sticker'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:x.reactions||{},reactionsByUser:x.reactionsByUser||{}})}
+function messageFromDoc(d){const x=d.data(),date=x.createdAt?.toDate?.()||null;return{id:d.id,from:x.uid===user.uid?'you':x.uid,senderName:x.displayName||'Member',day:date?date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0'):'',time:date?.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',reply:x.reply||'',replyTo:x.replyTo||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',sticker:x.attachmentType==='sticker'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:x.reactions||{},reactionsByUser:x.reactionsByUser||{}}}
 async function loadOlderMessages(){
  if(olderMessagesLoading||!oldestMessageDoc||!ui.state.hasOlderMessages)return false;
  olderMessagesLoading=true;
