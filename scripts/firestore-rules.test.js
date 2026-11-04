@@ -67,8 +67,11 @@ try {
     await setDoc(doc(db, 'circles', circleId, 'members', 'owner'), memberData('owner', 'Owner', 'owner'));
     await setDoc(doc(db, 'circles', circleId, 'members', 'member'), memberData('member', 'Member'));
     await setDoc(doc(db, 'circles', circleId, 'members', 'target'), memberData('target', 'Target'));
+    await setDoc(doc(db, 'circles', circleId, 'members', 'successor'), memberData('successor', 'Successor'));
+    await setDoc(doc(db, 'users', 'owner', 'circles', circleId), { name: 'Test circle', role: 'owner' });
     await setDoc(doc(db, 'users', 'member', 'circles', circleId), { name: 'Test circle', role: 'member' });
     await setDoc(doc(db, 'users', 'target', 'circles', circleId), { name: 'Test circle', role: 'member' });
+    await setDoc(doc(db, 'users', 'successor', 'circles', circleId), { name: 'Test circle', role: 'member' });
     await setDoc(doc(db, 'invites', inviteCode), {
       circleId,
       circleName: 'Test circle',
@@ -390,6 +393,24 @@ try {
       batch.delete(doc(memberDb, 'users', 'member', 'circles', circleId));
       await batch.commit();
     })()
+  );
+
+  const successorDb = testEnv.authenticatedContext('successor').firestore();
+  await allowed(
+    'the owner can transfer ownership and both member/index roles atomically',
+    (async () => {
+      const batch = writeBatch(ownerDb);
+      batch.update(doc(ownerDb, 'circles', circleId), { ownerUid: 'successor', updatedAt: serverTimestamp() });
+      batch.update(doc(ownerDb, 'circles', circleId, 'members', 'owner'), { role: 'member' });
+      batch.update(doc(ownerDb, 'circles', circleId, 'members', 'successor'), { role: 'owner' });
+      batch.update(doc(ownerDb, 'users', 'owner', 'circles', circleId), { role: 'member' });
+      batch.update(doc(ownerDb, 'users', 'successor', 'circles', circleId), { role: 'owner' });
+      await batch.commit();
+    })()
+  );
+  await allowed(
+    'the new owner can read the circle after ownership transfer',
+    getDoc(doc(successorDb, 'circles', circleId))
   );
 
   console.log(`\nFirestore rules checks passed: ${passed}`);
