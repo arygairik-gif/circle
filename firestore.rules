@@ -314,6 +314,33 @@ service cloud.firestore {
      allow delete: if isMember(cid) && resource.data.uid == request.auth.uid;
     }
 
+    match /tracks/{trackId} {
+     allow read: if isMember(cid);
+     allow create: if isMember(cid) &&
+      request.resource.data.keys().hasOnly([
+       'uid','createdAt','providerId','title','artist','album','artwork',
+       'previewUrl','trackUrl','source','durationMs'
+      ]) &&
+      request.resource.data.keys().hasAll([
+       'uid','createdAt','providerId','title','artist','album','artwork',
+       'previewUrl','trackUrl','source','durationMs'
+      ]) &&
+      request.resource.data.uid == request.auth.uid &&
+      request.resource.data.createdAt == request.time &&
+      validText(request.resource.data,'providerId',40,1) &&
+      validText(request.resource.data,'title',160,1) &&
+      validText(request.resource.data,'artist',160,1) &&
+      request.resource.data.album is string && request.resource.data.album.size() <= 160 &&
+      request.resource.data.artwork is string && request.resource.data.artwork.size() <= 1000 &&
+      request.resource.data.previewUrl is string && request.resource.data.previewUrl.size() <= 1000 &&
+      request.resource.data.trackUrl is string && request.resource.data.trackUrl.size() <= 1000 &&
+      request.resource.data.source == 'itunes' &&
+      request.resource.data.durationMs is int &&
+      request.resource.data.durationMs >= 0 && request.resource.data.durationMs <= 3600000;
+     allow update: if false;
+     allow delete: if isMember(cid) && resource.data.uid == request.auth.uid;
+    }
+
     match /plans/{pid} {
      allow read: if isMember(cid);
      allow create: if isMember(cid) &&
