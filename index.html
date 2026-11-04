@@ -629,6 +629,11 @@ html,body{background:var(--paper);color:var(--ink)}
  .app.chat-view-active .chat-area-bold .chat-scroll{flex:1;min-height:0;height:auto;max-height:none}
 }
 
+
+/* Cookie and browser-storage preferences. */
+.cookie-consent{position:fixed;z-index:1200;left:18px;right:18px;bottom:18px;max-width:620px;margin-left:auto;padding:17px 18px;background:#fffefa;color:#24291f;border:1px solid #d9ddcf;border-radius:15px;box-shadow:0 16px 50px #17201630;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center}
+.cookie-consent[hidden]{display:none}.cookie-consent h2{font:800 14px Manrope;margin:0 0 5px}.cookie-consent p{font-size:10px;line-height:1.55;color:#687064;margin:0}.cookie-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.cookie-actions button{border:1px solid #d8dccf;border-radius:8px;padding:9px 10px;background:transparent;color:#283023;font-size:9px;font-weight:900;white-space:nowrap}.cookie-actions .cookie-primary{background:#20291e;color:#fff;border-color:#20291e}.cookie-pref-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.cookie-pref-row strong{display:block;font-size:11px}.cookie-pref-row small{display:block;font-size:9px;color:var(--muted);line-height:1.5;margin-top:3px}.cookie-pref-row input{width:18px;height:18px;accent-color:#718b4b}.cookie-essential-pill{font-size:8px;font-weight:900;color:#5d7442;background:#edf1e5;border-radius:20px;padding:5px 8px;white-space:nowrap}
+@media(max-width:620px){.cookie-consent{left:9px;right:9px;bottom:calc(73px + env(safe-area-inset-bottom));grid-template-columns:1fr;padding:14px}.cookie-actions{justify-content:flex-start}.cookie-actions button{flex:1}}
 </style>
 
 <style id="circle-accessibility-polish">
@@ -768,6 +773,12 @@ function hydrateState(){
 }
 let state=hydrateState();
 let replyTo=null, memoryFilter='all', memoryQuery='', toastTimer=null, pendingChatBottom=true, lastModalFocus=null,pendingProfilePhoto='',openReactionMessageId=null,pendingStickerData='';
+
+const COOKIE_PREF_KEY='circle_cookie_preferences_v1';
+function readCookiePreferences(){try{const saved=JSON.parse(localStorage.getItem(COOKIE_PREF_KEY)||'null');return saved&&saved.version===1? saved:null}catch(e){return null}}
+function saveCookiePreferences(analytics){const prefs={version:1,essential:true,analytics:!!analytics,updatedAt:new Date().toISOString()};try{localStorage.setItem(COOKIE_PREF_KEY,JSON.stringify(prefs))}catch(e){toast('Your browser could not save this preference.')}const banner=$('#cookieConsent');if(banner)banner.hidden=true;render();toast('Cookie preferences saved.')}
+function renderCookieConsent(){if(readCookiePreferences())return '';return '<aside class="cookie-consent" id="cookieConsent" role="dialog" aria-label="Cookie and storage preferences"><div><h2>Cookie & storage preferences</h2><p>Circle uses essential browser storage for core app functions and your preferences. Optional analytics is not currently enabled. Choose whether to allow optional storage if it is introduced later.</p></div><div class="cookie-actions"><button type="button" data-action="cookie-manage">Manage</button><button type="button" data-action="cookie-reject">Only essential</button><button type="button" class="cookie-primary" data-action="cookie-accept">Accept optional</button></div></aside>'}
+function openCookiePreferences(){const prefs=readCookiePreferences();openModal('Cookie & storage preferences','Essential storage keeps Circle working. Optional analytics storage is currently not active.', '<div class="cookie-pref-row"><div><strong>Essential storage</strong><small>Needed for core app functions, security and remembering your settings. This cannot be switched off here.</small></div><span class="cookie-essential-pill">Always on</span></div><div class="cookie-pref-row"><div><strong>Optional analytics</strong><small>Would help measure general product usage if an analytics service is added. No optional analytics is currently running.</small></div><input type="checkbox" id="cookieAnalytics" '+(prefs?.analytics?'checked':'')+' aria-label="Allow optional analytics storage"></div><div class="modal-actions"><button type="button" class="soft-btn" data-action="cookie-reject">Only essential</button><button type="button" class="primary-btn" data-action="cookie-save">Save preferences</button></div>')}
 function save(){if(!circleStorage){if(!storageNoticeShown){toast('This browser cannot save settings between visits.');storageNoticeShown=true}return true}try{circleStorage.setItem('circle_settings_v1',JSON.stringify(state.settings));if(!window.CircleCloud?.user)circleStorage.setItem('circle_demo_v1',JSON.stringify(state));return true}catch(e){console.warn('Could not save this change locally',e);if(!storageNoticeShown){toast('Browser storage is full. Export your Circle data before adding more media.');storageNoticeShown=true}return false}}
 function person(id){const uid=window.CircleCloud?.user?.uid,lookup=id==='you'?uid:id,found=state.members.find(m=>m.id===lookup);if(id==='you')return{...state.me,...(found||{}),name:found?.name||state.me.displayName||'You',initial:(state.me.displayName||found?.name||'You').slice(0,1).toUpperCase(),photoURL:found?.photoURL||state.me.photoURL||''};if(found)return found;return{name:'Member',initial:'?',tone:''}}
 function circleName(){return escapeHtml(state.circleName||'Untitled circle')}
@@ -787,6 +798,7 @@ function header(eyebrow,title,subtitle,actions=''){return `<div class="page-head
 function setView(v){if(v==='chat')pendingChatBottom=true;openReactionMessageId=null;state.view=v;save();render();requestAnimationFrame(()=>window.scrollTo({top:0,behavior:'smooth'}))}
 function render(){
  applyTheme();updateSidebar();
+ const cookieLayer=$('#cookieConsent');if(cookieLayer)cookieLayer.remove();
  const profileDraft=state.view==='profile'?{displayName:$('#profileDisplayName')?.value,handle:$('#profileHandle')?.value,bio:$('#profileBio')?.value}:null;
  const oldInput=state.view==='chat'?$('#messageInput'):null;
  const chatDraft=oldInput?oldInput.value:null,chatHasFocus=!!oldInput&&document.activeElement===oldInput;
@@ -1085,6 +1097,7 @@ function renderSettings(){
  ${row('Quiet hours','Pause new-message alerts during the times below.','quiet')}
  <section class="card card-pad"><div class="card-title">Quiet hours schedule</div><div class="card-caption" style="margin-bottom:12px">When Quiet hours is on, new-message alerts are paused on this device during this window.</div><div style="display:flex;gap:9px;align-items:center"><label style="font-size:10px" for="quietStart">From <input class="select-field" type="time" value="${escapeAttr(s.quietStart)}" id="quietStart"></label><label style="font-size:10px" for="quietEnd">Until <input class="select-field" type="time" value="${escapeAttr(s.quietEnd)}" id="quietEnd"></label></div></section>
  <section class="card card-pad"><div class="card-title">Browser notifications</div><p class="card-caption" style="margin:8px 0 12px">Get a browser alert for new messages while Circle is open in another tab. This is not background push when the site is closed.</p><button class="soft-btn" data-action="enable-notifications">${s.browserNotifications?'Notifications enabled':'Enable browser alerts'}</button></section>
+ <section class="card card-pad"><div class="card-title">Cookie & storage preferences</div><p class="card-caption" style="margin:8px 0 12px">Review essential browser storage and choose whether to allow optional analytics storage in the future. Optional analytics is currently not active.</p><button class="soft-btn" data-action="cookie-manage">Manage cookie preferences</button></section>
  <section class="card card-pad"><div class="card-title">Privacy & your data</div><p style="font-size:10px;color:var(--muted);line-height:1.6">Circle uses Firebase Authentication and Cloud Firestore for member-only group data, including small compressed media attachments. Messages and attachments are access-controlled, but are not end-to-end encrypted. Push notifications and multi-person voice/video rooms still require additional service configuration.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="soft-btn" data-action="export">↓ Export my data</button><button class="soft-btn" data-action="switch-circle">Switch circle</button><button class="soft-btn" data-action="new-circle">Create circle</button><button class="soft-btn" data-action="sign-out">Sign out</button>${canLeave?'<button class="soft-btn" data-action="leave-circle">Leave this circle</button>':''}</div></section>
  </div>`;
 }
@@ -1234,6 +1247,7 @@ const root=document.body;root.addEventListener('click',e=>{const b=e.target.clos
  if(a==='new-commitment'){openNewCommitment();return}if(a==='all-commitments'){openModal('Little promises','Things your circle said they would do.',state.commitments.map(c=>`<div class="commit-row"><span>${c.done?'✓':'○'}</span><div class="commit-text">${escapeHtml(c.text)}<small>${escapeHtml(c.by)} · ${escapeHtml(c.when)}</small></div></div>`).join('')+`<div class="modal-actions"><button class="primary-btn" data-action="close-modal">Done</button></div>`);return}
  if(a==='quest'){const q=state.quests.find(x=>x.id===id);if(q){q.done=!q.done;if(window.CircleCloud)window.CircleCloud.toggleQuest(q.id,q.done).catch(e=>toast('Quest not updated: '+e.code));}save();render();toast(q?.done?'Quest marked complete.':'You can pick this up later.');return}
  if(a==='mood'){state.me.mood=b.dataset.mood;if(window.CircleCloud){window.CircleCloud.setMood(b.dataset.mood).then(()=>toast('Your pulse has been shared with the circle.')).catch(e=>toast('Could not share your pulse: '+e.code))}else toast('Mood saved locally.');save();render();return}
+ if(a==='cookie-manage'){openCookiePreferences();return}if(a==='cookie-accept'){saveCookiePreferences(true);return}if(a==='cookie-reject'){saveCookiePreferences(false);closeModal();return}if(a==='cookie-save'){saveCookiePreferences(!!$('#cookieAnalytics')?.checked);closeModal();return}
  if(a==='setting-toggle'){const k=b.dataset.key;state.settings[k]=!state.settings[k];save();render();return}if(a==='theme-mode'){const mode=b.dataset.themeMode;if(['light','dark'].includes(mode)){state.settings.theme=mode;save();render()}return}if(a==='theme-style'){const style=b.dataset.themeStyle;if(['warm','minimal','neo','glass'].includes(style)){state.settings.style=style;save();render()}return}
  if(a==='new-ritual'){openRitual();return}if(a==='time-capsule'){toast('Time Capsules are paused until timed access is enforced by Firestore.');return}if(a==='deep-questions'||a==='know-me'||a==='appreciation'||a==='playlist'||a==='adventure'||a==='stickers'||a==='support'||a==='awards'||a==='stats'||a==='rituals'||a==='quests'){openActivity(a);return}
  if(a==='invite-hangout'){openHangout(b.dataset.id);return}
@@ -1301,8 +1315,10 @@ function clearSessionState(){
 }
 window.CircleApp={clearSession:clearSessionState,get state(){return state},set state(v){state=v},render,toast,setView,save,escapeHtml,escapeAttr};
 render();
+const cookieRoot=$('#cookieConsentRoot');if(cookieRoot)cookieRoot.innerHTML=renderCookieConsent();
 </script>
 <script type="module" src="/src/cloud.js"></script>
 <script type="module" src="/src/music.js"></script>
+<div id="cookieConsentRoot"></div>
 </body>
 </html>
