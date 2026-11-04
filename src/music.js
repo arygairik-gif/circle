@@ -40,6 +40,7 @@ function makeTrack(item, added=false){
  row.append(art,info);
  const actions=el('div');actions.style.display='grid';actions.style.gap='6px';
  if(!added){const add=el('button','cm-secondary',busyId===String(item.trackId)?'Adding…':'＋ Add');add.disabled=busyId===String(item.trackId);add.addEventListener('click',async()=>{busyId=String(item.trackId);render();try{await window.CircleCloud.addTrack({providerId:String(item.trackId),title:item.trackName,artist:item.artistName,album:item.collectionName||'',artwork:item.artworkUrl100||'',previewUrl:item.previewUrl||'',trackUrl:item.trackViewUrl||'',source:'itunes',durationMs:item.trackTimeMillis||0});}catch(e){errorText='Could not add song: '+(e.code||e.message); }finally{busyId='';render();}});actions.append(add);}
+ if(added&&item.uid===window.CircleCloud.user?.uid){const remove=el('button','cm-secondary','Remove');remove.addEventListener('click',async()=>{try{await window.CircleCloud.removeTrack(item.id);render();}catch(e){errorText='Could not remove song: '+(e.code||e.message);render();}});actions.append(remove);}
  const link=el('button','cm-secondary','Open ↗');link.addEventListener('click',()=>openTrack(item.trackViewUrl||item.trackUrl));actions.append(link);row.append(actions);return row;
 }
 function render(){
@@ -48,13 +49,13 @@ function render(){
  if(!panel){panel=el('section');panel.id='circleMusic';const grid=view.querySelector('.activity-grid');if(!grid)return;grid.after(panel);}
  panel.replaceChildren();
  const head=el('div','cm-head'),copy=el('div');copy.append(el('h2','','Circle soundtrack'),el('p','','Find songs, add them together, and play previews or open the full track.'));head.append(copy,el('span','tag green','SHARED PLAYLIST'));panel.append(head);
- const form=el('form');form.setAttribute('role','search');const input=el('input');input.type='search';input.placeholder='Search songs, artists or albums…';input.value=queryText;input.setAttribute('aria-label','Search songs, artists or albums');const submit=el('button','','Search');submit.type='submit';submit.disabled=searching||!input.value.trim();form.append(input,submit);form.addEventListener('submit',e=>{e.preventDefault();queryText=input.value.trim();search(queryText);});panel.append(form);
+ const form=el('form');form.setAttribute('role','search');const input=el('input');input.type='search';input.placeholder='Search songs, artists or albums…';input.value=queryText;input.setAttribute('aria-label','Search songs, artists or albums');const submit=el('button','','Search');submit.type='submit';submit.disabled=searching||!input.value.trim();input.addEventListener('input',()=>{submit.disabled=searching||!input.value.trim();});form.append(input,submit);form.addEventListener('submit',e=>{e.preventDefault();queryText=input.value.trim();search(queryText);});panel.append(form);
  if(errorText)panel.append(el('div','cm-muted',errorText));
  if(results.length){const resultWrap=el('div','cm-results');resultWrap.append(el('div','card-title','Search results'));const list=el('div','cm-list');results.forEach(t=>list.append(makeTrack(t,false)));resultWrap.append(list);panel.append(resultWrap);}
  panel.append(el('div','section-row',''));const playlistTitle=el('div','card-title','Songs added by your circle');panel.append(playlistTitle);
  const tracks=[...(window.CircleApp.state.tracks||[])].sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
  if(!tracks.length)panel.append(el('div','cm-muted','Your shared playlist is empty. Search for a song and add the first one.'));
- else{const list=el('div','cm-list');tracks.forEach(t=>list.append(makeTrack({trackId:t.providerId,trackName:t.title,artistName:t.artist,artworkUrl100:t.artwork,previewUrl:t.previewUrl,trackViewUrl:t.trackUrl},true)));panel.append(list);}
+ else{const list=el('div','cm-list');tracks.forEach(t=>list.append(makeTrack({id:t.id,uid:t.uid,trackId:t.providerId,trackName:t.title,artistName:t.artist,artworkUrl100:t.artwork,previewUrl:t.previewUrl,trackViewUrl:t.trackUrl},true)));panel.append(list);}
 }
 async function search(q){
  if(!q)return;searching=true;errorText='';render();
@@ -71,8 +72,9 @@ function mount(){
  if(window.CircleApp.state.view==='activities')render();
 }
 waitFor(()=>{
- const observer=new MutationObserver(()=>{if(window.CircleApp.state.view==='activities')mount();});
+ const observer=new MutationObserver(()=>{if(window.CircleApp.state.view==='activities'&&!document.getElementById('circleMusic'))mount();});
  observer.observe(document.getElementById('view')||document.body,{childList:true,subtree:true});
+ mount();
  document.addEventListener('click',e=>{
   const b=e.target.closest('[data-action="playlist"]');if(!b)return;
   e.preventDefault();e.stopImmediatePropagation();window.CircleApp.setView('activities');
