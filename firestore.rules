@@ -38,6 +38,10 @@ service cloud.firestore {
     request.resource.data.bio.size() <= 160 &&
     request.resource.data.photoURL is string &&
     request.resource.data.photoURL.size() <= 220000 &&
+    (request.resource.data.photoURL.size() == 0 ||
+     request.resource.data.photoURL.matches('^data:image/.*') ||
+     request.resource.data.photoURL.matches('^https://lh[0-9][.]googleusercontent[.]com/.*') ||
+     request.resource.data.photoURL.matches('^https://firebasestorage[.]googleapis[.]com/.*')) &&
     request.resource.data.role in ['owner','member'] &&
     request.resource.data.status in ['around','free'] &&
     request.resource.data.joinedAt == request.time;
