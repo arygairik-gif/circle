@@ -164,7 +164,7 @@ service cloud.firestore {
      allow read: if isMember(cid);
      allow create: if isMember(cid) &&
       request.resource.data.keys().hasOnly([
-       'uid','displayName','text','reply','attachmentDataUrl',
+       'uid','displayName','text','reply','replyTo','attachmentDataUrl',
        'attachmentType','attachmentName','createdAt'
       ]) &&
       request.resource.data.keys().hasAll(['uid','displayName','text','createdAt']) &&
