@@ -220,20 +220,27 @@ service cloud.firestore {
        (request.resource.data.attachmentDataUrl is string &&
         request.resource.data.attachmentDataUrl.size() <= 420000 &&
         request.resource.data.attachmentDataUrl.matches('^data:(image|audio)/.*')));
-     allow update: if isMember(cid) &&
-      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactionsByUser']) &&
-      request.resource.data.reactionsByUser is map &&
-      request.resource.data.reactionsByUser
-       .diff(resource.data.get('reactionsByUser',{}))
-       .affectedKeys().hasOnly([request.auth.uid]) &&
-      (!(request.auth.uid in request.resource.data.reactionsByUser) ||
-       (request.resource.data.reactionsByUser[request.auth.uid] is list &&
-        request.resource.data.reactionsByUser[request.auth.uid].size() <= 32 &&
-        request.resource.data.reactionsByUser[request.auth.uid].hasOnly([
-         '❤️','😂','😍','🥹','😭','😮','😡','👍','👎','🙌','👏','🔥',
-         '🎉','✨','💯','🫶','🤝','👀','🥳','💀','😎','🤔','🙏','💚',
-         '🤍','💛','🫡','🥰','😅','💖','🧡','💜'
-        ])));
+     allow update: if isMember(cid) && (
+      (resource.data.uid == request.auth.uid &&
+       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['text','editedAt']) &&
+       request.resource.data.text is string &&
+       request.resource.data.text.size() > 0 &&
+       request.resource.data.text.size() <= 1500 &&
+       request.resource.data.editedAt == request.time) ||
+      (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactionsByUser']) &&
+       request.resource.data.reactionsByUser is map &&
+       request.resource.data.reactionsByUser
+        .diff(resource.data.get('reactionsByUser',{}))
+        .affectedKeys().hasOnly([request.auth.uid]) &&
+       (!(request.auth.uid in request.resource.data.reactionsByUser) ||
+        (request.resource.data.reactionsByUser[request.auth.uid] is list &&
+         request.resource.data.reactionsByUser[request.auth.uid].size() <= 32 &&
+         request.resource.data.reactionsByUser[request.auth.uid].hasOnly([
+          '❤️','😂','😍','🥹','😭','😮','😡','👍','👎','🙌','👏','🔥',
+          '🎉','✨','💯','🫶','🤝','👀','🥳','💀','😎','🤔','🙏','💚',
+          '🤍','💛','🫡','🥰','😅','💖','🧡','💜'
+         ]))))
+     );
      allow delete: if isMember(cid) &&
       resource.data.uid == request.auth.uid;
     }
