@@ -75,7 +75,7 @@ waitFor(()=>{
  const observer=new MutationObserver(()=>{if(window.CircleApp.state.view==='activities'&&!document.getElementById('circleMusic'))mount();});
  observer.observe(document.getElementById('view')||document.body,{childList:true,subtree:true});
  mount();
- document.addEventListener('click',e=>{
+ document.addEventListener('play',e=>{const audio=e.target;if(!(audio instanceof HTMLAudioElement)||!audio.closest('#circleMusic')&&!audio.closest('.chat-music-list'))return;window.CircleCloud?.setListeningTrack?.({title:audio.dataset.trackTitle||audio.closest('.cm-track')?.querySelector('.cm-info strong')?.textContent||'Song preview',artist:audio.dataset.trackArtist||audio.closest('.cm-track')?.querySelector('.cm-info span')?.textContent||'',artwork:audio.dataset.trackArtwork||audio.closest('.cm-track')?.querySelector('.cm-art')?.src||''}).catch(()=>{});},true);\n document.addEventListener('pause',e=>{const audio=e.target;if(audio instanceof HTMLAudioElement&&(audio.closest('#circleMusic')||audio.closest('.chat-music-list')))window.CircleCloud?.clearListeningTrack?.().catch(()=>{});},true);\n document.addEventListener('ended',e=>{const audio=e.target;if(audio instanceof HTMLAudioElement&&(audio.closest('#circleMusic')||audio.closest('.chat-music-list')))window.CircleCloud?.clearListeningTrack?.().catch(()=>{});},true);\n document.addEventListener('click',e=>{
   const b=e.target.closest('[data-action="playlist"]');if(!b)return;
   e.preventDefault();e.stopImmediatePropagation();window.CircleApp.setView('activities');
   setTimeout(()=>document.getElementById('circleMusic')?.scrollIntoView({behavior:'smooth',block:'start'}),80);
