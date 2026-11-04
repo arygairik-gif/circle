@@ -145,9 +145,36 @@ try {
   const anonymousDb = testEnv.unauthenticatedContext().firestore();
   const memberDb = testEnv.authenticatedContext('member').firestore();
   const ownerDb = testEnv.authenticatedContext('owner').firestore();
+  await allowed(
+    'owners can create invites with a validated circle name',
+    setDoc(doc(ownerDb, 'invites', 'NEWCODE123'), {
+      circleId,
+      circleName: 'Test circle',
+      createdBy: 'owner',
+      createdAt: serverTimestamp(),
+      expiresAt: future
+    })
+  );
+  await denied(
+    'invites without a circle name are rejected',
+    setDoc(doc(ownerDb, 'invites', 'BADCODE123'), {
+      circleId,
+      createdBy: 'owner',
+      createdAt: serverTimestamp(),
+      expiresAt: future
+    })
+  );
 
   await allowed('members can read their own membership record', getDoc(doc(memberDb, 'circles', circleId, 'members', 'member')));
   await allowed('members can read the circle document', getDoc(doc(memberDb, 'circles', circleId)));
+  await allowed(
+    'profile edits do not fail because an existing lastSeen timestamp is old',
+    updateDoc(doc(memberDb, 'circles', circleId, 'members', 'member'), { bio: 'A profile update' })
+  );
+  await allowed(
+    'members can refresh lastSeen with a server timestamp',
+    updateDoc(doc(memberDb, 'circles', circleId, 'members', 'member'), { lastSeen: serverTimestamp() })
+  );
 
   await denied(
     'invite documents are not readable to signed-out visitors',
