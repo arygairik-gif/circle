@@ -448,6 +448,14 @@ try {
     'the new owner can read the circle after ownership transfer',
     getDoc(doc(successorDb, 'circles', circleId))
   );
+  await denied(
+    'the former owner cannot revoke invites after transferring ownership',
+    updateDoc(doc(ownerDb, 'invites', inviteCode), { revokedAt: serverTimestamp() })
+  );
+  await allowed(
+    'the new owner can revoke an existing circle invite',
+    updateDoc(doc(successorDb, 'invites', inviteCode), { revokedAt: serverTimestamp() })
+  );
   await allowed(
     'the former owner can leave after transferring ownership',
     (async () => {
