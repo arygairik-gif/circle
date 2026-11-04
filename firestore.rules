@@ -397,7 +397,8 @@ service cloud.firestore {
        request.resource.data.time is string &&
        request.resource.data.time.size() <= 40 &&
        request.resource.data.place is string &&
-       request.resource.data.place.size() <= 120
+       request.resource.data.place.size() <= 120 &&
+       request.resource.data.status in ['Voting open','Finalized']
       ) ||
       (
        request.resource.data.diff(resource.data).affectedKeys()
@@ -408,6 +409,8 @@ service cloud.firestore {
         .affectedKeys().hasOnly([request.auth.uid]) &&
        request.resource.data.rsvps.diff(resource.data.rsvps)
         .affectedKeys().hasOnly([request.auth.uid]) &&
+       (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['votes']) ||
+        resource.data.status == 'Voting open') &&
        (!(request.auth.uid in request.resource.data.votes) ||
         (request.resource.data.votes[request.auth.uid] is int &&
          request.resource.data.votes[request.auth.uid] >= 0 &&
