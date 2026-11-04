@@ -211,7 +211,7 @@ async function openCircle(id){
   const isCircleOwner=c.data().ownerUid===user.uid;
   await persistActiveCircleId(id);
   stage='opening circle interface';
-  ui.state.circleName=c.data().name||'Untitled circle';ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),dayKey:dayKey(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.tracks=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
+  ui.state.circleName=c.data().name||'Untitled circle';ui.state.homeSourcesLoaded={messages:false,plans:false,memories:false,activities:false};ui.state.homeSourceErrors={};ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),dayKey:dayKey(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.tracks=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
    if(isCircleOwner){
     s.docs.filter(d=>Object.prototype.hasOwnProperty.call(d.data(),'email')).forEach(d=>{
@@ -238,20 +238,20 @@ async function openCircle(id){
      const latestIds=new Set(latestMessages.map(m=>String(m.id)));
      const olderLoaded=ui.state.messages.filter(m=>!latestIds.has(String(m.id)));
      ui.state.messages=[...olderLoaded,...latestMessages];
-   ui.render();
-  },e=>ui.toast('Messages could not load: '+e.code)));
+   ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),messages:true};ui.render();
+  },e=>{ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),messages:true};ui.state.homeSourceErrors={...(ui.state.homeSourceErrors||{}),messages:true};ui.render();ui.toast('Messages could not load: '+e.code)}));
   stops.push(onSnapshot(query(collection(db,'circles',id,'plans'),orderBy('createdAt','desc'),limit(50)),s=>{
    ui.state.plans=s.docs.map(d=>{const x=d.data(),legacyVoteData=Array.isArray(x.votes)||Array.isArray(x.rsvps),voteMap=x.votes&&typeof x.votes==='object'&&!Array.isArray(x.votes)?x.votes:{},rsvpMap=x.rsvps&&typeof x.rsvps==='object'&&!Array.isArray(x.rsvps)?x.rsvps:{};return{id:d.id,...x,legacyVoteData,options:Array.isArray(x.options)?x.options:[],votes:Array.isArray(x.votes)?x.votes.map(a=>Array.isArray(a)?a.map(uid=>uid===user.uid?'you':uid):[]):(Array.isArray(x.options)?x.options:[]).map((_,i)=>Object.keys(voteMap).filter(uid=>voteMap[uid]===i).map(uid=>uid===user.uid?'you':uid)),rsvps:Array.isArray(x.rsvps)?x.rsvps.map(uid=>uid===user.uid?'you':uid):Object.keys(rsvpMap).filter(uid=>rsvpMap[uid]===true).map(uid=>uid===user.uid?'you':uid)}});
-   ui.render();
-  },e=>ui.toast('Plans could not load: '+e.code)));
+   ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),plans:true};ui.render();
+  },e=>{ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),plans:true};ui.state.homeSourceErrors={...(ui.state.homeSourceErrors||{}),plans:true};ui.render();ui.toast('Plans could not load: '+e.code)}));
   stage='loading your profile';
   const p=await getDoc(doc(db,'users',user.uid));profileData=p.data()||profileData||{};
   ui.state.me.displayName=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.me.email=user.email||'';
   ui.render();
   // Profile changes are synced by saveProfile(). Opening a circle is read-only so stale
   // member metadata cannot block the entire circle from opening.
-  const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);ui.render()},e=>ui.toast(name+' could not load: '+e.code)));
-  watch('commitments','commitments');stops.push(onSnapshot(query(collection(db,'circles',id,'memories'),where('type','!=','time-capsule')),snap=>{ui.state.memories=snap.docs.map(d=>({id:d.id,...d.data()}));ui.render()},e=>ui.toast('Memories could not load: '+e.code)));watch('rituals','rituals');watch('quests','quests',d=>{const x=d.data();return{id:d.id,...x,done:!!x.doneBy?.[user.uid]}});watch('activities','activities');watch('tracks','tracks');
+  const watch=(name,target,convert=d=>({id:d.id,...d.data()}))=>stops.push(onSnapshot(collection(db,'circles',id,name),s=>{ui.state[target]=s.docs.map(convert);if(name==='activities')ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),activities:true};ui.render()},e=>{if(name==='activities'){ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),activities:true};ui.state.homeSourceErrors={...(ui.state.homeSourceErrors||{}),activities:true}}ui.render();ui.toast(name+' could not load: '+e.code)}));
+  watch('commitments','commitments');stops.push(onSnapshot(query(collection(db,'circles',id,'memories'),where('type','!=','time-capsule')),snap=>{ui.state.memories=snap.docs.map(d=>({id:d.id,...d.data()}));ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),memories:true};ui.render()},e=>{ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),memories:true};ui.state.homeSourceErrors={...(ui.state.homeSourceErrors||{}),memories:true};ui.render();ui.toast('Memories could not load: '+e.code)}));watch('rituals','rituals');watch('quests','quests',d=>{const x=d.data();return{id:d.id,...x,done:!!x.doneBy?.[user.uid]}});watch('activities','activities');watch('tracks','tracks');
   async function listenDailyDropAnswers(targetCircleId,targetDay=dayKey()){
    if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}
    const ownRef=doc(db,'circles',targetCircleId,'dailyDrops',targetDay,'answers',user.uid);
