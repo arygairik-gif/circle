@@ -178,6 +178,14 @@ try {
     'members can refresh lastSeen with a server timestamp',
     updateDoc(doc(memberDb, 'circles', circleId, 'members', 'member'), { lastSeen: serverTimestamp() })
   );
+  await denied(
+    'external profile photo URLs are rejected',
+    updateDoc(doc(memberDb, 'circles', circleId, 'members', 'member'), { photoURL: 'https://evil.example/pixel' })
+  );
+  await allowed(
+    'Google-hosted profile photos remain supported',
+    updateDoc(doc(memberDb, 'circles', circleId, 'members', 'member'), { photoURL: 'https://lh3.googleusercontent.com/a/test' })
+  );
 
   await denied(
     'invite documents are not readable to signed-out visitors',
@@ -346,6 +354,22 @@ try {
   await allowed(
     'members can read ordinary memories',
     getDoc(doc(memberDb, 'circles', circleId, 'memories', 'ordinary-memory'))
+  );
+  await denied(
+    'memories cannot embed arbitrary external tracking URLs',
+    addDoc(collection(memberDb, 'circles', circleId, 'memories'), {
+      uid: 'member', createdAt: serverTimestamp(), type: 'photo', icon: '▧',
+      title: 'External URL', desc: '', date: '2026-11-04', by: 'Member', color: 'photo',
+      mediaUrl: 'https://evil.example/tracker', mediaType: 'image'
+    })
+  );
+  await allowed(
+    'memories can still store compressed inline image data',
+    addDoc(collection(memberDb, 'circles', circleId, 'memories'), {
+      uid: 'member', createdAt: serverTimestamp(), type: 'photo', icon: '▧',
+      title: 'Inline image', desc: '', date: '2026-11-04', by: 'Member', color: 'photo',
+      mediaUrl: 'data:image/webp;base64,AAAA', mediaType: 'image'
+    })
   );
   await allowed(
     'the memory query excludes legacy Time Capsule documents',
