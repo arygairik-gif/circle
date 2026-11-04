@@ -382,6 +382,116 @@ button:active{transform:scale(.98)}
 .catchup-top span{color:#806a32}
 .drop-foot{color:#53684f}
 .ritual-day{color:#66552e}
+ 
+/* Circle editorial refresh — warm paper, quiet green, clearer hierarchy */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
+:root{
+ --paper:#f7f6f1;--surface:#fffefa;--surface-2:#f1f0e9;--ink:#242820;--muted:#777b70;
+ --line:#e6e4da;--green:#56785a;--green-dark:#3e5c42;--green-soft:#e9efe5;
+ --orange:#c98160;--shadow:0 10px 28px rgba(39,45,34,.045);--radius:17px;
+}
+html,body{background:var(--paper);color:var(--ink)}
+.app{grid-template-columns:258px minmax(0,1fr);max-width:1900px}
+.sidebar{background:#faf9f5;border-right-color:#e8e6dd;padding:30px 18px 20px}
+.brand{padding-bottom:34px}.brand-mark{border-radius:12px;transform:none;background:#526f53}
+.brand-name{font-size:21px;letter-spacing:-1px}.brand-tag{letter-spacing:1.7px}
+.section-label{padding-left:13px;color:#999b90;letter-spacing:1.6px}
+.nav-list{gap:5px}.nav-link{border-radius:10px;padding:12px 13px;color:#686d63;font-size:12px}
+.nav-link.active{background:#e9eee5;color:#3e5c42;box-shadow:inset 2px 0 #648166}
+.nav-link:hover{background:#f0f0e9}
+.circle-mini{background:#f0efe8;border:1px solid #e8e6dc}
+.sidebar-note{background:#f0efe7;border:1px solid #e8e6dc}
+.main-shell{background:var(--paper)}
+.topbar{height:72px;background:rgba(250,249,245,.94);border-bottom-color:#e8e6dd;padding:0 34px}
+.searchbox{background:#fffefa;border-radius:9px;border-color:#e7e5dc;height:39px}
+.content-grid{max-width:1600px;padding:32px 36px 48px;gap:26px;grid-template-columns:minmax(0,1fr) 280px}
+.page-head{margin:0 0 24px;align-items:flex-end}
+.eyebrow{font-size:9px;letter-spacing:1.8px;color:#668067}
+.page-title{font:400 34px/1.08 'DM Serif Display',Georgia,serif;letter-spacing:-.6px}
+.page-subtitle{font-size:12px;line-height:1.65;color:#777b70;max-width:560px}
+.card{border-radius:16px;box-shadow:none;border-color:#e8e6dd}
+.primary-btn{background:#526f53;border-radius:9px;box-shadow:none;padding:11px 15px;font-size:11px}
+.primary-btn:hover{background:#3e5c42}
+.soft-btn{border-radius:9px;background:#fffefa;border-color:#e5e3d9;padding:10px 13px}
+.right-rail{padding-top:0}.rail-card{border-radius:14px;padding:15px;margin-bottom:12px}
+.rail-heading strong,.card-title{font-family:'DM Sans',sans-serif}
+.tag{border-radius:6px;letter-spacing:.3px}
+.dashboard-grid{gap:14px}
+.home-hero{position:relative;overflow:hidden;min-height:285px;border:1px solid #e4e5d9;border-radius:18px;background:#eeefe6;padding:34px 36px 20px;display:flex;align-items:center;margin-bottom:15px}
+.home-hero-copy{position:relative;z-index:1;max-width:490px}
+.home-hero-copy h2{font:400 clamp(35px,4vw,52px)/1.02 'DM Serif Display',Georgia,serif;letter-spacing:-.6px;margin:9px 0 12px;max-width:430px}
+.home-hero-copy p{font-size:12px;line-height:1.75;color:#656d60;max-width:390px;margin:0}
+.home-hero-actions{display:flex;align-items:center;gap:18px;margin-top:22px;flex-wrap:wrap}
+.home-text-link{border:0;background:none;padding:8px 0;color:#496b4f;font-size:11px;font-weight:700}
+.home-hero-art{position:absolute;right:7%;top:50%;width:240px;height:220px;transform:translateY(-50%);display:grid;place-items:center}
+.home-orbit{position:absolute;border:1px solid rgba(83,112,82,.23);border-radius:50%;transform:rotate(-28deg)}
+.orbit-one{width:205px;height:128px}.orbit-two{width:150px;height:205px;transform:rotate(38deg)}
+.home-sun{width:106px;height:106px;border-radius:50%;display:grid;place-items:center;background:#d7dfcd;color:#587257;font-size:53px;box-shadow:0 10px 28px rgba(65,88,60,.08)}
+.home-art-note{position:absolute;font:italic 15px 'DM Serif Display',Georgia,serif;color:#75836d}
+.note-one{top:15px;right:0;transform:rotate(8deg)}.note-two{bottom:13px;left:5px;transform:rotate(-9deg)}
+.home-hero-foot{position:absolute;left:36px;right:36px;bottom:15px;display:flex;justify-content:space-between;gap:10px;color:#879080;font-size:8px;letter-spacing:1.3px;font-weight:700}
+.home-overview-grid,.home-lower-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.home-feature-card,.home-drop-card,.home-list-card{padding:20px 21px}
+.home-card-top,.home-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.home-card-top h3,.home-section-head h3,.home-drop-card h3,.spaces-quick-row h3{font:400 22px 'DM Serif Display',Georgia,serif;margin:3px 0 5px}
+.home-card-top p{font-size:10px;color:var(--muted);margin:0;line-height:1.5}
+.home-card-symbol{font-size:24px;color:#71856d}
+.home-feature-card .mood-options{margin:18px 0 12px}
+.home-card-foot{border-top:1px solid var(--line);padding-top:10px;font-size:9px;line-height:1.5;color:#85897e;min-height:31px}
+.home-drop-card{position:relative;overflow:hidden;border-radius:16px;background:#e8ede3;border:1px solid #dce4d6;padding:20px 21px}
+.home-drop-card .eyebrow{color:#6b8065}
+.home-drop-icon{float:right;font-size:30px;color:#8b9c82}
+.home-drop-card h3{font-size:25px;margin:10px 0 8px;color:#3c513a}
+.home-drop-card p{font:400 17px/1.35 'DM Serif Display',Georgia,serif;color:#485c44;max-width:330px;margin:0 0 10px}
+.home-drop-foot{font-size:9px;color:#75836e}
+.home-drop-button{display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:15px;padding:10px 0 0;border:0;border-top:1px solid #d1ddcc;background:none;color:#456143;font-size:10px;font-weight:700}
+.home-section-head{align-items:center;margin-bottom:15px}.home-section-head h3{font-size:23px}
+.home-next-plan{display:flex;align-items:center;gap:11px;padding:12px 0 15px}
+.home-plan-icon{width:35px;height:35px;display:grid;place-items:center;border-radius:10px;background:#f2eee3;color:#9b8056;font-size:19px}
+.home-next-plan strong,.home-quest-row strong{display:block;font-size:11px}
+.home-next-plan small,.home-quest-row small{display:block;font-size:9px;color:var(--muted);margin-top:4px}
+.home-outline-action{width:100%;padding:10px;border:1px dashed #d9d9ce;border-radius:9px;background:transparent;color:#5b7658;font-size:10px;font-weight:700}
+.home-empty-copy{font-size:10px;line-height:1.6;color:#85897e;margin:10px 0 16px}
+.home-quest-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #efeee8}
+.home-quest-row:last-child{border-bottom:0}
+.home-quest-icon{width:29px;height:29px;display:grid;place-items:center;border-radius:9px;background:#f1f0e8;color:#73866d}
+.home-quest-row>div{flex:1;min-width:0}
+.home-footer-note{display:flex;align-items:center;gap:9px;padding:10px 2px;color:#898d82;font-size:9px}
+.home-footer-note>span:first-child{color:#6c8668;font-size:15px}
+.home-footer-note button{margin-left:auto;border:0;background:none;color:#5d785a;font-size:9px;font-weight:700}
+.spaces-intro{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:27px 30px;margin-bottom:15px;border:1px solid #e5e5d9;border-radius:16px;background:#eeefe7}
+.spaces-intro h2{font:400 31px 'DM Serif Display',Georgia,serif;margin:4px 0 7px}
+.spaces-intro p{font-size:11px;line-height:1.6;color:#747a6e;max-width:510px;margin:0}
+.spaces-intro-mark{width:74px;height:74px;display:grid;place-items:center;border-radius:50%;background:#dce4d5;color:#668061;font-size:40px;flex-shrink:0}
+.spaces-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.space-card{display:flex;flex-direction:column;align-items:flex-start;min-height:218px;padding:20px 21px;text-align:left;border:1px solid #e7e5dc;border-radius:15px;background:#fffefa;color:var(--ink);transition:transform .18s,border-color .18s,background .18s}
+.space-card:hover{transform:translateY(-2px);border-color:#cbd7c6;background:#fff}
+.space-card-top{width:100%;display:flex;justify-content:space-between;align-items:center;margin-bottom:19px}
+.space-card-icon{width:39px;height:39px;border-radius:11px;background:#edf1e9;color:#5c7859;display:grid;place-items:center;font-size:21px}
+.space-card-number{font-size:9px;letter-spacing:1.3px;color:#a0a397}
+.space-card .eyebrow{margin-bottom:7px}
+.space-card>strong{font:400 24px 'DM Serif Display',Georgia,serif;margin-bottom:6px}
+.space-card-desc{font-size:10px;line-height:1.6;color:#777b70;max-width:310px}
+.space-card-bottom{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:auto;padding-top:18px}
+.space-card-bottom small{font-size:9px;color:#92968b}.space-card-bottom b{color:#688165;font-size:17px}
+.spaces-quick-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px 2px;margin-top:8px;border-top:1px solid #e6e4da}
+.spaces-quick-row h3{font-size:22px}.spaces-quick-row p{font-size:10px;color:#777b70;margin:0}
+.spaces-quick-actions{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:1160px){.app{grid-template-columns:230px minmax(0,1fr)}.content-grid{padding:25px 24px 38px}.home-hero-art{right:2%;opacity:.8}}
+@media(max-width:900px){.app{grid-template-columns:72px minmax(0,1fr)}.home-hero{padding-left:26px}.home-hero-foot{left:26px;right:26px}.home-hero-art{right:-4%;opacity:.5}}
+@media(max-width:620px){
+ .content-grid{padding:17px 13px 25px}.page-title{font-size:29px}
+ .home-hero{min-height:330px;padding:27px 21px 54px;align-items:flex-start}
+ .home-hero-copy{max-width:100%}.home-hero-copy h2{font-size:39px;max-width:300px}
+ .home-hero-copy p{max-width:290px}.home-hero-art{width:150px;height:140px;right:-14px;top:auto;bottom:8px;transform:none;opacity:.48}
+ .home-orbit.orbit-one{width:145px;height:90px}.home-orbit.orbit-two{width:105px;height:140px}.home-sun{width:70px;height:70px;font-size:34px}
+ .home-art-note{font-size:11px}.home-hero-foot{left:21px;right:21px;bottom:14px;font-size:7px}
+ .home-overview-grid,.home-lower-grid,.spaces-grid{grid-template-columns:1fr}
+ .home-feature-card,.home-drop-card,.home-list-card{padding:17px}
+ .spaces-intro{padding:21px}.spaces-intro h2{font-size:27px}.spaces-intro-mark{width:54px;height:54px;font-size:29px}
+ .space-card{min-height:190px}.spaces-quick-row{align-items:flex-start;flex-direction:column}.spaces-quick-actions{width:100%}.spaces-quick-actions button{flex:1}
+ .home-footer-note{align-items:flex-start;flex-wrap:wrap}.home-footer-note button{margin-left:24px}
+}
 </style>
 </head>
 <body>
@@ -391,12 +501,10 @@ button:active{transform:scale(.98)}
   <div class="brand"><div class="brand-mark">c</div><div class="brand-copy"><div class="brand-name">circle</div><div class="brand-tag">closer, together</div></div></div>
   <div class="section-label">Your space</div>
   <div class="nav-list">
-   <button class="nav-link" data-view="today"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="nav-label">Today</span></button>
-   <button class="nav-link active" data-view="chat"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/><path d="M8 10h8M8 14h5"/></svg></span><span class="nav-label">Messages</span></button>
-   <button class="nav-link" data-view="stickers"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3Z"/></svg></span><span class="nav-label">Sticker shelf</span></button>
-   <button class="nav-link" data-view="plans"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3M8 17h3"/></svg></span><span class="nav-label">Plans board</span></button>
-   <button class="nav-link" data-view="memories"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l1 4H3l1-4Z"/><path d="M5 8v12h14V8M9 12h6"/></svg></span><span class="nav-label">Memory vault</span></button>
-   <button class="nav-link" data-view="activities"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span><span class="nav-label">Activities</span></button>
+   <button class="nav-link" data-view="today"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg></span><span class="nav-label">Home</span></button>
+   <button class="nav-link active" data-view="chat"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/><path d="M8 10h8M8 14h5"/></svg></span><span class="nav-label">Chats</span></button>
+   <button class="nav-link" data-view="spaces"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></span><span class="nav-label">Spaces</span></button>
+   <button class="nav-link" data-view="memories"><span class="nav-icon"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l1 4H3l1-4Z"/><path d="M5 8v12h14V8M9 12h6"/></svg></span><span class="nav-label">Memories</span></button>
   </div>
   <div class="section-label" style="margin-top:17px">Your circles</div>
   <button type="button" class="circle-mini" data-view="circle" aria-label="Open circle details"><div class="circle-avatars" id="sidebarCircleAvatars"></div><div class="circle-copy"><div class="circle-name" id="sidebarCircleName">Connecting…</div><div class="circle-meta">Connecting to your people…</div></div><span class="circle-more" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span></button>
@@ -423,7 +531,11 @@ button:active{transform:scale(.98)}
  </div>
 </div>
 <nav class="mobile-nav" aria-label="Main navigation">
- <button data-view="today"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>Today</button><button class="active" data-view="chat"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/><path d="M8 10h8M8 14h5"/></svg></span>Chat</button><button data-view="stickers"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.8 6.2L20 11l-6.2 1.8L12 19l-1.8-6.2L4 11l6.2-1.8L12 3Z"/></svg></span>Stickers</button><button data-view="plans"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg></span>Plans</button><button data-view="settings"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l-1.8 1.8a1.7 1.7 0 0 0-2-.4 1.7 1.7 0 0 0-1 1.6h-2.6a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-2 .4l-1.8-1.8a1.7 1.7 0 0 0 .4-2 1.7 1.7 0 0 0-1.6-1v-2.6a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.4-2l1.8-1.8a1.7 1.7 0 0 0 2 .4 1.7 1.7 0 0 0 1-1.6h2.6a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 2-.4l1.8 1.8a1.7 1.7 0 0 0-.4 2 1.7 1.7 0 0 0 1.6 1v2.6a1.7 1.7 0 0 0-1.6 1Z"/></svg></span>Settings</button><button data-action="mobile-more" aria-haspopup="dialog"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span>More</button>
+ <button data-view="today"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/></svg></span>Home</button>
+ <button class="active" data-view="chat"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/><path d="M8 10h8M8 14h5"/></svg></span>Chats</button>
+ <button data-view="spaces"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></span>Spaces</button>
+ <button data-view="memories"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l1 4H3l1-4Z"/><path d="M5 8v12h14V8M9 12h6"/></svg></span>Memories</button>
+ <button data-action="mobile-more" aria-haspopup="dialog"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></span>More</button>
 </nav>
 <div id="modalRoot"></div><div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <script>
@@ -499,11 +611,11 @@ function render(){
  const oldChat=$('#chatScroll');
  const wasNearBottom=oldChat?oldChat.scrollHeight-oldChat.scrollTop-oldChat.clientHeight<90:true;
  const oldScrollTop=oldChat?.scrollTop||0;
- $$('.nav-link[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));$$('.mobile-nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view));$('.mobile-nav [data-action="mobile-more"]')?.classList.toggle('active',['memories','activities','circle','profile'].includes(state.view));
+ $('.nav-link[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view||(b.dataset.view==='spaces'&&['plans','activities','stickers'].includes(state.view))));$('.mobile-nav button[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===state.view||(b.dataset.view==='spaces'&&['plans','activities','stickers'].includes(state.view))));$('.mobile-nav [data-action="mobile-more"]')?.classList.toggle('active',['circle','profile','settings'].includes(state.view));
  $('#freeLabel').textContent=state.me.free?'Free for a bit':'I’m free';
  document.querySelector('.app')?.classList.toggle('chat-view-active',state.view==='chat');
  const view=$('#view');const rail=$('#rightRail');
- switch(state.view){case'today':view.innerHTML=renderToday();rail.innerHTML=renderRail();break;case'chat':view.innerHTML=renderChat();rail.innerHTML=renderRail();break;case'plans':view.innerHTML=renderPlans();rail.innerHTML=renderRail();break;case'memories':view.innerHTML=renderMemories();rail.innerHTML=renderRail();break;case'activities':view.innerHTML=renderActivities();rail.innerHTML=renderRail();break;case'stickers':view.innerHTML=renderStickers();rail.innerHTML='';break;case'circle':view.innerHTML=renderCircle();rail.innerHTML=renderRail();break;case'profile':view.innerHTML=renderProfile();rail.innerHTML='';break;case'settings':view.innerHTML=renderSettings();rail.innerHTML='';break;default:view.innerHTML=renderChat();rail.innerHTML=renderRail()}
+ switch(state.view){case'today':view.innerHTML=renderToday();rail.innerHTML=renderRail();break;case'spaces':view.innerHTML=renderSpaces();rail.innerHTML=renderRail();break;case'chat':view.innerHTML=renderChat();rail.innerHTML=renderRail();break;case'plans':view.innerHTML=renderPlans();rail.innerHTML=renderRail();break;case'memories':view.innerHTML=renderMemories();rail.innerHTML=renderRail();break;case'activities':view.innerHTML=renderActivities();rail.innerHTML=renderRail();break;case'stickers':view.innerHTML=renderStickers();rail.innerHTML='';break;case'circle':view.innerHTML=renderCircle();rail.innerHTML=renderRail();break;case'profile':view.innerHTML=renderProfile();rail.innerHTML='';break;case'settings':view.innerHTML=renderSettings();rail.innerHTML='';break;default:view.innerHTML=renderChat();rail.innerHTML=renderRail()}
  if(profileDraft){if(profileDraft.displayName!==undefined)$('#profileDisplayName').value=profileDraft.displayName;if(profileDraft.handle!==undefined)$('#profileHandle').value=profileDraft.handle;if(profileDraft.bio!==undefined)$('#profileBio').value=profileDraft.bio}
  if(chatDraft!==null&&state.view==='chat'){const input=$('#messageInput');if(input){input.value=chatDraft;input.style.height='auto';input.style.height=Math.min(input.scrollHeight,100)+'px';if(chatHasFocus){input.focus();input.setSelectionRange(Math.min(chatSelectionStart,input.value.length),Math.min(chatSelectionEnd,input.value.length))}}}
  if(state.view==='chat'){
@@ -604,14 +716,45 @@ function renderRail(){const free=state.members.filter(m=>m.id!==window.CircleClo
  <section class="card rail-card"><div class="rail-heading"><strong>Little promises</strong><button data-action="new-commitment">＋ Add</button></div>${state.commitments.slice(0,3).map(c=>`<div class="commit-row"><button class="commit-check ${c.done?'done':''}" data-action="toggle-commit" data-id="${c.id}" aria-label="${c.done?'Mark as not done: ':'Mark as done: '}${escapeAttr(c.text)}" aria-pressed="${c.done?'true':'false'}">${c.done?'✓':''}</button><div class="commit-text" style="${c.done?'text-decoration:line-through;opacity:.55':''}">${escapeHtml(c.text)}<small>${escapeHtml(c.by)} · ${escapeHtml(c.when)}</small></div></div>`).join('')}</section>
  <section class="card rail-card drop-card"><div class="rail-heading"><strong>Today’s Daily Drop</strong><span class="tag green">Today</span></div><div class="drop-prompt">${escapeHtml(state.drop.prompt)}</div><div class="drop-foot">${state.drop.posted?'Your answer is in. See what everyone shared.':'Answers stay hidden until you post yours.'}</div><button class="primary-btn" style="margin-top:12px;width:100%" data-action="daily-drop">${state.drop.posted?'Open the drop':'Answer the prompt'}</button></section>
  `}
-function renderToday(){let completed=state.quests.filter(q=>q.done).length;return `${header(todayLong().toUpperCase(),'A little closer today.','A small check-in, a plan taking shape, and a few people who get you.',`<button class="soft-btn" data-action="new-commitment">＋ Add reminder</button><button class="soft-btn" data-action="invite">＋ Invite friends</button>`)}<div class="dashboard-grid">
- <section class="card welcome-card"><div class="welcome-copy"><div class="eyebrow">YOUR CIRCLE, TODAY</div><h2>Hey, ${escapeHtml(state.me.displayName||'there')}. ✳</h2><p>There’s no big agenda. Just a place to catch up, make a plan, and be around each other.</p><button class="primary-btn" data-view="chat">Open the conversation →</button></div></section>
- <section class="card pulse-card"><div class="section-row"><div><div class="card-title">How’s your day feeling?</div><div class="card-caption">One emoji is enough. Passing is okay too.</div></div><span class="tag">Group pulse</span></div><div class="mood-options">${['😊','😌','😵‍💫','🥲','⚡'].map(m=>`<button class="mood-btn ${state.me.mood===m?'selected':''}" data-action="mood" data-mood="${m}" aria-label="Mood ${m}" aria-pressed="${state.me.mood===m}">${m}</button>`).join('')}</div><div class="pulse-summary">${state.members.filter(m=>m.mood).map(m=>`${escapeHtml(m.id===window.CircleCloud?.user?.uid?(state.me.displayName||'You'):(m.name||'Member'))} ${escapeHtml(m.mood)}`).join(' · ')||'No one has checked in yet. You can start the group pulse.'}</div></section>
- <section class="card drop-large dashboard-wide"><div class="drop-art">✉</div><div class="drop-copy"><div class="eyebrow">THE DAILY DROP</div><strong>${escapeHtml(state.drop.prompt)}</strong><p>${state.drop.posted?'You’re in. Everyone’s answers are ready to reveal.':'A tiny prompt, one honest answer. Responses reveal together after you post.'}</p></div><button class="primary-btn" data-action="daily-drop">${state.drop.posted?'See answers':'Drop yours'}</button></section>
- <div class="two-col-cards dashboard-wide"><section class="card card-pad"><div class="section-row"><div><div class="card-title">This week’s friend quests</div><div class="card-caption">Little things you can do together</div></div><button class="tiny-link" data-view="activities">All quests →</button></div>${state.quests.map(q=>`<div class="quest-row"><div class="quest-icon">${escapeHtml(q.icon||'✳')}</div><div class="quest-info"><strong>${escapeHtml(q.title||'Friend quest')}</strong><small>${q.done?'Completed for you':'Not completed by you yet'}</small><div class="progress"><span style="width:${q.done?100:42}%"></span></div></div><button class="join-mini" data-action="quest" data-id="${q.id}">${q.done?'✓ Done':'Join'}</button></div>`).join('')}</section>
- <section class="card card-pad"><div class="section-row"><div><div class="card-title">Your little rituals</div><div class="card-caption">Traditions worth keeping</div></div><button class="tiny-link" data-action="new-ritual">＋ Add</button></div>${state.rituals.map(r=>`<div class="ritual-chip"><div class="ritual-day">${escapeHtml(r.day)}</div><div><strong>${escapeHtml(r.title)}</strong><small>${escapeHtml(r.detail)}</small></div></div>`).join('')}</section></div>
- <section class="card card-pad dashboard-wide"><div class="section-row"><div><div class="card-title">The weekend is taking shape</div><div class="card-caption">Your next plan is almost a real plan.</div></div><button class="tiny-link" data-view="plans">Open plans board →</button></div><div style="display:flex;align-items:center;gap:13px;flex-wrap:wrap"><div style="font-size:27px">☕</div><div style="flex:1;min-width:180px"><strong style="font:700 13px Manrope">${escapeHtml(state.plans[0]?.title||'Make a plan together')}</strong><div class="card-caption">${state.plans[0]?`${fmt(state.plans[0].date)} · ${escapeHtml(state.plans[0].time||'Time to decide')} · ${state.plans[0].rsvps.length} going`:'Pick a date, time and place with your friends.'}</div></div><button class="soft-btn" data-view="plans">${state.plans.length?'View poll':'Create a plan'}</button></div></section>
- </div>`}
+function renderToday(){
+ const completed=state.quests.filter(q=>q.done).length;
+ const moodSummary=state.members.filter(m=>m.mood).map(m=>`${escapeHtml(m.id===window.CircleCloud?.user?.uid?(state.me.displayName||'You'):(m.name||'Member'))} ${escapeHtml(m.mood)}`).join(' · ');
+ const nextPlan=state.plans[0];
+ return `${header('YOUR SPACE','Good things happen here.','A shared place for conversations, plans and moments that matter.',`<button class="soft-btn" data-action="invite">＋ Invite people</button><button class="primary-btn" data-view="chat">Open chats →</button>`)}
+ <section class="home-hero">
+  <div class="home-hero-copy"><div class="eyebrow">A SPACE THAT FEELS LIKE YOURS</div><h2>Make room for your people.</h2><p>Catch up, make a plan, save a little moment. The good stuff doesn't need a big occasion.</p><div class="home-hero-actions"><button class="primary-btn" data-view="chat">Go to conversation <span aria-hidden="true">→</span></button><button class="home-text-link" data-view="spaces">Explore your spaces</button></div></div>
+  <div class="home-hero-art" aria-hidden="true"><span class="home-orbit orbit-one"></span><span class="home-orbit orbit-two"></span><span class="home-sun">✳</span><span class="home-art-note note-one">little things</span><span class="home-art-note note-two">together</span></div>
+  <div class="home-hero-foot"><span>PRIVATE BY DESIGN</span><span>${state.members.length} ${state.members.length===1?'MEMBER':'MEMBERS'} IN THIS CIRCLE</span></div>
+ </section>
+ <div class="home-overview-grid">
+  <section class="card home-feature-card"><div class="home-card-top"><div><div class="eyebrow">CHECK IN</div><h3>How's your day feeling?</h3><p>One emoji is enough. Passing is okay too.</p></div><span class="home-card-symbol">☼</span></div><div class="mood-options">${['😊','😌','😵‍💫','🥲','⚡'].map(m=>`<button class="mood-btn ${state.me.mood===m?'selected':''}" data-action="mood" data-mood="${m}" aria-label="Mood ${m}" aria-pressed="${state.me.mood===m}">${m}</button>`).join('')}</div><div class="home-card-foot">${moodSummary||'Start the group pulse whenever you feel like it.'}</div></section>
+  <section class="home-drop-card"><div class="eyebrow">A SMALL DAILY RITUAL</div><div class="home-drop-icon">✉</div><h3>Today's Drop</h3><p>${escapeHtml(state.drop.prompt)}</p><div class="home-drop-foot">${state.drop.posted?'Your answer is in. See what everyone shared.':'A tiny prompt for the whole circle.'}</div><button class="home-drop-button" data-action="daily-drop">${state.drop.posted?'Open today’s answers':'Answer the prompt'} <span aria-hidden="true">→</span></button></section>
+ </div>
+ <div class="home-lower-grid">
+  <section class="card home-list-card"><div class="home-section-head"><div><div class="eyebrow">ON THE HORIZON</div><h3>Coming up</h3></div><button class="tiny-link" data-view="plans">All plans →</button></div>
+   ${nextPlan?`<div class="home-next-plan"><span class="home-plan-icon">↗</span><div><strong>${escapeHtml(nextPlan.title)}</strong><small>${fmt(nextPlan.date)} · ${escapeHtml(nextPlan.time||'Time to decide')} · ${nextPlan.rsvps.length} going</small></div></div>`:'<p class="home-empty-copy">Nothing planned yet. Start with a loose idea and decide the details together.</p>'}
+   <button class="home-outline-action" data-action="new-plan">＋ Make a plan</button>
+  </section>
+  <section class="card home-list-card"><div class="home-section-head"><div><div class="eyebrow">LITTLE BY LITTLE</div><h3>Friend quests</h3></div><button class="tiny-link" data-view="activities">Explore →</button></div>
+   ${state.quests.length?state.quests.slice(0,3).map(q=>`<div class="home-quest-row"><span class="home-quest-icon">${escapeHtml(q.icon||'✳')}</span><div><strong>${escapeHtml(q.title||'Friend quest')}</strong><small>${q.done?'Completed for you':'Ready when you are'}</small></div><button class="join-mini" data-action="quest" data-id="${escapeAttr(q.id)}">${q.done?'✓ Done':'Join'}</button></div>`).join(''):'<p class="home-empty-copy">Small shared challenges will show up here when your circle creates them.</p>'}
+  </section>
+ </div>
+ <div class="home-footer-note"><span>✳</span><span>${completed} of ${state.quests.length} quests completed by you. No streaks, no pressure.</span><button data-view="memories">Visit your memories →</button></div>
+ `;
+} 
+function renderSpaces(){
+ const cards=[
+  {icon:'▦',eyebrow:'MAKE IT HAPPEN',title:'Plans & calendar',desc:'Turn “we should” into a date, a place and a plan.',meta:`${state.plans.length} ${state.plans.length===1?'plan':'plans'}`,view:'plans'},
+  {icon:'✳',eyebrow:'DO SOMETHING TOGETHER',title:'Group activities',desc:'Daily Drop, rituals, quests and little ways to connect.',meta:`${state.activities.length} shared updates`,view:'activities'},
+  {icon:'▧',eyebrow:'ADD A LITTLE PERSONALITY',title:'Sticker shelf',desc:'Keep your favourite custom stickers ready for chat.',meta:'Your personal collection',view:'stickers'},
+  {icon:'◎',eyebrow:'THE PEOPLE',title:'Your circle',desc:'Meet the members, manage invites and shape your space.',meta:`${state.members.length} ${state.members.length===1?'member':'members'}`,view:'circle'}
+ ];
+ return `${header('YOUR SHARED SPACE','Spaces for everything you share.','Plans, activities and the small tools that bring your circle together.',`<button class="primary-btn" data-action="new-plan">＋ New plan</button>`)}
+ <section class="spaces-intro"><div><div class="eyebrow">ONE CIRCLE, MANY MOMENTS</div><h2>Make something happen.</h2><p>Choose a space and pick up where your group left off. Everything stays connected to this circle.</p></div><div class="spaces-intro-mark" aria-hidden="true">✳</div></section>
+ <div class="spaces-grid">${cards.map((card,index)=>`<button class="space-card" data-view="${card.view}"><span class="space-card-top"><span class="space-card-icon">${card.icon}</span><span class="space-card-number">0${index+1}</span></span><span class="eyebrow">${card.eyebrow}</span><strong>${card.title}</strong><span class="space-card-desc">${card.desc}</span><span class="space-card-bottom"><small>${card.meta}</small><b aria-hidden="true">↗</b></span></button>`).join('')}</div>
+ <section class="spaces-quick-row"><div><div class="eyebrow">A GOOD PLACE TO START</div><h3>Bring everyone into the moment.</h3><p>Invite someone new or start a conversation with your circle.</p></div><div class="spaces-quick-actions"><button class="soft-btn" data-action="invite">＋ Invite people</button><button class="primary-btn" data-view="chat">Open chats →</button></div></section>`;
+}
+
 function renderPlans(){
  return `${header('MAKE IT HAPPEN','Plans board','Less “when are you free?” and more actually seeing each other.',`<button class="primary-btn" data-action="new-plan">＋ New plan</button>`)}<div class="plan-grid">${state.plans.map(p=>`<section class="card plan-card"><div class="section-row"><span class="tag orange">${escapeHtml(p.status||'Planning')}</span><span class="tag">${fmt(p.date)}</span></div><h3>${escapeHtml(p.title)}</h3><p>${escapeHtml(p.description||'A new plan with the circle.')}</p>${p.legacyVoteData?'<p class="card-caption">This older poll is read-only. Create a new plan to vote.</p>':''}<div class="plan-details"><span>◷ ${escapeHtml(p.time||'Time to decide')}</span><span>⌖ ${escapeHtml(p.place||'Place to decide')}</span></div><div style="font-size:10px;font-weight:700;margin-bottom:7px">Pick a time</div>${(p.options||[]).map((o,i)=>{const votes=p.votes[i]||[];return `<div class="poll-option"><span>${escapeHtml(o)}</span><div class="poll-bar"><span style="width:${Math.max(8,Math.min(100,votes.length/Math.max(1,p.rsvps.length)*100))}%"></span></div><small>${votes.length}</small><button data-action="vote" data-plan="${p.id}" data-option="${i}" ${p.legacyVoteData||p.status==='Finalized'?'disabled title="Voting is closed for this plan"':''}>${p.status==='Finalized'?'Closed':votes.includes('you')?'Voted':'Vote'}</button></div>`}).join('')}<div class="plan-card-foot"><small>${p.legacyVoteData?'Older poll · read-only':`${p.rsvps.length} friends are in`}</small><span style="display:flex;gap:9px;align-items:center">${p.createdBy===window.CircleCloud?.user?.uid&&p.status==='Voting open'?`<button class="tiny-link" data-action="finalize-plan" data-plan="${p.id}">Finalize</button>`:''}<button class="tiny-link" data-action="rsvp" data-plan="${p.id}" ${p.legacyVoteData?'disabled title="This older poll is read-only"':''}>${p.rsvps.includes('you')?'You’re going ✓':'I’m in →'}</button></span></div></section>`).join('')||`<div class="empty-state card" style="grid-column:1/-1"><div class="empty-icon">☀</div><strong>Nothing on the calendar. Yet.</strong><p>Start with a loose idea. Your circle can vote on the details.</p><button class="primary-btn" data-action="new-plan">Make the first plan</button></div>`}</div><section class="card card-pad" style="margin-top:15px"><div class="section-row"><div><div class="card-title">Planning tip</div><div class="card-caption">The winning option can become a pinned event.</div></div><span style="font-size:24px">✳</span></div><p style="font-size:10px;line-height:1.6;color:var(--muted);margin:0">Keep it easy: suggest a couple of dates, let everyone vote, and change the plan if life happens. No one needs to explain why they can’t make it.</p></section>`
 }
@@ -670,6 +813,8 @@ function renderProfile(){
 function openMobileMoreMenu(){
  openModal('More in Circle','The rest of your space is one tap away.',`<div class="mobile-more-list">
  <button class="mobile-more-link" data-view="memories"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16l1 4H3l1-4Z"/><path d="M5 8v12h14V8M9 12h6"/></svg></span><span><strong>Memory Vault</strong><small>Photos, voice notes and saved moments</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="plans"><span>▦</span><span><strong>Plans & calendar</strong><small>Polls, RSVPs and group plans</small></span><b>→</b></button>
+ <button class="mobile-more-link" data-view="stickers"><span>✳</span><span><strong>Sticker shelf</strong><small>Your saved chat stickers</small></span><b>→</b></button>
  <button class="mobile-more-link" data-view="activities"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span><span><strong>Activities</strong><small>Daily Drop, rituals and group activities</small></span><b>→</b></button>
  <button class="mobile-more-link" data-view="circle"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H6l-3 2v-6a7.5 7.5 0 1 1 17-3.5Z"/></svg></span><span><strong>Your circle</strong><small>Members and invite details</small></span><b>→</b></button>
  <button class="mobile-more-link" data-view="profile"><span><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-3.1 3.2-5 7-5s6.3 1.9 7 5"/></svg></span><span><strong>My profile</strong><small>Your name, photo and bio</small></span><b>→</b></button>
