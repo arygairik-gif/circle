@@ -228,14 +228,16 @@ async function openCircle(id){
    ui.state.stickers=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
    if(ui.state.view==='stickers')ui.render();
   },e=>ui.toast('Your stickers could not load: '+e.code)));
-  oldestMessageDoc=null;olderMessagesLoading=false;ui.state.hasOlderMessages=false;
+  oldestMessageDoc=null;olderMessagesLoading=false;firstMessageSnapshot=true;ui.state.hasOlderMessages=false;
    stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{
-   if(firstMessageSnapshot){firstMessageSnapshot=false}
+   if(firstMessageSnapshot){firstMessageSnapshot=false;oldestMessageDoc=s.docs.length?s.docs[s.docs.length-1]:null;ui.state.hasOlderMessages=s.docs.length===150}
    else if(ui.state.settings?.browserNotifications&&!isQuietNow(ui.state.settings)&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
     s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})});
    }
-    oldestMessageDoc=s.docs.length?s.docs[s.docs.length-1]:null;ui.state.hasOlderMessages=s.docs.length===150;
-    ui.state.messages=[...s.docs].reverse().map(d=>messageFromDoc(d));
+     const latestMessages=[...s.docs].reverse().map(d=>messageFromDoc(d));
+     const latestIds=new Set(latestMessages.map(m=>String(m.id)));
+     const olderLoaded=ui.state.messages.filter(m=>!latestIds.has(String(m.id)));
+     ui.state.messages=[...olderLoaded,...latestMessages];
    ui.render();
   },e=>ui.toast('Messages could not load: '+e.code)));
   stops.push(onSnapshot(query(collection(db,'circles',id,'plans'),orderBy('createdAt','desc'),limit(50)),s=>{
