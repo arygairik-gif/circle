@@ -47,7 +47,9 @@ service cloud.firestore {
   }
   function validMedia(data){
    return (!('mediaUrl' in data) ||
-     (data.mediaUrl is string && data.mediaUrl.size() <= 420000)) &&
+     (data.mediaUrl is string && data.mediaUrl.size() <= 420000 &&
+      (data.mediaUrl.matches('^data:(image|audio)/.*') ||
+       data.mediaUrl.matches('^https://firebasestorage[.]googleapis[.]com/.*')))) &&
     (!('mediaType' in data) || data.mediaType in ['image','audio']);
   }
 
@@ -155,7 +157,11 @@ service cloud.firestore {
       (!('bio' in request.resource.data) ||
        (request.resource.data.bio is string && request.resource.data.bio.size() <= 160)) &&
       (!('photoURL' in request.resource.data) ||
-       (request.resource.data.photoURL is string && request.resource.data.photoURL.size() <= 220000)) &&
+       (request.resource.data.photoURL is string && request.resource.data.photoURL.size() <= 220000 &&
+        (request.resource.data.photoURL.size() == 0 ||
+         request.resource.data.photoURL.matches('^data:image/.*') ||
+         request.resource.data.photoURL.matches('^https://lh[0-9][.]googleusercontent[.]com/.*') ||
+         request.resource.data.photoURL.matches('^https://firebasestorage[.]googleapis[.]com/.*')))) &&
       (!('status' in request.resource.data) ||
        request.resource.data.status in ['around','free']) &&
       (!('freeUntil' in request.resource.data) ||
