@@ -491,6 +491,56 @@ html,body{background:var(--paper);color:var(--ink)}
  .space-card{min-height:190px}.spaces-quick-row{align-items:flex-start;flex-direction:column}.spaces-quick-actions{width:100%}.spaces-quick-actions button{flex:1}
  .home-footer-note{align-items:flex-start;flex-wrap:wrap}.home-footer-note button{margin-left:24px}
 }
+
+/* Circle Chats: bold social workspace */
+.app.chat-view-active .content-grid{grid-template-columns:minmax(0,1fr);max-width:1480px;padding-top:20px}
+.app.chat-view-active #rightRail{display:none}
+.chat-redesign{--chat-ink:#171d19;--chat-lime:#d5f36b;--chat-muted:#858c81;min-width:0}
+.chat-redesign-top{height:58px;background:var(--chat-ink);border-radius:17px 17px 0 0;padding:0 20px;display:flex;align-items:center;justify-content:space-between;color:#fff}
+.chat-brand-lockup{display:flex;align-items:center;gap:10px}.chat-brand-mark{width:29px;height:29px;display:grid;place-items:center;background:var(--chat-lime);color:#20271d;border-radius:9px;font-size:19px;font-weight:900;transform:rotate(-8deg)}
+.chat-brand-lockup>span:last-child{display:grid;gap:1px}.chat-brand-lockup b{font:800 12px Manrope;letter-spacing:1.6px}.chat-brand-lockup small{font-size:8px;letter-spacing:1.7px;color:#aab2a7}
+.chat-top-right{display:flex;align-items:center;gap:12px}.chat-private-pill{font-size:8px;letter-spacing:1.2px;color:#c4cec0;font-weight:700}.chat-private-pill i{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--chat-lime);margin-right:6px;vertical-align:1px}.chat-invite-btn{border:0;border-radius:9px;padding:8px 12px;background:var(--chat-lime);color:#20271d;font-size:10px;font-weight:800}
+.chat-workspace{display:grid;grid-template-columns:minmax(0,1fr) 245px;gap:14px;padding:14px;background:#e9e9e1;border:1px solid #dfe0d7;border-top:0;border-radius:0 0 17px 17px}
+.chat-main-panel{min-width:0;display:flex;flex-direction:column;gap:12px}
+.chat-room-header{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#fffefa;border:1px solid #dedfd5;border-radius:14px}
+.chat-room-symbol{width:44px;height:44px;border-radius:13px;background:var(--chat-lime);color:#263021;display:grid;place-items:center;font-size:23px;font-weight:800;flex-shrink:0}
+.chat-room-title{min-width:0;flex:1}.chat-overline{font-size:8px;letter-spacing:1.5px;font-weight:800;color:#777f72}.chat-room-title h1{font:800 20px/1.15 Manrope;letter-spacing:-.8px;margin:4px 0 3px;color:#1d241e}.chat-room-title p{font-size:10px;color:#7d8479;margin:0}
+.chat-room-members{display:flex;align-items:center;padding-left:8px}.chat-room-members .avatar{width:29px;height:29px;border-radius:50%;margin-left:-8px;border:2px solid #fffefa}.chat-extra-count{font-size:9px;font-weight:800;background:#eef0e8;border-radius:50%;width:27px;height:27px;display:grid;place-items:center;margin-left:-5px;border:2px solid white}
+.chat-room-actions{display:flex;gap:6px}.chat-action-btn{width:32px;height:32px;border:1px solid #e7e8df;border-radius:9px;background:#fff;color:#30392f;font-size:14px;font-weight:800}.chat-action-btn:hover{background:var(--chat-lime);border-color:var(--chat-lime)}
+.chat-now-strip{min-height:53px;display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:12px;background:#202820;color:#fff}.chat-now-icon{width:27px;height:27px;display:grid;place-items:center;border-radius:8px;background:var(--chat-lime);color:#25301f;font-size:15px}.chat-now-strip>span:nth-child(2){display:grid;gap:3px;min-width:0;flex:1}.chat-now-strip b{font-size:8px;letter-spacing:1.3px;color:var(--chat-lime)}.chat-now-strip small{font-size:10px;color:#d3d9d0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chat-now-arrow{color:var(--chat-lime);font-size:16px}
+.chat-area-bold{min-height:540px;border:1px solid #dedfd5;border-radius:14px;background:#fffefa;box-shadow:0 5px 18px rgba(25,32,25,.035)}
+.chat-area-bold .chat-scroll{max-height:calc(100vh - 400px);min-height:330px;padding:22px 22px 16px}
+.chat-area-bold .date-divider{font-size:8px;letter-spacing:1.5px;color:#90968b}
+.chat-area-bold .date-divider:before,.chat-area-bold .date-divider:after{background:#e8e9e1}
+.chat-area-bold .message{gap:10px;margin-bottom:18px}
+.chat-area-bold .message .avatar{width:34px;height:34px;border-radius:12px}
+.chat-area-bold .message-name{font-size:10px;font-weight:800;color:#283127}
+.chat-area-bold .message-time{font-size:8px;color:#969b91}
+.chat-area-bold .message-bubble{background:#f0f1eb;border:1px solid #e8e9e1;border-radius:4px 14px 14px 14px;padding:11px 13px;font-size:12px;color:#30382f}
+.chat-area-bold .message.mine .message-bubble{background:#d9f477;border-color:#cce76b;color:#20291b;border-radius:14px 4px 14px 14px}
+.chat-area-bold .message-actions{opacity:1}
+.chat-area-bold .message-action{color:#858c80}
+.chat-area-bold .reaction{background:#fff;border-color:#e3e5dc}
+.chat-composer-bold{background:#fffefa;border-top:1px solid #e7e8df;padding:13px 16px}
+.chat-composer-bold .composer-input{background:#f0f1eb;border:1px solid #e6e8de;border-radius:12px;font-size:11px;min-height:40px}
+.chat-composer-bold .composer-tools button{background:#f0f1eb;border-radius:9px;margin-right:3px;color:#495246}
+.chat-composer-bold .composer-tools button:hover{background:#d9f477;color:#20291b}
+.chat-composer-bold .send-btn{width:40px;height:40px;border-radius:12px;background:#202820;color:#d9f477}
+.chat-composer-bold .send-btn:hover{background:#354332}
+.chat-composer-bold .composer-hint{font-size:8px;letter-spacing:1px;color:#969c91;margin-left:2px}
+.chat-composer-bold .composer-hint span{color:#b4b9ae;margin:0 4px}
+.chat-side-panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+.chat-side-card{background:#fffefa;border:1px solid #dedfd5;border-radius:14px;padding:15px}
+.chat-side-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;font-size:8px;font-weight:900;letter-spacing:1.4px;color:#747d70}
+.chat-side-title>b{font-size:10px;color:#263021;background:#d9f477;border-radius:7px;padding:4px 7px}
+.chat-people-list{display:grid;gap:9px}
+.chat-person-row{display:flex;align-items:center;gap:9px}.chat-person-row .avatar{width:30px;height:30px;border-radius:10px}.chat-person-row>span{display:grid;gap:3px;min-width:0}.chat-person-row b{font-size:10px;color:#30382f}.chat-person-row small{font-size:8px;color:#92998e}.chat-person-row small:first-letter{color:#84a55d}
+.chat-side-empty{font-size:10px;line-height:1.5;color:#8b9287;margin:0 0 10px}
+.chat-side-link{border:0;background:transparent;padding:12px 0 0;margin-top:10px;border-top:1px solid #eceee5;width:100%;text-align:left;color:#5b7144;font-size:8px;font-weight:900;letter-spacing:1px}
+.chat-next-card{background:#202820;color:#fff;border-color:#202820}.chat-next-card .chat-side-title{color:#c0c9ba}.chat-side-spark{color:#d9f477;font-size:17px}.chat-plan-date{display:inline-block;padding:5px 7px;border-radius:6px;background:#d9f477;color:#263021;font-size:8px;font-weight:900;margin:2px 0 9px}.chat-next-card h3{font:800 15px Manrope;margin:0 0 5px;color:#fff}.chat-next-card p{font-size:9px;line-height:1.5;color:#bfc8ba;margin:0}.chat-plan-foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:10px;border-top:1px solid #3a4438;font-size:9px;color:#c2cbbb}.chat-plan-foot button{border:0;background:transparent;color:#d9f477;font-size:8px;font-weight:900;letter-spacing:.7px}
+.chat-shortcuts-card{padding-bottom:8px}.chat-shortcuts-card>button{display:flex;align-items:center;gap:9px;width:100%;padding:9px 0;border:0;border-top:1px solid #eff0e9;background:transparent;text-align:left;font-size:10px;font-weight:700;color:#394236}.chat-shortcuts-card>button span{width:25px;height:25px;border-radius:8px;background:#eff2e8;display:grid;place-items:center}.chat-shortcuts-card>button b{margin-left:auto;color:#8b9585}
+@media(max-width:900px){.chat-workspace{grid-template-columns:minmax(0,1fr) 220px;gap:10px;padding:10px}.chat-room-members{display:none}.chat-area-bold .chat-scroll{max-height:calc(100vh - 380px)}}
+@media(max-width:700px){.app.chat-view-active .content-grid{padding:12px 9px 14px}.chat-redesign-top{height:50px;padding:0 12px}.chat-private-pill{display:none}.chat-workspace{display:block;padding:8px}.chat-side-panel{display:none}.chat-room-header{padding:11px;gap:9px}.chat-room-symbol{width:38px;height:38px}.chat-room-title h1{font-size:16px}.chat-room-title p{font-size:9px}.chat-room-actions{gap:4px}.chat-action-btn{width:29px;height:29px}.chat-now-strip{min-height:47px;padding:8px}.chat-now-strip small{font-size:9px}.chat-area-bold{height:calc(100dvh - 300px);min-height:320px;max-height:620px;overflow:hidden}.chat-area-bold .chat-scroll{height:100%;min-height:0;max-height:none;padding:15px 11px;overflow-y:auto;overscroll-behavior:contain}.chat-area-bold .message-body{max-width:84%}.chat-area-bold .message-bubble{font-size:11px}.chat-composer-bold{padding:9px}.chat-composer-bold .composer-tools{gap:1px}.chat-composer-bold .composer-tools button{width:27px;height:29px}.chat-composer-bold .composer-input{padding:10px;font-size:11px}.chat-composer-bold .composer-hint{display:none}}
 </style>
 </head>
 <body>
@@ -614,7 +664,7 @@ function render(){
  $('#freeLabel').textContent=state.me.free?'Free for a bit':'I’m free';
  document.querySelector('.app')?.classList.toggle('chat-view-active',state.view==='chat');
  const view=$('#view');const rail=$('#rightRail');
- switch(state.view){case'today':view.innerHTML=renderToday();rail.innerHTML=renderRail();break;case'spaces':view.innerHTML=renderSpaces();rail.innerHTML=renderRail();break;case'chat':view.innerHTML=renderChat();rail.innerHTML=renderRail();break;case'plans':view.innerHTML=renderPlans();rail.innerHTML=renderRail();break;case'memories':view.innerHTML=renderMemories();rail.innerHTML=renderRail();break;case'activities':view.innerHTML=renderActivities();rail.innerHTML=renderRail();break;case'stickers':view.innerHTML=renderStickers();rail.innerHTML='';break;case'circle':view.innerHTML=renderCircle();rail.innerHTML=renderRail();break;case'profile':view.innerHTML=renderProfile();rail.innerHTML='';break;case'settings':view.innerHTML=renderSettings();rail.innerHTML='';break;default:view.innerHTML=renderChat();rail.innerHTML=renderRail()}
+ switch(state.view){case'today':view.innerHTML=renderToday();rail.innerHTML=renderRail();break;case'spaces':view.innerHTML=renderSpaces();rail.innerHTML=renderRail();break;case'chat':view.innerHTML=renderChat();rail.innerHTML='';break;case'plans':view.innerHTML=renderPlans();rail.innerHTML=renderRail();break;case'memories':view.innerHTML=renderMemories();rail.innerHTML=renderRail();break;case'activities':view.innerHTML=renderActivities();rail.innerHTML=renderRail();break;case'stickers':view.innerHTML=renderStickers();rail.innerHTML='';break;case'circle':view.innerHTML=renderCircle();rail.innerHTML=renderRail();break;case'profile':view.innerHTML=renderProfile();rail.innerHTML='';break;case'settings':view.innerHTML=renderSettings();rail.innerHTML='';break;default:view.innerHTML=renderChat();rail.innerHTML=renderRail()}
  if(profileDraft){if(profileDraft.displayName!==undefined)$('#profileDisplayName').value=profileDraft.displayName;if(profileDraft.handle!==undefined)$('#profileHandle').value=profileDraft.handle;if(profileDraft.bio!==undefined)$('#profileBio').value=profileDraft.bio}
  if(chatDraft!==null&&state.view==='chat'){const input=$('#messageInput');if(input){input.value=chatDraft;input.style.height='auto';input.style.height=Math.min(input.scrollHeight,100)+'px';if(chatHasFocus){input.focus();input.setSelectionRange(Math.min(chatSelectionStart,input.value.length),Math.min(chatSelectionEnd,input.value.length))}}}
  if(state.view==='chat'){
@@ -632,15 +682,42 @@ function renderMessageTimeline(){
  }).join('');
 }
 function renderChat(){
- const latestMessages=state.messages.slice(-3).map(m=>`<span><strong>${escapeHtml(person(m.from).name)}:</strong> ${escapeHtml((m.text||'').slice(0,90))}</span>`).join(' · ');
- const nextPlan=state.plans[0]?'<strong>Next plan:</strong> '+escapeHtml(state.plans[0].title)+' · '+escapeHtml(state.plans[0].date||'date undecided'):'No plans are on the board yet.';
- const openTasks=state.commitments.filter(x=>!x.done).slice(0,2).map(x=>escapeHtml(x.text)).join(' · ');
- const catchupText=[latestMessages||'No messages yet. Start the conversation.',nextPlan,openTasks?'<strong>Little promises:</strong> '+openTasks:''].filter(Boolean).join('<br>');
+ const others=state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid);
+ const free=others.filter(m=>m.status==='Free now'&&(!m.freeUntil||((m.freeUntil.toDate?.()||new Date(m.freeUntil)).getTime()>Date.now())));
+ const latest=state.messages[state.messages.length-1];
+ const nextPlan=state.plans[0];
+ const memberCount=state.membersLoaded?state.members.length:0;
+ const memberLine=!state.membersLoaded?'Connecting to your people…':state.membersError?'Members temporarily unavailable':others.length?(`${others.length} friends in this circle`):'Just you here · invite your people';
  return `
- <div class="chat-head"><div class="chat-group-icon">${escapeHtml(state.circleSymbol||'✿')}</div><div class="chat-heading"><h1>${circleName()}</h1><p>${!state.membersLoaded?'Connecting to your people…':state.membersError?'Members temporarily unavailable':state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid).length?`${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid).length} friends · ${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid&&m.status==='Free now'&&(!m.freeUntil||((m.freeUntil.toDate?.()||new Date(m.freeUntil)).getTime()>Date.now()))).length} free now`:'Just you here · invite friends'} · private circle</p></div><div class="head-actions"><div class="stack">${state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid).slice(0,4).map(m=>avatar(m.id,true)).join('')}</div><button class="soft-btn" data-action="hangout">◉ Start a hangout</button><button class="icon-btn" data-action="circle-info" aria-label="Circle options" title="Circle options"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg></button></div></div>
- <div class="catchup"><div class="catchup-icon">✦</div><div class="catchup-content"><div class="catchup-top"><strong>Your circle catch-up</strong><span>shared updates</span></div><p>${catchupText}</p><div class="catchup-actions"><button data-view="plans">See plans ↗</button><button data-view="plans">Open plans board →</button></div></div></div>
- <section class="chat-area"><div class="chat-scroll" id="chatScroll">${state.hasOlderMessages?'<div class="older-messages-wrap"><button class="soft-btn" data-action="load-older-messages">Load older messages</button></div>':''}${renderMessageTimeline()}</div><div class="chat-composer">${replyTo?`<div class="replying-to"><span>Replying to ${escapeHtml(person(state.messages.find(m=>String(m.id)===String(replyTo))?.from).name)}</span><button data-action="cancel-reply">✕</button></div>`:''}<div class="composer-row"><div class="composer-tools"><button type="button" title="Choose a photo" aria-label="Choose a photo" data-action="attach">▧</button><button type="button" title="Send a voice note" aria-label="Send a voice note" data-action="voice-note">♫</button><button type="button" title="Choose a sticker" aria-label="Choose a sticker" data-action="sticker-picker">✧</button><button type="button" title="Add emoji" aria-label="Add emoji" data-action="emoji">☺</button></div><textarea class="composer-input" id="messageInput" rows="1" placeholder="Message your circle…" maxlength="1500" aria-label="Message your circle"></textarea><button class="send-btn" data-action="send-message" title="Send" aria-label="Send message"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-5 14-3-6-6-1Z"/><path d="m11 13 8-8"/></svg></button></div><div class="composer-hint">Enter to send · Shift + Enter for a new line · good vibes only</div><input type="file" id="attachmentInput" accept="image/*,audio/*" hidden></div></section>
- `}
+ <section class="chat-redesign">
+  <div class="chat-redesign-top">
+   <div class="chat-brand-lockup"><span class="chat-brand-mark">✳</span><span><b>CIRCLE</b><small>THE GROUP CHAT</small></span></div>
+   <div class="chat-top-right"><span class="chat-private-pill"><i></i> PRIVATE SPACE</span><button class="chat-invite-btn" data-action="invite">＋ Invite</button></div>
+  </div>
+  <div class="chat-workspace">
+   <section class="chat-main-panel">
+    <header class="chat-room-header">
+     <div class="chat-room-symbol">${escapeHtml(state.circleSymbol||'✳')}</div>
+     <div class="chat-room-title"><span class="chat-overline">YOUR PEOPLE / YOUR SPACE</span><h1>${circleName()}</h1><p>${escapeHtml(memberLine)} · ${free.length} free now</p></div>
+     <div class="chat-room-members">${others.slice(0,4).map(m=>avatar(m.id,true)).join('')}${others.length>4?'<span class="chat-extra-count">+'+(others.length-4)+'</span>':''}</div>
+     <div class="chat-room-actions"><button class="chat-action-btn" data-action="hangout" title="Start a hangout" aria-label="Start a hangout">◉</button><button class="chat-action-btn" data-action="circle-info" title="Circle options" aria-label="Circle options">•••</button></div>
+    </header>
+    <div class="chat-now-strip"><span class="chat-now-icon">✦</span><span><b>${latest?'THE CONVERSATION IS ALIVE':'START THE CONVERSATION'}</b><small>${latest?escapeHtml((person(latest.from).name||'Someone')+' sent the latest message · '+(latest.text||'Shared something with the circle').slice(0,75)):'Say something, share a photo, or drop a sticker.'}</small></span><span class="chat-now-arrow">↗</span></div>
+    <section class="chat-area chat-area-bold"><div class="chat-scroll" id="chatScroll">${state.hasOlderMessages?'<div class="older-messages-wrap"><button class="soft-btn" data-action="load-older-messages">Load older messages</button></div>':''}${renderMessageTimeline()}</div>
+     <div class="chat-composer chat-composer-bold">${replyTo?`<div class="replying-to"><span>Replying to ${escapeHtml(person(state.messages.find(m=>String(m.id)===String(replyTo))?.from).name)}</span><button data-action="cancel-reply">✕</button></div>`:''}
+      <div class="composer-row"><div class="composer-tools"><button type="button" title="Choose a photo" aria-label="Choose a photo" data-action="attach">▧</button><button type="button" title="Send a voice note" aria-label="Send a voice note" data-action="voice-note">♫</button><button type="button" title="Choose a sticker" aria-label="Choose a sticker" data-action="sticker-picker">✧</button><button type="button" title="Add emoji" aria-label="Add emoji" data-action="emoji">☺</button></div><textarea class="composer-input" id="messageInput" rows="1" placeholder="Say something to your people…" maxlength="1500" aria-label="Message your circle"></textarea><button class="send-btn" data-action="send-message" title="Send" aria-label="Send message"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-5 14-3-6-6-1Z"/><path d="m11 13 8-8"/></svg></button></div>
+      <div class="composer-hint">ENTER TO SEND <span>·</span> SHIFT + ENTER FOR A NEW LINE</div><input type="file" id="attachmentInput" accept="image/*,audio/*" hidden>
+     </div>
+    </section>
+   </section>
+   <aside class="chat-side-panel">
+    <section class="chat-side-card chat-people-card"><div class="chat-side-title"><span>THE PEOPLE</span><b>${memberCount||'—'}</b></div><div class="chat-people-list">${others.length?others.slice(0,7).map(m=>`<div class="chat-person-row">${avatar(m.id)}<span><b>${escapeHtml(m.name||'Member')}</b><small>${m.status==='Free now'?'● Free right now':'In your circle'}</small></span></div>`).join(''):'<p class="chat-side-empty">Your people will show up here when they join.</p>'}</div><button class="chat-side-link" data-view="circle">SEE YOUR CIRCLE ↗</button></section>
+    <section class="chat-side-card chat-next-card"><div class="chat-side-title"><span>NEXT UP</span><span class="chat-side-spark">✳</span></div>${nextPlan?`<div class="chat-plan-date">${escapeHtml(fmt(nextPlan.date))}</div><h3>${escapeHtml(nextPlan.title)}</h3><p>${escapeHtml(nextPlan.time||'Time to decide')} · ${escapeHtml(nextPlan.place||'Place to decide')}</p><div class="chat-plan-foot"><span>${nextPlan.rsvps?.length||0} going</span><button data-view="plans">OPEN PLAN ↗</button></div>`:'<p class="chat-side-empty">Nothing planned yet. Make a plan and get everyone together.</p><button class="chat-side-link" data-action="new-plan">＋ MAKE A PLAN</button>'}</section>
+    <section class="chat-side-card chat-shortcuts-card"><div class="chat-side-title"><span>AROUND YOUR CIRCLE</span></div><button data-view="spaces"><span>▦</span> Spaces <b>↗</b></button><button data-view="memories"><span>▧</span> Memory vault <b>↗</b></button><button data-view="activities"><span>✳</span> Activities <b>↗</b></button></section>
+   </aside>
+  </div>
+ </section>`;
+}
 
 let voiceRecorder=null,voiceStream=null,voiceChunks=[],voiceBlob=null,voicePreviewUrl='',voiceLimitTimer=null,deviceStream=null,pendingPhotoFile=null,pendingPhotoUrl='';
 function openVoiceNote(){
