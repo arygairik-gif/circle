@@ -762,7 +762,31 @@ function openSupport(){openModal(state.me.support?'Support Mode is on':'Need a s
 function openRitual(){openModal('Start a little tradition','Small rituals make a circle feel like yours.',`<form id="ritualForm"><div class="field"><label>Ritual name</label><input name="title" placeholder="e.g. Wednesday photo dump" required></div><div class="field"><label>Which day?</label><select name="day"><option>MON</option><option>TUE</option><option>WED</option><option>THU</option><option>FRI</option><option>SAT</option><option>SUN</option></select></div><div class="field"><label>What’s the vibe?</label><input name="detail" placeholder="One tiny thing to look forward to"></div><div class="modal-actions"><button type="button" class="soft-btn" data-action="close-modal">Cancel</button><button class="primary-btn">Create ritual</button></div></form>`)}
 function openSearch(q){const results=state.messages.filter(m=>(m.text||'').toLowerCase().includes(q.toLowerCase()));const memories=state.memories.filter(m=>`${m.title||''} ${m.desc||''}`.toLowerCase().includes(q.toLowerCase()));openModal('Search your circle',`Results for “${q}”`, `<div class="search-results">${results.map(m=>`<button class="search-result" data-action="search-jump" data-id="${m.id}"><strong>${escapeHtml(person(m.from).name)} · ${escapeHtml(m.time||'')}</strong><span>${escapeHtml(m.text)}</span></button>`).join('')}${memories.map(m=>`<button class="search-result" data-action="search-memory" data-id="${m.id}"><strong>Memory · ${escapeHtml(m.title)}</strong><span>${escapeHtml(m.desc)}</span></button>`).join('')}${!results.length&&!memories.length?'<div class="empty-state"><strong>No matches yet</strong><p>Try another word or a friend’s name.</p></div>':''}</div>`)}
 async function copyInviteLink(){const code=window.CircleCloud?await window.CircleCloud.inviteCode():'CIR-CLE26';const text=code;try{if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(text);toast('Invite code copied.');return}const helper=document.createElement('textarea');helper.value=text;helper.setAttribute('readonly','');helper.style.position='fixed';helper.style.opacity='0';document.body.appendChild(helper);helper.select();const copied=document.execCommand('copy');helper.remove();toast(copied?'Invite details copied.':text)}catch(e){toast(text)}}
-function exportData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='circle-your-data.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Your Circle data export is ready.')}
+function exportData(){
+ const uid=window.CircleCloud?.user?.uid;
+ const owned=(items,predicate)=>Array.isArray(items)?items.filter(predicate).map(item=>{
+  const copy={...item};
+  for(const key of ['attachmentDataUrl','dataUrl','photoDataUrl','mediaUrl','image','audio','sticker','photoURL','votes','rsvps','doneBy'])delete copy[key];
+  return copy;
+ }):[];
+ const data={
+  exportedAt:new Date().toISOString(),
+  note:'Personal records only. Media files, shared member lists, other members’ posts, votes, RSVPs and private reply contents are excluded.',
+  profile:{displayName:state.me.displayName||state.me.name||'',handle:state.me.handle||'',bio:state.me.bio||''},
+  settings:{...state.settings},
+  messages:owned(state.messages,m=>uid?(m.uid===uid||m.from==='you'):m.from==='you'),
+  memories:owned(state.memories,m=>uid?m.uid===uid:m.by==='You'),
+  commitments:owned(state.commitments,m=>uid?m.uid===uid:m.by==='You'),
+  plans:owned(state.plans,p=>uid?p.createdBy===uid:false),
+  rituals:owned(state.rituals,r=>uid?r.uid===uid:r.by==='You'),
+  quests:owned(state.quests,q=>uid?q.uid===uid:q.by==='You'),
+  activities:owned(state.activities,a=>uid?a.uid===uid:a.by==='You'),
+  tracks:owned(state.tracks,t=>uid?t.uid===uid:t.by==='You')
+ };
+ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+ a.href=url;a.download='circle-my-data.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ toast('Your personal export is ready. Media and private replies are excluded.');
+}
 async function sendMessage(text,image){
  const value=String(text||"").trim();if(!value&&!image)return false;
  const quoted=replyTo?state.messages.find(m=>String(m.id)===String(replyTo)):null;
