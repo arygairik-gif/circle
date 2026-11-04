@@ -178,6 +178,38 @@ try {
       createdAt: serverTimestamp()
     })
   );
+  await allowed(
+    'members can send emoji-only messages',
+    addDoc(collection(memberDb, 'circles', circleId, 'messages'), {
+      uid: 'member',
+      displayName: 'Member',
+      text: '😂',
+      createdAt: serverTimestamp()
+    })
+  );
+  await allowed(
+    'members can send replies with a replyTo message ID',
+    addDoc(collection(memberDb, 'circles', circleId, 'messages'), {
+      uid: 'member',
+      displayName: 'Member',
+      text: 'A reply',
+      reply: 'Owner: A seeded message',
+      replyTo: 'message-one',
+      createdAt: serverTimestamp()
+    })
+  );
+  await allowed(
+    'members can send sticker attachments',
+    addDoc(collection(memberDb, 'circles', circleId, 'messages'), {
+      uid: 'member',
+      displayName: 'Member',
+      text: 'Sticker',
+      attachmentDataUrl: 'data:image/webp;base64,AAAA',
+      attachmentType: 'sticker',
+      attachmentName: 'test sticker',
+      createdAt: serverTimestamp()
+    })
+  );
   await denied(
     'members cannot forge message timestamps',
     addDoc(collection(memberDb, 'circles', circleId, 'messages'), {
