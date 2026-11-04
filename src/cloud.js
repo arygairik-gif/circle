@@ -1,5 +1,5 @@
 import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth';
-import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch, startAfter } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
 const dayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
 const safeText=(v,n=1000)=>String(v??'').trim().slice(0,n);
@@ -31,7 +31,7 @@ function isQuietNow(settings={}){
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const gate=$('#cloudGate'), shell=$('.app');
-let user=null,circleId=null,stops=[],firstMessageSnapshot=true,profileData={},signupPhotoDataUrl='',dailyDropTimer=null,dropAnswerStop=null;
+let user=null,circleId=null,stops=[],firstMessageSnapshot=true,profileData={},signupPhotoDataUrl='',dailyDropTimer=null,dropAnswerStop=null,oldestMessageDoc=null,olderMessagesLoading=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const error=m=>{const el=$('#cloudError');if(el)el.textContent=m};
 const explain=e=>({'auth/email-already-in-use':'That email already has an account. Sign in instead.','auth/invalid-credential':'Email or password is incorrect.','auth/weak-password':'Use at least 6 characters.','auth/unauthorized-domain':'Add this website in Firebase Authentication → Authorized domains.'}[e.code]||`Firebase error: ${e.code||e.message}`);
@@ -228,12 +228,14 @@ async function openCircle(id){
    ui.state.stickers=s.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
    if(ui.state.view==='stickers')ui.render();
   },e=>ui.toast('Your stickers could not load: '+e.code)));
-  stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{
+  oldestMessageDoc=null;olderMessagesLoading=false;ui.state.hasOlderMessages=false;
+   stops.push(onSnapshot(query(collection(db,'circles',id,'messages'),orderBy('createdAt','desc'),limit(150)),s=>{
    if(firstMessageSnapshot){firstMessageSnapshot=false}
    else if(ui.state.settings?.browserNotifications&&!isQuietNow(ui.state.settings)&&'Notification' in window&&Notification.permission==='granted'&&document.visibilityState==='hidden'){
     s.docChanges().filter(change=>change.type==='added').forEach(change=>{const msg=change.doc.data();if(msg.uid!==user.uid)new Notification(`${msg.displayName||'Someone'} in ${ui.state.circleName||'Circle'}`,{body:(msg.text||'Shared an attachment').slice(0,140),tag:change.doc.id})});
    }
-   ui.state.messages=[...s.docs].reverse().map(d=>{const x=d.data();return{id:d.id,from:x.uid===user.uid?'you':x.uid,senderName:x.displayName||'Member',day:x.createdAt?.toDate?.().toISOString().slice(0,10)||'',time:x.createdAt?.toDate?.().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',reply:x.reply||'',replyTo:x.replyTo||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',sticker:x.attachmentType==='sticker'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:x.reactions||{},reactionsByUser:x.reactionsByUser||{}}});
+    oldestMessageDoc=s.docs.length?s.docs[s.docs.length-1]:null;ui.state.hasOlderMessages=s.docs.length===150;
+    ui.state.messages=[...s.docs].reverse().map(d=>messageFromDoc(d));
    ui.render();
   },e=>ui.toast('Messages could not load: '+e.code)));
   stops.push(onSnapshot(query(collection(db,'circles',id,'plans'),orderBy('createdAt','desc'),limit(50)),s=>{
@@ -289,6 +291,23 @@ async function enableBrowserNotifications(){
  window.CircleApp.save?.();
  window.CircleApp.render();
  return true;
+}
+function messageFromDoc(d){const x=d.data(),date=x.createdAt?.toDate?.()||null;return{id:d.id,from:x.uid===user.uid?'you':x.uid,senderName:x.displayName||'Member',day:date?date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0'):'',time:date?.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})||'now',text:x.text||'',reply:x.reply||'',replyTo:x.replyTo||'',image:x.attachmentType==='image'?x.attachmentDataUrl:'',sticker:x.attachmentType==='sticker'?x.attachmentDataUrl:'',audio:x.attachmentType==='audio'?x.attachmentDataUrl:'',reactions:x.reactions||{},reactionsByUser:x.reactionsByUser||{}})}
+async function loadOlderMessages(){
+ if(olderMessagesLoading||!oldestMessageDoc||!ui.state.hasOlderMessages)return false;
+ olderMessagesLoading=true;
+ try{
+  const snap=await getDocs(query(collection(db,'circles',circleId,'messages'),orderBy('createdAt','desc'),startAfter(oldestMessageDoc),limit(150)));
+  if(!snap.empty){
+   oldestMessageDoc=snap.docs[snap.docs.length-1];
+   const older=snap.docs.slice().reverse().map(messageFromDoc);
+   const known=new Set(ui.state.messages.map(m=>String(m.id)));
+   ui.state.messages=[...older.filter(m=>!known.has(String(m.id))),...ui.state.messages];
+  }else oldestMessageDoc=null;
+  ui.state.hasOlderMessages=snap.docs.length===150;
+  ui.render();
+  return snap.docs.length>0;
+ }finally{olderMessagesLoading=false}
 }
 async function sendMessage(text,reply='',replyToId=''){
  const value=safeText(text,1500);if(!value)return false;
@@ -511,7 +530,7 @@ async function rotateInvite(){
  return newCode;
 }
 async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}await signOut(auth)}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,transferOwnership,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,finalizePlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addTrack,removeTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,transferOwnership,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,loadOlderMessages,sendAttachment,createPlan,react,votePlan,rsvpPlan,finalizePlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addTrack,removeTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
