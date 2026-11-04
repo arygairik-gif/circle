@@ -38,6 +38,15 @@ const explain=e=>({'auth/email-already-in-use':'That email already has an accoun
 function stop(){if(dailyDropTimer){clearInterval(dailyDropTimer);dailyDropTimer=null}if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}stops.forEach(f=>f());stops=[]}
 function gateView(html){gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
 function showApp(){gate.hidden=true;shell.style.display=''}
+function withStartupTimeout(promise,label,ms=18000){
+ let timer;
+ return Promise.race([Promise.resolve(promise),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after 18 seconds. Check your connection and retry.')),ms)})]).finally(()=>clearTimeout(timer));
+}
+function startupRecovery(message){
+ gateView(`<section class="cloud-panel cloud-wide"><div class="brand-mark">c</div><p class="cloud-kicker">CIRCLE · CONNECTION CHECK</p><h1>Circle is taking longer than expected.</h1><p class="cloud-copy" id="startupError">${esc(message)}</p><p class="cloud-field-hint">Your account and circle data are still on Firebase. Retry the connection, or sign out and try again later.</p><div class="cloud-auth-actions"><button class="cloud-primary" id="startupRetry">Retry connection</button><button class="cloud-secondary" id="startupSignOut">Sign out</button></div></section>`);
+ $('#startupRetry').onclick=()=>window.location.reload();
+ $('#startupSignOut').onclick=()=>signOut(auth).catch(e=>{const note=$('#startupError');if(note)note.textContent=explain(e)});
+}
 async function prepareProfilePhoto(file){
  if(!file||!file.type.startsWith('image/'))throw new Error('Choose an image file.');
  if(file.size>8*1024*1024)throw new Error('Choose a photo smaller than 8 MB.');
@@ -202,14 +211,14 @@ async function openCircle(id){
  stop();circleId=id;firstMessageSnapshot=true;
  const ui=window.CircleApp;let stage='checking circle membership';
  try{
-  const memberDocument=doc(db,'circles',id,'members',user.uid),m=await getDoc(memberDocument);
+  const memberDocument=doc(db,'circles',id,'members',user.uid),m=await withStartupTimeout(getDoc(memberDocument),'Checking circle membership');
   if(!m.exists())throw new Error('Your account is not listed as a member of this circle. Ask a current member for a new invite code.');
-  if('email' in m.data())await updateDoc(memberDocument,{email:deleteField()}).catch(e=>console.warn('Could not remove legacy member email field:',e?.code||e?.message));
+  if('email' in m.data())await withStartupTimeout(updateDoc(memberDocument,{email:deleteField()}).catch(e=>console.warn('Could not remove legacy member email field:',e?.code||e?.message)),'Updating member details');
   stage='loading circle details';
-  const c=await getDoc(doc(db,'circles',id));
+  const c=await withStartupTimeout(getDoc(doc(db,'circles',id)),'Loading circle details');
   if(!c.exists())throw new Error('This circle no longer exists.');
   const isCircleOwner=c.data().ownerUid===user.uid;
-  await persistActiveCircleId(id);
+  await withStartupTimeout(persistActiveCircleId(id),'Saving your active circle');
   stage='opening circle interface';
   ui.state.circleName=c.data().name||'Untitled circle';ui.state.homeSourcesLoaded={messages:false,plans:false,memories:false,activities:false};ui.state.homeSourceErrors={};ui.state.messages=[];ui.state.stickers=[];ui.state.members=[];ui.state.membersLoaded=false;ui.state.membersError=false;ui.state.me.displayName=accountDisplayName();ui.state.me.name=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.plans=[];ui.state.commitments=[];ui.state.memories=[];ui.state.quests=[];ui.state.rituals=[];ui.state.drop={prompt:dailyPrompt(),dayKey:dayKey(),posted:false,answer:'',entries:[]};ui.state.activities=[];ui.state.tracks=[];ui.state.dropEntries=[];ui.state.quietReplies=[];ui.state.view='chat';ui.render();showApp();
   stops.push(onSnapshot(collection(db,'circles',id,'members'),s=>{
@@ -245,7 +254,7 @@ async function openCircle(id){
    ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),plans:true};ui.render();
   },e=>{ui.state.homeSourcesLoaded={...(ui.state.homeSourcesLoaded||{}),plans:true};ui.state.homeSourceErrors={...(ui.state.homeSourceErrors||{}),plans:true};ui.render();ui.toast('Plans could not load: '+e.code)}));
   stage='loading your profile';
-  const p=await getDoc(doc(db,'users',user.uid));profileData=p.data()||profileData||{};
+  const p=await withStartupTimeout(getDoc(doc(db,'users',user.uid)),'Loading your profile');profileData=p.data()||profileData||{};
   ui.state.me.displayName=accountDisplayName();ui.state.me.handle=profileData.handle||'';ui.state.me.bio=profileData.bio||'';ui.state.me.photoURL=profileData.photoURL||user.photoURL||'';ui.state.me.email=user.email||'';
   ui.render();
   // Profile changes are synced by saveProfile(). Opening a circle is read-only so stale
@@ -546,12 +555,12 @@ onAuthStateChanged(auth,async u=>{
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
  try{
   try{localStorage.removeItem('circle_demo_v1')}catch{}
-  const r=doc(db,'users',u.uid),p=await getDoc(r),saved=p.data()||{};
+  const r=doc(db,'users',u.uid),p=await withStartupTimeout(getDoc(r),'Loading your profile'),saved=p.data()||{};
   const savedName=validDisplayName(saved.displayName,u.email),authName=validDisplayName(u.displayName,u.email),sessionName=validDisplayName(profileData.displayName,u.email);
   profileData={...profileData,...saved,displayName:savedName||authName||sessionName,email:u.email,photoURL:saved.photoURL||profileData.photoURL||u.photoURL||'',handle:saved.handle||profileData.handle||'',bio:saved.bio||profileData.bio||''};
-  await setDoc(r,{displayName:profileData.displayName||'',email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true});
+  await withStartupTimeout(setDoc(r,{displayName:profileData.displayName||'',email:u.email,photoURL:profileData.photoURL,handle:profileData.handle,bio:profileData.bio},{merge:true}),'Saving your profile');
   if(!profileData.handle||!profileData.displayName){saveActiveCircleId('');profileSetupScreen();return}
-  const circles=await myCircles();
+  const circles=await withStartupTimeout(myCircles(),'Loading your circles');
   const savedCircleId=saved.activeCircleId||getSavedCircleId();
   const savedCircle=circles.find(item=>item.id===savedCircleId);
   const mostRecentlyJoined=[...circles].sort((a,b)=>{
@@ -561,5 +570,5 @@ onAuthStateChanged(auth,async u=>{
   const defaultCircle=savedCircle||mostRecentlyJoined;
   if(defaultCircle){const opened=await openCircle(defaultCircle.id);if(opened)return;return}
   picker(circles);
- }catch(x){authScreen();error(`Firebase setup issue: ${x.code||x.message}. Enable Authentication and create a Firestore database.`)}
+ }catch(x){startupRecovery(`Could not finish signing you in: ${x.code||x.message}. Check Firebase Authentication, Firestore setup, and your connection.`)}
 });
