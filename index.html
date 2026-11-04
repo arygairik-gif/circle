@@ -458,6 +458,7 @@ function hydrateState(){
  const data={...cloneData(seed),...(stored&&typeof stored==='object'?stored:{})};
  data.me={...cloneData(seed.me),...(data.me&&typeof data.me==='object'?data.me:{})};
  data.settings={...cloneData(seed.settings),...(data.settings&&typeof data.settings==='object'?data.settings:{})};
+ try{const personalSettings=JSON.parse(circleStorage?.getItem('circle_settings_v1')||'null');if(personalSettings&&typeof personalSettings==='object')data.settings={...data.settings,...personalSettings}}catch(e){console.warn('Saved personal settings were unreadable.')}
  for(const key of ['members','messages','plans','commitments','memories','quests','rituals','quietReplies']){if(!Array.isArray(data[key]))data[key]=cloneData(seed[key]||[]);data[key]=data[key].filter(item=>item&&typeof item==='object')}
  data.members=data.members.length?data.members:cloneData(seed.members);
  data.messages=data.messages.map(m=>({...m,reactions:Array.isArray(m.reactions)?m.reactions:[]}));
@@ -472,7 +473,7 @@ function hydrateState(){
 }
 let state=hydrateState();
 let replyTo=null, memoryFilter='all', memoryQuery='', toastTimer=null, pendingChatBottom=true, lastModalFocus=null,pendingProfilePhoto='',openReactionMessageId=null,pendingStickerData='';
-function save(){if(window.CircleCloud?.user)return true;if(!circleStorage){if(!storageNoticeShown){toast('This preview cannot save between visits in this browser. Use Export to keep a copy.');storageNoticeShown=true}return true}try{circleStorage.setItem('circle_demo_v1',JSON.stringify(state));return true}catch(e){console.warn('Could not save this change locally',e);if(!storageNoticeShown){toast('Browser storage is full. Export your Circle data before adding more media.');storageNoticeShown=true}return false}}
+function save(){if(!circleStorage){if(!storageNoticeShown){toast('This browser cannot save settings between visits.');storageNoticeShown=true}return true}try{circleStorage.setItem('circle_settings_v1',JSON.stringify(state.settings));if(!window.CircleCloud?.user)circleStorage.setItem('circle_demo_v1',JSON.stringify(state));return true}catch(e){console.warn('Could not save this change locally',e);if(!storageNoticeShown){toast('Browser storage is full. Export your Circle data before adding more media.');storageNoticeShown=true}return false}}
 function person(id){const uid=window.CircleCloud?.user?.uid,lookup=id==='you'?uid:id,found=state.members.find(m=>m.id===lookup);if(id==='you')return{...state.me,...(found||{}),name:found?.name||state.me.displayName||'You',initial:(state.me.displayName||found?.name||'You').slice(0,1).toUpperCase(),photoURL:found?.photoURL||state.me.photoURL||''};if(found)return found;return{name:'Member',initial:'?',tone:''}}
 function circleName(){return escapeHtml(state.circleName||'Untitled circle')}
 function avatar(id,small=false){const p=person(id),face=p.photoURL?'<img src="'+escapeAttr(p.photoURL)+'" alt="">':escapeHtml(p.initial||String(p.name||'?').slice(0,1).toUpperCase());return `<div class="avatar ${escapeAttr(p.tone||'')} ${small?'small':''}" title="${escapeAttr(p.name)}">${face}</div>`}
@@ -678,6 +679,9 @@ function openMobileMoreMenu(){
 }
 function renderSettings(){
  const s=state.settings;
+ const uid=window.CircleCloud?.user?.uid;
+ const currentMember=uid?state.members.find(m=>m.id===uid):null;
+ const canLeave=!!currentMember&&currentMember.role!=='owner';
  const row=(title,desc,key)=>`<div class="card setting-row"><div class="setting-copy"><strong>${title}</strong><small>${desc}</small></div><button class="toggle ${s[key]?'on':''}" data-action="setting-toggle" data-key="${key}" role="switch" aria-checked="${!!s[key]}" aria-label="Toggle ${title}"><span></span></button></div>`;
  return `${header('YOUR SPACE, YOUR RULES','Settings','Make Circle fit your life. You can change these any time.')}
  <div class="settings-list">
