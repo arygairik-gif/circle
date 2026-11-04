@@ -15,7 +15,7 @@
 <meta name="twitter:title" content="Circle — closer, together">
 <meta name="twitter:description" content="A private space for your people: group chats, shared plans, little traditions and favourite moments.">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&family=Manrope:wght@400;500;600;700;800&display=swap');
 :root{
  --paper:#f5f4ee;--surface:#fffefa;--surface-2:#f0efe8;--ink:#242820;--muted:#62685e;--line:#e8e6dc;
  --green:#496b4f;--green-dark:#35543c;--green-soft:#e7eee4;--orange:#dc805c;--orange-soft:#f8e9df;
@@ -384,7 +384,6 @@ button:active{transform:scale(.98)}
 .ritual-day{color:#66552e}
  
 /* Circle editorial refresh — warm paper, quiet green, clearer hierarchy */
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&display=swap');
 :root{
  --paper:#f7f6f1;--surface:#fffefa;--surface-2:#f1f0e9;--ink:#242820;--muted:#777b70;
  --line:#e6e4da;--green:#56785a;--green-dark:#3e5c42;--green-soft:#e9efe5;
@@ -745,7 +744,7 @@ function renderToday(){
 function renderSpaces(){
  const cards=[
   {icon:'▦',eyebrow:'MAKE IT HAPPEN',title:'Plans & calendar',desc:'Turn “we should” into a date, a place and a plan.',meta:`${state.plans.length} ${state.plans.length===1?'plan':'plans'}`,view:'plans'},
-  {icon:'✳',eyebrow:'DO SOMETHING TOGETHER',title:'Group activities',desc:'Daily Drop, rituals, quests and little ways to connect.',meta:`${state.activities.length} shared updates`,view:'activities'},
+  {icon:'✳',eyebrow:'DO SOMETHING TOGETHER',title:'Group activities',desc:'Daily Drop, rituals, quests and little ways to connect.',meta:`${Array.isArray(state.activities)?state.activities.length:0} shared updates`,view:'activities'},
   {icon:'▧',eyebrow:'ADD A LITTLE PERSONALITY',title:'Sticker shelf',desc:'Keep your favourite custom stickers ready for chat.',meta:'Your personal collection',view:'stickers'},
   {icon:'◎',eyebrow:'THE PEOPLE',title:'Your circle',desc:'Meet the members, manage invites and shape your space.',meta:`${state.members.length} ${state.members.length===1?'member':'members'}`,view:'circle'}
  ];
