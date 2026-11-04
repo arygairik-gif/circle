@@ -569,9 +569,55 @@ html,body{background:var(--paper);color:var(--ink)}
 .home-activity-skeleton{padding:7px 0}.home-skeleton-row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid #eeede6}.home-skeleton-row:last-child{border-bottom:0}.home-skeleton-dot,.home-skeleton-line{background:linear-gradient(90deg,#eeede6 25%,#f7f6f0 45%,#eeede6 65%);background-size:220% 100%;animation:homeShimmer 1.5s ease-in-out infinite}.home-skeleton-dot{width:34px;height:34px;border-radius:12px;flex:0 0 auto}.home-skeleton-copy{flex:1;display:grid;gap:7px}.home-skeleton-line{height:8px;border-radius:8px;width:62%}.home-skeleton-line.short{width:38%;height:7px}@keyframes homeShimmer{to{background-position:-220% 0}}.home-activity-status{font-size:9px;color:#8a8e82;margin:8px 2px 0;line-height:1.45}
 @media(prefers-reduced-motion:reduce){.home-skeleton-dot,.home-skeleton-line{animation:none}}
 </style>
+
+<style id="circle-accessibility-polish">
+/* Responsive and keyboard-accessibility polish */
+.skip-link{position:fixed;z-index:200;top:10px;left:10px;transform:translateY(-160%);padding:11px 15px;border-radius:10px;background:#1c201a;color:#fff;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 5px 20px #0002}
+.skip-link:focus{transform:translateY(0);outline:3px solid #d9f17b;outline-offset:3px}
+#view{scroll-margin-top:88px}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,[tabindex]:focus-visible{outline:3px solid #647d45;outline-offset:3px}
+.mobile-nav{min-height:64px;height:auto;padding:5px 8px calc(5px + env(safe-area-inset-bottom));gap:4px}
+.mobile-nav button{min-width:58px;min-height:48px;padding:7px 5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:10px;line-height:1.1}
+.mobile-nav button span:first-child{min-height:20px}
+.mobile-nav button:focus-visible{outline-offset:-2px;background:#eef1e7}
+.top-create,.primary-btn,.soft-btn,.icon-btn,.chat-action-btn,.send-btn,.composer-tools button,.modal-close,.cloud-primary,.cloud-secondary,.cloud-signout{min-height:40px}
+@media(max-width:900px){
+ .content-grid{padding-left:clamp(14px,3vw,24px);padding-right:clamp(14px,3vw,24px)}
+ .desktop-nav{gap:2px}.desktop-nav button{padding:10px 9px}
+}
+@media(max-width:620px){
+ .content-grid{padding:16px 12px calc(24px + env(safe-area-inset-bottom))}
+ .page-head{gap:10px;flex-wrap:wrap}
+ .page-head .head-actions{width:100%;flex-wrap:wrap}
+ .home-v2{gap:18px}
+ .home-circle-hero{padding:22px 19px;min-height:185px}
+ .home-v2-title{font-size:clamp(26px,7vw,32px)}
+ .mobile-nav{height:calc(64px + env(safe-area-inset-bottom));padding-bottom:calc(5px + env(safe-area-inset-bottom))}
+ .mobile-nav button{min-width:0;flex:1;font-size:9px}
+ .mobile-nav button span:first-child{font-size:18px}
+ .modal-backdrop{align-items:end;padding:8px}
+ .modal{width:100%;max-height:calc(90dvh - env(safe-area-inset-bottom));border-radius:20px 20px 14px 14px}
+ .form-grid{grid-template-columns:minmax(0,1fr)}
+ .field.full{grid-column:auto}
+ .chat-area-bold{min-height:300px}
+}
+@media(max-width:380px){
+ .topbar{padding-inline:10px;gap:7px}
+ .topbar .searchbox{min-width:0}
+ .topbar .top-create{padding:9px 9px}
+ .mobile-nav{gap:1px;padding-inline:4px}
+ .mobile-nav button{font-size:8px}
+ .home-circle-hero{min-height:205px}
+}
+@media(prefers-reduced-motion:reduce){
+ html:focus-within{scroll-behavior:auto}
+ *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
+}
+</style>
 </head>
 <body>
 <div id="cloudGate" class="cloud-gate" aria-live="polite" aria-busy="true"><section class="cloud-loading-panel" role="status" aria-live="polite"><span class="brand-mark" aria-hidden="true">c</span><p class="cloud-kicker">CIRCLE · CLOSER, TOGETHER</p><h1>Finding your people.</h1><p>Checking your sign-in and getting your private space ready.</p><div class="cloud-loading-mark" aria-hidden="true"></div></section><noscript><p class="cloud-loading-panel">Circle needs JavaScript enabled to sign in and load your private circles.</p></noscript></div>
+<a class="skip-link" href="#view">Skip to main content</a>
 <div class="app" style="display:none">
  <aside class="sidebar">
   <div class="brand"><div class="brand-mark">c</div><div class="brand-copy"><div class="brand-name">circle</div><div class="brand-tag">closer, together</div></div></div>
@@ -601,7 +647,7 @@ html,body{background:var(--paper);color:var(--ink)}
    <button class="top-create" data-action="create-menu"><span aria-hidden="true">＋</span> Create</button><button class="top-profile" data-view="profile" aria-label="Open your profile"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-3.1 3.2-5 7-5s6.3 1.9 7 5"/></svg></button>
   </header>
   <div class="content-grid">
-   <main class="main-column" id="view"></main>
+   <main class="main-column" id="view" tabindex="-1" aria-label="Circle content"></main>
    <aside class="right-rail" id="rightRail"></aside>
   </div>
  </div>
