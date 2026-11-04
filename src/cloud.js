@@ -431,6 +431,7 @@ async function addTrack(d){
  if(!tracks.empty)throw new Error('That song is already in the shared playlist.');
  return addRecord('tracks',{providerId,title,artist,album:safeText(d.album,160),artwork:safeText(d.artwork,1000),previewUrl:safeText(d.previewUrl,1000),trackUrl:safeText(d.trackUrl,1000),source:'itunes',durationMs:Math.max(0,Math.min(3600000,Number(d.durationMs)||0))});
 }
+async function removeTrack(id){const ref=doc(db,'circles',circleId,'tracks',String(id));await deleteDoc(ref)}
 
 async function addQuietReply(toUid,messageId,reply){if(!toUid||toUid==='you'||toUid===user.uid)throw new Error('Quiet replies can only be sent to another circle member.');return addRecord('privateReplies',{fromUid:user.uid,toUid,messageId:String(messageId),reply:safeText(reply,1500)})}
 async function saveProfile(data){
@@ -492,7 +493,7 @@ async function rotateInvite(){
  return newCode;
 }
 async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}await signOut(auth)}
-window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,sendAttachment,createPlan,react,votePlan,rsvpPlan,setMood,setAvailability,addCommitment,toggleCommitment,addMemory,addRitual,addQuest,toggleQuest,addActivity,addTrack,removeTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
