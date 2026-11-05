@@ -1316,6 +1316,125 @@ button:active{transform:translateY(1px)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
 </style>
 
+<style id="circle-field-notes-polish">
+
+/* CIRCLE / FIELD NOTES — final brand polish */
+:root{
+ --paper:#f4f4ef;--surface:#fcfcf9;--surface-2:#e9ebe4;--ink:#171916;
+ --muted:#74796f;--line:#d8dcd3;--green:#1b201b;--green-dark:#111510;
+ --green-soft:#e9eee4;--lime:#d9f36b;--radius:10px;
+}
+html{scrollbar-color:#aeb4a7 #f0f1eb;scrollbar-width:thin}
+body{
+ background-color:var(--paper);
+ background-image:radial-gradient(#cfd3c9 0.65px,transparent .65px);
+ background-size:18px 18px;
+}
+.app{background:transparent}
+.sidebar{
+ background:rgba(247,247,242,.96);border-right:1px solid #d5d9d0;
+ padding:25px 15px 17px 19px;
+}
+.brand{padding-bottom:34px}
+.brand-mark{border-radius:8px!important;transform:none!important;background:#171a17!important;color:var(--lime)!important}
+.brand-name{font-size:21px;letter-spacing:-1.2px}
+.brand-tag{font-size:9px;letter-spacing:1.8px}
+.section-label{font-size:9px;letter-spacing:1.8px;color:#969c90}
+.nav-list{gap:3px}
+.nav-link{border-radius:7px;padding:11px 12px;font-size:12px;letter-spacing:.05px}
+.nav-link.active{background:#1b201b;color:#f8f9f3}
+.nav-link.active .nav-icon{color:var(--lime)}
+.nav-link.active .nav-count{background:#343b31;color:var(--lime)}
+.circle-mini{border:1px solid #dfe2d9;background:#fbfbf8;border-radius:8px}
+.sidebar-note{border-radius:8px;background:#e8ece2;border:1px solid #dce2d6}
+.sidebar-note .note-kicker{font-size:9px;letter-spacing:1.7px}
+.profile{border-top:1px solid #d8dcd3}
+.topbar{background:rgba(244,244,239,.94);border-color:#d8dcd3}
+.searchbox{box-shadow:none}
+.page-head{margin-bottom:25px}
+.eyebrow{display:flex;align-items:center;gap:8px}
+.eyebrow:before{content:"";display:inline-block;width:17px;height:2px;background:var(--lime);box-shadow:0 0 0 1px #b9ca86}
+.page-title{font-weight:800;letter-spacing:-2px}
+.page-subtitle{max-width:560px}
+.card,.community-panel,.home-rail-card,.chat-side-card,.plan-card,.activity-card,.member-card,.memory-card{
+ background:#fcfcf9;border-color:#d9ddd4;border-radius:9px;box-shadow:0 1px 0 rgba(23,25,22,.025)
+}
+.community-home{gap:23px}
+.community-welcome{padding:5px 0 4px}
+.community-welcome h1{max-width:720px;font-size:clamp(34px,4vw,49px);line-height:.99;letter-spacing:-2.8px}
+.community-welcome p{max-width:470px;color:#74796f;line-height:1.65}
+.community-create,.top-create{background:#171a17;color:#f8f9f3;border:1px solid #171a17}
+.community-create:hover,.top-create:hover{background:#343b31}
+.community-banner{
+ position:relative;overflow:hidden;min-height:150px;padding:26px 28px;
+ background:#191d18;border:1px solid #191d18;border-radius:9px;
+}
+.community-banner:after{
+ content:"C / 01";position:absolute;right:24px;bottom:-22px;
+ font:800 clamp(74px,10vw,130px)/1 Manrope,sans-serif;letter-spacing:-9px;
+ color:rgba(255,255,255,.055);pointer-events:none;
+}
+.community-banner h2{font-size:clamp(23px,2.6vw,31px);letter-spacing:-1.4px;max-width:470px}
+.community-banner p{max-width:400px;color:#b5bcb0;line-height:1.55}
+.community-banner>button{position:relative;z-index:1;background:var(--lime);color:#171a17;border-radius:6px;font-weight:800}
+.community-stat-row{border:1px solid #d9ddd4;border-radius:9px;overflow:hidden}
+.community-stat-row>div+div{border-left:1px solid #e1e4dc}
+.community-stat-row strong{font-size:24px;letter-spacing:-1.4px}
+.community-stat-row span{font-size:8px;letter-spacing:1.5px;color:#82887d}
+.community-columns{gap:14px}
+.community-panel{padding:19px}
+.community-panel-head h2{font-size:14px;letter-spacing:-.4px}
+.community-feed-row,.community-chat-row{border-bottom:1px solid #eceee8}
+.community-feed-icon{border-radius:7px;background:#eff1eb}
+.community-next-panel{background:#e9eee4;border-color:#dbe2d5}
+.community-invite-panel{background:#1b201b;border-color:#1b201b}
+.home-rail-card{padding:15px}
+.home-rail-heading{font-size:9px;letter-spacing:1.4px;text-transform:uppercase}
+.home-rail-link{border-bottom:1px solid #eceee8}
+.home-rail-link:last-child{border-bottom:0}
+.chat-redesign-top{background:#171a17}
+.chat-workspace{background:#eceee8}
+.chat-room-header,.chat-area-bold,.chat-side-card{border-radius:8px}
+.chat-room-header{background:#fcfcf9}
+.chat-now-strip{background:#20261f;border-radius:7px}
+.chat-area-bold .chat-scroll{scrollbar-width:thin;scrollbar-color:#c5cbbf transparent}
+.chat-area-bold .message-bubble{background:#f0f1ec}
+.chat-area-bold .message.mine .message-bubble{background:#e7f1c9}
+.chat-composer-bold{background:#fcfcf9}
+.chat-composer-bold .composer-input{background:#f0f1ec}
+.chat-side-card{background:#fcfcf9}
+.plan-card,.activity-card,.member-card,.memory-card{transition:transform .18s ease,border-color .18s ease}
+.plan-card:hover,.activity-card:hover,.member-card:hover,.memory-card:hover{transform:translateY(-2px);border-color:#b9c2b2}
+.activity-icon{border-radius:8px;background:#ecefe8}
+.activity-card:nth-child(3n+2) .activity-icon{background:#e6edda}
+.activity-card:nth-child(3n) .activity-icon{background:#f0f0e8}
+.memory-visual{background:#e8ebe4}
+.memory-visual.photo{background:linear-gradient(135deg,#e6e9df,#d8ded0)}
+.member-card .avatar{border-radius:9px}
+.modal{border-radius:10px}
+.primary-btn,.soft-btn,.icon-btn,.chat-action-btn,.send-btn{border-radius:7px}
+input,textarea,select{accent-color:#1b201b}
+:focus-visible{outline-color:#91a65c!important}
+@media(min-width:1400px){
+ .content-grid,.content-grid.home-layout{max-width:1560px}
+ .community-columns{grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr)}
+}
+@media(max-width:700px){
+ body{background-size:15px 15px}
+ .sidebar{display:none}
+ .community-welcome h1{font-size:32px;letter-spacing:-1.8px}
+ .community-banner{min-height:138px;padding:18px}
+ .community-banner:after{right:8px;font-size:76px;letter-spacing:-6px}
+ .community-stat-row{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .community-stat-row>div+div{border-left:1px solid #e1e4dc}
+ .community-panel{padding:14px}
+ .mobile-nav{border-radius:0;background:rgba(250,250,247,.98)}
+}
+@media(prefers-reduced-motion:reduce){
+ .plan-card,.activity-card,.member-card,.memory-card{transition:none}
+}
+
+</style>
 </head>
 <body>
 <div id="cloudGate" class="cloud-gate" aria-live="polite" aria-busy="true"><section class="cloud-loading-panel" role="status" aria-live="polite"><span class="brand-mark" aria-hidden="true">c</span><p class="cloud-kicker">CIRCLE · CLOSER, TOGETHER</p><h1>Finding your people.</h1><p>Checking your sign-in and getting your private space ready.</p><div class="cloud-loading-mark" aria-hidden="true"></div></section><noscript><p class="cloud-loading-panel">Circle needs JavaScript enabled to sign in and load your private circles.</p></noscript></div>
