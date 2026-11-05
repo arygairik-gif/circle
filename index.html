@@ -992,6 +992,12 @@ function renderMessageTimeline(){
 function renderChat(){
  const others=state.members.filter(m=>m.id!==window.CircleCloud?.user?.uid);
  const free=others.filter(m=>m.status==='Free now'&&(!m.freeUntil||((m.freeUntil.toDate?.()||new Date(m.freeUntil)).getTime()>Date.now())));
+ const listening=others.filter(m=>{
+  if(!m.listeningTrackTitle||!m.listeningAt) return false;
+  const raw=m.listeningAt?.toDate?.()||m.listeningAt;
+  const stamp=raw instanceof Date?raw.getTime():new Date(raw).getTime();
+  return Number.isFinite(stamp)&&stamp<=Date.now()+30000&&(Date.now()-stamp)<120000;
+ });
  const latest=state.messages[state.messages.length-1];
  const nextPlan=state.plans[0];
  const memberCount=state.membersLoaded?state.members.length:0;
@@ -1020,9 +1026,9 @@ function renderChat(){
    </section>
    <aside class="chat-side-panel">
     <section class="chat-side-card chat-people-card"><div class="chat-side-title"><span>THE PEOPLE</span><b>${memberCount||'—'}</b></div><div class="chat-people-list">${others.length?others.slice(0,7).map(m=>`<div class="chat-person-row">${avatar(m.id)}<span><b>${escapeHtml(m.name||'Member')}</b><small>${m.status==='Free now'?'● Free right now':'In your circle'}</small></span></div>`).join(''):'<p class="chat-side-empty">Your people will show up here when they join.</p>'}</div><button class="chat-side-link" data-view="circle">SEE YOUR CIRCLE ↗</button></section>
-    <section class="chat-side-card"><div class="chat-side-title"><span>LISTENING NOW</span><span class="chat-side-spark">♫</span></div>
-      ${others.filter(m=>m.listeningTrackTitle&&m.listeningAt&&(Date.now()-(m.listeningAt.toDate?.()?.getTime?.()||new Date(m.listeningAt).getTime()))<120000).map(m=>`<div class="chat-listening-row">${avatar(m.id,true)}<span class="chat-listening-copy"><b>${escapeHtml(m.name||'Member')}</b><small>${escapeHtml(m.listeningTrackTitle)} · ${escapeHtml(m.listeningArtist||'')}</small></span><span class="chat-eq" aria-label="Listening"><i></i><i></i><i></i></span></div>`).join('')||'<p class="chat-side-empty">No one is listening right now. Play a song preview to show what you’re hearing.</p>'}
-     </section>
+    ${listening.length?`<section class="chat-side-card"><div class="chat-side-title"><span>LISTENING NOW</span><span class="chat-side-spark">♫</span></div>
+      ${listening.map(m=>`<div class="chat-listening-row">${avatar(m.id,true)}<span class="chat-listening-copy"><b>${escapeHtml(m.name||'Member')}</b><small>${escapeHtml(m.listeningTrackTitle)} · ${escapeHtml(m.listeningArtist||'')}</small></span><span class="chat-eq" aria-label="Listening"><i></i><i></i><i></i></span></div>`).join('')}
+     </section>`:''}
      <section class="chat-side-card"><div class="chat-side-title"><span>CIRCLE PLAYLIST</span><button class="chat-side-link" data-action="playlist">OPEN ↗</button></div>
       <div class="chat-music-list">${(state.tracks||[]).slice(0,5).map(t=>`<div class="chat-music-track"><img class="chat-music-art" src="${escapeAttr(t.artwork||'')}" alt="" loading="lazy"><div class="chat-music-meta"><b>${escapeHtml(t.title||'Untitled')}</b><small>${escapeHtml(t.artist||'')} · Added by ${escapeHtml(person(t.uid).name||'Member')}</small>${t.previewUrl?`<audio controls preload="none" data-track-title="${escapeAttr(t.title||'')}" data-track-artist="${escapeAttr(t.artist||'')}" data-track-artwork="${escapeAttr(t.artwork||'')}" src="${escapeAttr(t.previewUrl)}" aria-label="Play ${escapeAttr(t.title||'song')} preview"></audio>`:''}</div></div>`).join('')||'<p class="chat-side-empty">Your shared playlist is empty. Add songs in Activities.</p>'}</div>
      </section>
