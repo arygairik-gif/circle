@@ -31,7 +31,7 @@ function isQuietNow(settings={}){
 
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const gate=$('#cloudGate'), shell=$('.app');
-let user=null,circleId=null,stops=[],firstMessageSnapshot=true,profileData={},signupPhotoDataUrl='',dailyDropTimer=null,dropAnswerStop=null,oldestMessageDoc=null,olderMessagesLoading=false;
+let user=null,circleId=null,stops=[],firstMessageSnapshot=true,profileData={},signupPhotoDataUrl='',dailyDropTimer=null,dropAnswerStop=null,oldestMessageDoc=null,olderMessagesLoading=false,startupWatchdog=null;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const error=m=>{const el=$('#cloudError');if(el)el.textContent=m};
 const explain=e=>({
@@ -55,7 +55,7 @@ const explain=e=>({
  'auth/web-storage-unsupported':'Your browser is blocking the storage needed for sign-in. Enable site data and try again.'
 }[e?.code]||`Firebase error: ${e?.code||e?.message||'Unknown error'}`);
 function stop(){if(dailyDropTimer){clearInterval(dailyDropTimer);dailyDropTimer=null}if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}stops.forEach(f=>f());stops=[]}
-function gateView(html){gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
+function gateView(html){if(startupWatchdog){clearTimeout(startupWatchdog);startupWatchdog=null}gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
 function showApp(){gate.hidden=true;shell.style.display=''}
 function withStartupTimeout(promise,label,ms=18000){
  let timer;
@@ -599,6 +599,7 @@ getRedirectResult(auth).catch(x=>{
  console.error('Circle Google redirect sign-in failed:',x?.code||x?.message);
  if(!auth.currentUser){authScreen();error(explain(x))}
 });
+startupWatchdog=setTimeout(()=>startupRecovery('Firebase did not finish checking your sign-in within 25 seconds. Check your connection, then retry. If this keeps happening, open the browser console and share the first red error.'),25000);
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
