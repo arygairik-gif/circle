@@ -55,8 +55,8 @@ const explain=e=>({
  'auth/web-storage-unsupported':'Your browser is blocking the storage needed for sign-in. Enable site data and try again.'
 }[e?.code]||`Firebase error: ${e?.code||e?.message||'Unknown error'}`);
 function stop(){if(dailyDropTimer){clearInterval(dailyDropTimer);dailyDropTimer=null}if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}stops.forEach(f=>f());stops=[]}
-function gateView(html){if(startupWatchdog){clearTimeout(startupWatchdog);startupWatchdog=null}gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
-function showApp(){gate.hidden=true;shell.style.display=''}
+function gateView(html){if(startupWatchdog){clearTimeout(startupWatchdog);startupWatchdog=null}gate.classList.remove('circle-boot');gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
+function showApp(){if(startupWatchdog){clearTimeout(startupWatchdog);startupWatchdog=null}gate.hidden=true;shell.style.display=''}
 function withStartupTimeout(promise,label,ms=18000){
  let timer;
  return Promise.race([Promise.resolve(promise),new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(label+' timed out after 18 seconds. Check your connection and retry.')),ms)})]).finally(()=>clearTimeout(timer));
@@ -184,9 +184,8 @@ function authScreen(){
   const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});
   try{
    const result=await signInWithPopup(auth,provider);
-   // Let onAuthStateChanged own profile loading and routing. A second
-   // Firestore read here raced that handler and could leave the gate unchanged.
-   profileData={displayName:validDisplayName(result.user.displayName,result.user.email),handle:'',bio:'',photoURL:result.user.photoURL||'',email:result.user.email};
+   // Let onAuthStateChanged own profile loading and routing. Do not replace
+   // an existing profile with an empty handle while that handler is running.
    b.textContent='Signed in — opening Circle…';
   }catch(x){
    const fallback=['auth/popup-blocked','auth/web-storage-unsupported','auth/operation-not-supported-in-this-environment'].includes(x?.code);
@@ -529,7 +528,7 @@ async function saveProfile(data){
  return profileData;
 }
 async function setSupport(enabled,preference=''){return updateDoc(memberRef(),{support:!!enabled,supportPreference:safeText(preference,100),lastSeen:serverTimestamp()})}
-async function createPlan(d){const raw=String(d.options||'');const source=raw.includes('\n')?raw.split(/\r?\n/):raw.split(',');const options=[...new Set(source.map(x=>safeText(x,80)).filter(Boolean))].slice(0,8);if(!options.length)options.push('Let’s decide together');await addDoc(collection(db,'circles',circleId,'plans'),{title:safeText(d.title,100),description:safeText(d.description,500),date:safeText(d.date,10),time:options[0]||'',place:safeText(d.place,120),options,votes:{},rsvps:{},status:'Voting open',createdBy:user.uid,createdAt:serverTimestamp()})}
+async function createPlan(d){const raw=String(d.options||'');const source=raw.includes('\n')?raw.split(/\r?\n/):raw.split(',');const options=[...new Set(source.map(x=>safeText(x,80)).filter(Boolean))].slice(0,8);if(!options.length)options.push('Let’s decide together');await addDoc(collection(db,'circles',circleId,'plans'),{title:safeText(d.title,100),description:safeText(d.description,500),date:safeText(d.date,10),time:safeText(options[0]||'',40),place:safeText(d.place,120),options,votes:{},rsvps:{},status:'Voting open',createdBy:user.uid,createdAt:serverTimestamp()})}
 async function editMessage(id,text){const value=safeText(text,1500);if(!value)throw new Error('Message cannot be empty.');const ref=doc(db,'circles',circleId,'messages',String(id));await updateDoc(ref,{text:value,editedAt:serverTimestamp()});}
 async function deleteMessage(id){const ref=doc(db,'circles',circleId,'messages',String(id));await deleteDoc(ref);}
 async function react(id,emoji){const allowed=['❤️','😂','😍','🥹','😭','😮','😡','👍','👎','🙌','👏','🔥','🎉','✨','💯','🫶','🤝','👀','🥳','💀','😎','🤔','🙏','💚','🤍','💛','🫡','🥰','😅','💖','🧡','💜'];if(!allowed.includes(emoji))throw new Error('That reaction is not available.');const r=doc(db,'circles',circleId,'messages',String(id));await runTransaction(db,async tx=>{const s=await tx.get(r);if(!s.exists())return;const all={...(s.data().reactionsByUser||{})},mine=Array.isArray(all[user.uid])?[...all[user.uid]]:[],i=mine.indexOf(emoji);if(i>=0)mine.splice(i,1);else mine.push(emoji);if(mine.length)all[user.uid]=mine;else delete all[user.uid];tx.update(r,{reactionsByUser:all})})}
