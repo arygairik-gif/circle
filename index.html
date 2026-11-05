@@ -933,6 +933,43 @@ button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,
  *,*::before,*::after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
 </style>
+
+<style id="circle-compact-right-rail">
+/* Keep the existing Circle design; constrain the chat rail instead of letting it stretch the page. */
+.app.chat-view-active .chat-workspace{grid-template-columns:minmax(0,1fr) 214px;align-items:stretch}
+.app.chat-view-active .chat-side-panel{
+  min-width:0;min-height:0;max-height:calc(100dvh - 190px);
+  overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+  scrollbar-width:thin;scrollbar-color:#c5cbb9 transparent;
+  padding-right:3px;align-self:start;
+}
+.app.chat-view-active .chat-side-panel::-webkit-scrollbar{width:5px}
+.app.chat-view-active .chat-side-panel::-webkit-scrollbar-thumb{background:#c5cbb9;border-radius:8px}
+.app.chat-view-active .chat-side-card{padding:11px;border-radius:12px}
+.app.chat-view-active .chat-side-panel{gap:9px}
+.app.chat-view-active .chat-side-title{margin-bottom:8px;font-size:9px}
+.app.chat-view-active .chat-shortcuts-card{padding-bottom:6px}
+.app.chat-view-active .chat-shortcuts-card>button{padding:6px 0;font-size:10px;min-height:36px}
+.app.chat-view-active .chat-shortcuts-card>button span{width:22px;height:22px;border-radius:7px}
+.app.chat-view-active .chat-people-list{gap:7px}
+.app.chat-view-active .chat-person-row .avatar{width:27px;height:27px}
+@media(max-width:1100px){
+ .app.chat-view-active .chat-workspace{grid-template-columns:minmax(0,1fr)}
+ .app.chat-view-active .chat-side-panel{display:none}
+}
+@media(max-width:700px){
+ .app.chat-view-active .chat-workspace{display:block}
+ .app.chat-view-active .chat-side-panel{display:none}
+}
+@media(max-width:360px){
+ .app.chat-view-active .content-grid.chat-layout{padding-left:7px;padding-right:7px}
+ .app.chat-view-active .chat-workspace{padding:6px}
+ .app.chat-view-active .chat-room-title{min-width:0}
+ .app.chat-view-active .chat-room-title h1{overflow-wrap:anywhere}
+ .app.chat-view-active .chat-area-bold .message-bubble{overflow-wrap:anywhere;word-break:break-word}
+}
+</style>
+
 </head>
 <body>
 <div id="cloudGate" class="cloud-gate" aria-live="polite" aria-busy="true"><section class="cloud-loading-panel" role="status" aria-live="polite"><span class="brand-mark" aria-hidden="true">c</span><p class="cloud-kicker">CIRCLE · CLOSER, TOGETHER</p><h1>Finding your people.</h1><p>Checking your sign-in and getting your private space ready.</p><div class="cloud-loading-mark" aria-hidden="true"></div></section><noscript><p class="cloud-loading-panel">Circle needs JavaScript enabled to sign in and load your private circles.</p></noscript></div>
