@@ -2019,6 +2019,7 @@ input,textarea,select{border-radius:0!important;box-shadow:none!important}
 /* The home page uses the actual content as an editorial spread. */
 .community-home{display:grid;gap:0;min-width:0;color:#000}
 .community-welcome{display:grid;grid-template-columns:var(--dp-spacing-rail) minmax(0,1fr);column-gap:var(--dp-spacing-column-gap);align-items:end;padding:var(--dp-spacing-band-large) 0 var(--dp-spacing-band-medium);border-bottom:3px solid #000}
+.community-welcome>div{grid-column:2;grid-row:1 / span 2;min-width:0}.community-welcome>div>.eyebrow{margin:0 0 14px}.community-welcome>button{grid-column:2;grid-row:3}
 .community-welcome:before{content:"YOUR CIRCLE";grid-column:1;grid-row:1;align-self:start;padding-top:8px;font:500 10px var(--dp-typography-mono);letter-spacing:.12em;color:#4d4d4d}
 .community-welcome h1{grid-column:2;grid-row:1;margin:0;color:#000;font:500 clamp(52px,10cqw,150px)/.92 var(--dp-typography-display);letter-spacing:-.045em;max-width:9.2em}
 .community-welcome p{grid-column:2;grid-row:2;margin:18px 0 0;max-width:38em;color:#4d4d4d;font:400 17px/1.55 var(--dp-typography-text)}
