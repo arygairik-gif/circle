@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
+import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch, startAfter } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
 const dayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
@@ -34,7 +34,26 @@ const gate=$('#cloudGate'), shell=$('.app');
 let user=null,circleId=null,stops=[],firstMessageSnapshot=true,profileData={},signupPhotoDataUrl='',dailyDropTimer=null,dropAnswerStop=null,oldestMessageDoc=null,olderMessagesLoading=false;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const error=m=>{const el=$('#cloudError');if(el)el.textContent=m};
-const explain=e=>({'auth/email-already-in-use':'That email already has an account. Sign in instead.','auth/invalid-credential':'Email or password is incorrect.','auth/weak-password':'Use at least 6 characters.','auth/unauthorized-domain':'Add this website in Firebase Authentication → Authorized domains.'}[e.code]||`Firebase error: ${e.code||e.message}`);
+const explain=e=>({
+ 'auth/email-already-in-use':'That email already has an account. Switch to Sign in.',
+ 'auth/invalid-credential':'Email or password is incorrect.',
+ 'auth/user-not-found':'No account was found for that email. Choose Get started to create one.',
+ 'auth/wrong-password':'Email or password is incorrect.',
+ 'auth/weak-password':'Use at least 6 characters for your password.',
+ 'auth/invalid-email':'Enter a valid email address.',
+ 'auth/missing-password':'Enter your password.',
+ 'auth/user-disabled':'This account has been disabled. Contact the Circle administrator.',
+ 'auth/too-many-requests':'Too many attempts. Wait a little and try again.',
+ 'auth/network-request-failed':'Network error. Check your internet connection and try again.',
+ 'auth/unauthorized-domain':'This website is not authorised in Firebase. Add its exact domain in Firebase Authentication → Settings → Authorised domains.',
+ 'auth/operation-not-allowed':'This sign-in method is disabled. In Firebase Console → Authentication → Sign-in method, enable Google and Email/Password.',
+ 'auth/popup-blocked':'The Google sign-in popup was blocked. Allow popups for this site and try again.',
+ 'auth/popup-closed-by-user':'Google sign-in was closed before it finished. Try again.',
+ 'auth/cancelled-popup-request':'Another sign-in popup is already open. Finish or close it, then try again.',
+ 'auth/account-exists-with-different-credential':'An account already exists with this email using another sign-in method. Sign in with that method first.',
+ 'auth/invalid-api-key':'Firebase API key is invalid. Check the Firebase web app configuration.',
+ 'auth/web-storage-unsupported':'Your browser is blocking the storage needed for sign-in. Enable site data and try again.'
+}[e?.code]||`Firebase error: ${e?.code||e?.message||'Unknown error'}`);
 function stop(){if(dailyDropTimer){clearInterval(dailyDropTimer);dailyDropTimer=null}if(dropAnswerStop){dropAnswerStop();dropAnswerStop=null}stops.forEach(f=>f());stops=[]}
 function gateView(html){gate.innerHTML=html;gate.hidden=false;gate.setAttribute('aria-busy','false');shell.style.display='none'}
 function showApp(){gate.hidden=true;shell.style.display=''}
@@ -160,10 +179,19 @@ function authScreen(){
   finally{b.disabled=false}
  };
  $('#cloudGoogle').onclick=async()=>{
-  const b=$('#cloudGoogle');b.disabled=true;
-  try{const result=await signInWithPopup(auth,new GoogleAuthProvider());const photo=result.user.photoURL||'';const current=await getDoc(doc(db,'users',result.user.uid));profileData={...(current.data()||{}),displayName:validDisplayName(current.data()?.displayName,result.user.email)||validDisplayName(result.user.displayName,result.user.email),handle:current.data()?.handle||'',bio:current.data()?.bio||'',photoURL:current.data()?.photoURL||photo,email:result.user.email};}
-  catch(x){error(explain(x))}
-  finally{b.disabled=false}
+  const b=$('#cloudGoogle');b.disabled=true;error('');
+  const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});
+  try{
+   const result=await signInWithPopup(auth,provider);
+   const photo=result.user.photoURL||'',current=await getDoc(doc(db,'users',result.user.uid));
+   profileData={...(current.data()||{}),displayName:validDisplayName(current.data()?.displayName,result.user.email)||validDisplayName(result.user.displayName,result.user.email),handle:current.data()?.handle||'',bio:current.data()?.bio||'',photoURL:current.data()?.photoURL||photo,email:result.user.email};
+  }catch(x){
+   const fallback=['auth/popup-blocked','auth/web-storage-unsupported','auth/operation-not-supported-in-this-environment'].includes(x?.code);
+   if(fallback){
+    try{await signInWithRedirect(auth,provider);return}
+    catch(redirectError){error(explain(redirectError))}
+   }else error(explain(x));
+  }finally{if(b.isConnected)b.disabled=false}
  };
 }
 function profileSetupScreen(){
@@ -562,6 +590,12 @@ async function rotateInvite(){
 }
 async function signOutAndClear(){stop();circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}await signOut(auth)}
 window.CircleCloud={saveProfile,prepareProfilePhoto,prepareDailyDropPhoto,prepareSticker,saveSticker,deleteSticker,sendSticker,backToCircles:async()=>{stop();circleId=null;picker(await myCircles())},leaveCircle,removeMember,transferOwnership,rotateInvite,get circleId(){return circleId},get user(){return user},sendMessage,loadOlderMessages,sendAttachment,addMemory,editMessage,deleteMessage,createPlan,react,votePlan,rsvpPlan,finalizePlan,setMood,setListeningTrack,clearListeningTrack,setAvailability,addCommitment,toggleCommitment,addRitual,addQuest,toggleQuest,addActivity,addTrack,removeTrack,addDropAnswer,addQuietReply,setSupport,enableBrowserNotifications,signOut:signOutAndClear,inviteCode:async()=>{const s=await getDoc(doc(db,'circles',circleId));return s.data()?.inviteCode||''}};
+let redirectAuthError=null;
+getRedirectResult(auth).catch(x=>{
+ redirectAuthError=x;
+ console.error('Circle Google redirect sign-in failed:',x?.code||x?.message);
+ if(!auth.currentUser){authScreen();error(explain(x))}
+});
 onAuthStateChanged(auth,async u=>{
  stop();user=u;
  if(!u){profileData={};circleId=null;saveActiveCircleId('');try{localStorage.removeItem('circle_demo_v1')}catch{}window.CircleApp?.clearSession?.();authScreen();return}
