@@ -887,6 +887,145 @@ html[data-theme="dark"] .chat-side-empty{color:var(--muted)!important}
 .cloud-reset{display:block;width:100%;min-height:44px;margin-top:8px;border:0;background:transparent;color:var(--green-dark);font-size:13px;font-weight:700;text-align:center}
 .cloud-reset:hover{text-decoration:underline}
 .cloud-reset[hidden]{display:none!important}
+
+/* Circle visual refresh — clearer hierarchy, stronger contrast, calmer surfaces */
+:root{
+ --paper:#f3f3ed;--surface:#fff;--surface-2:#f6f7f2;--ink:#202820;--muted:#687267;--line:#e1e6dc;
+ --green:#3f6848;--green-dark:#2d5036;--green-soft:#e8f0e6;--orange:#c87552;--orange-soft:#f8ebe4;
+ --yellow:#ead18b;--yellow-soft:#faf4e2;--pink:#e9b9b0;--shadow:0 10px 28px rgba(33,48,34,.055);--radius:17px;
+}
+html,body{background:var(--paper);color:var(--ink);font-size:14px}
+.app{grid-template-columns:232px minmax(0,1fr);max-width:1920px}
+.sidebar{padding:24px 15px 18px 17px;background:#fbfcf8;border-right-color:#e2e7de}
+.brand{padding-bottom:30px}.brand-mark{border-radius:11px;transform:none;box-shadow:0 4px 10px #35543c22}
+.brand-name{font-size:21px}
+.section-label{font-size:10px;color:#7e897c;letter-spacing:1.25px}
+.nav-list{gap:5px}.nav-link{min-height:42px;padding:10px 12px;font-size:13px;border-radius:11px;color:#596458}
+.nav-link.active{background:#e6efe3;color:#2d5036;box-shadow:inset 3px 0 #4e7955}
+.nav-icon{font-size:17px}
+.circle-mini{background:#f0f3ec;border:1px solid #e5eae1;padding:11px}
+.sidebar-note{background:#eef2e9;border:1px solid #e3e9df}
+.profile{border-color:#e5e9e1}
+.topbar{height:70px;padding:0 clamp(18px,2.4vw,38px);background:rgba(251,252,248,.94);border-color:#e2e7de}
+.searchbox{height:42px;border-radius:13px;background:#f6f8f3;border-color:#e3e8df;width:min(420px,44vw)}
+.searchbox input{font-size:13px}
+.top-status{border-color:#dbe8d8;background:#edf5eb}
+.icon-btn{width:40px;height:40px;border-radius:12px;background:#fff;border-color:#e3e8df}
+.primary-btn{font-size:12px;padding:12px 17px;border-radius:11px;box-shadow:0 3px 8px #35543c18}
+.soft-btn{font-size:12px;padding:10px 14px}
+.content-grid{grid-template-columns:minmax(0,1fr) 300px;gap:22px;padding:28px clamp(18px,2.4vw,38px) 40px;max-width:1660px}
+.page-head{margin-bottom:23px}
+.eyebrow{font-size:10px;letter-spacing:1.6px;margin-bottom:8px}
+.page-title{font-size:29px;letter-spacing:-1.2px}
+.page-subtitle{font-size:13px;line-height:1.55;color:#687267}
+.card{border-color:#e4e9e1;box-shadow:0 3px 12px rgba(40,54,39,.025);border-radius:17px}
+.card-pad{padding:20px}
+.card-title{font-size:15px}
+.card-caption{font-size:11px}
+.section-row{margin-bottom:15px}
+.tag{font-size:10px}
+.chat-head{margin-bottom:19px}
+.chat-group-icon{width:48px;height:48px;border-radius:15px}
+.chat-heading h1{font-size:22px}
+.chat-heading p{font-size:12px}
+.chat-area{border-color:#e1e7de;border-radius:18px;min-height:540px;box-shadow:0 5px 18px rgba(40,54,39,.035)}
+.chat-scroll{padding:24px 25px 18px;max-height:calc(100vh - 390px)}
+.date-divider{font-size:10px;color:#798477}
+.message{gap:11px;margin-bottom:19px}
+.message .avatar{width:34px;height:34px;border-radius:12px}
+.message-body{max-width:min(78%,640px)}
+.message-name{font-size:12px}
+.message-time{font-size:10px}
+.message-bubble{font-size:13px;line-height:1.6;padding:11px 14px;background:#f1f4ee;color:#303a30;border-radius:4px 15px 15px 15px}
+.message.mine .message-bubble{background:#e5efe2}
+.message-actions{opacity:1}
+.message-action{font-size:10px}
+.chat-composer{padding:15px 17px;background:#fff;border-top-color:#e8ece5}
+.composer-input{font-size:13px;min-height:42px;background:#f4f6f1;border:1px solid #edf0e9}
+.composer-tools button{font-size:17px}
+.send-btn{width:40px;height:40px;border-radius:12px}
+.composer-hint{font-size:10px}
+.rail-card{padding:18px;margin-bottom:14px}
+.rail-heading strong{font-size:13px}
+.plan-mini{padding:13px;background:#f5f0e8}
+.plan-mini strong{font-size:12px}
+.plan-mini p{font-size:11px}
+.free-info strong,.commit-text{font-size:11px}
+.free-info span,.commit-text small{font-size:10px}
+.welcome-card{padding:25px;min-height:205px;border-radius:18px}
+.welcome-card h2{font-size:25px}
+.welcome-card p{font-size:13px;line-height:1.6}
+.pulse-card{padding:21px}
+.mood-btn{width:45px;height:45px}
+.pulse-summary{font-size:11px}
+.drop-large{padding:19px}
+.drop-copy strong{font-size:15px}
+.drop-copy p{font-size:12px}
+.quest-info strong,.ritual-chip strong{font-size:11px}
+.quest-info small,.ritual-chip small{font-size:10px}
+.plan-card{padding:19px}
+.plan-card h3{font-size:16px}
+.plan-card p{font-size:11px;line-height:1.5}
+.plan-details{font-size:10px}
+.memory-visual{height:145px}
+.memory-copy{padding:14px}
+.memory-copy strong{font-size:12px}
+.memory-copy p{font-size:10px}
+.activity-card{padding:18px;min-height:170px}
+.activity-card strong{font-size:13px}
+.activity-card p{font-size:10px;line-height:1.5}
+.member-card{padding:16px}
+.member-card strong{font-size:12px}
+.member-card small{font-size:10px}
+.setting-row{padding:16px 18px}
+.setting-copy strong{font-size:12px}
+.setting-copy small{font-size:10px}
+.empty-state{padding:54px 20px}
+.empty-state strong{font-size:15px}
+.empty-state p{font-size:11px}
+.modal{border-radius:20px}
+.modal-head h2{font-size:20px}
+.modal-head p,.field label{font-size:11px}
+.field input,.field textarea,.field select{font-size:13px;padding:11px 12px}
+@media(max-width:1160px){
+ .app{grid-template-columns:216px minmax(0,1fr)}
+ .content-grid{grid-template-columns:minmax(0,1fr) 270px;gap:16px;padding:23px 18px 32px}
+ .sidebar{padding-left:13px}
+}
+@media(max-width:900px){
+ .app{grid-template-columns:68px minmax(0,1fr)}
+ .sidebar{padding:20px 9px}
+ .content-grid{grid-template-columns:minmax(0,1fr)}
+ .right-rail{display:none}
+}
+@media(max-width:620px){
+ html,body{font-size:14px}
+ .topbar{height:60px;padding:0 12px;gap:8px}
+ .mobile-brand{font-size:17px}
+ .searchbox{height:37px}
+ .content-grid{padding:17px 12px 22px}
+ .page-title{font-size:25px}
+ .page-subtitle{font-size:12px}
+ .chat-heading h1{font-size:19px}
+ .chat-area{border-radius:15px;min-height:0}
+ .chat-scroll{padding:16px 12px;max-height:none}
+ .message{gap:8px;margin-bottom:16px}
+ .message .avatar{width:30px;height:30px}
+ .message-body{max-width:86%}
+ .message-bubble{font-size:12px;padding:10px 11px}
+ .chat-composer{padding:10px}
+ .composer-input{font-size:12px;min-height:39px}
+ .dashboard-grid{gap:12px}
+ .welcome-card{padding:20px;min-height:180px}
+ .welcome-card h2{font-size:23px}
+ .plan-grid,.memory-grid{gap:9px}
+ .memory-visual{height:112px}
+ .activity-card{padding:14px;min-height:155px}
+ .mobile-nav{height:64px;background:rgba(255,255,255,.97);border-top-color:#e3e8df}
+ .mobile-nav button{font-size:10px}
+ .mobile-nav button span:first-child{font-size:18px}
+}
+
 </style>
 
 <style id="circle-accessibility-polish">
