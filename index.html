@@ -2191,5 +2191,72 @@ input,textarea,select{border-radius:0!important;box-shadow:none!important}
  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 \n</style>
+
+<style id="circle-dashboard-rebuild">
+/* A usable dashboard, not a poster: restore information hierarchy and density. */
+:root{--dp-spacing-gutter:clamp(22px,4vw,64px);--dp-spacing-rail:190px;--dp-spacing-column-gap:clamp(22px,3vw,42px)}
+.topbar{padding-inline:var(--dp-spacing-gutter);height:66px}
+.content-grid,.content-grid.home-layout,.content-grid.chat-layout{max-width:1480px;margin-inline:auto;padding-inline:var(--dp-spacing-gutter)}
+.community-home{max-width:1360px;margin-inline:auto;gap:0}
+.community-welcome{padding:clamp(42px,6vw,78px) 0 34px;grid-template-columns:160px minmax(0,1fr);border-bottom:1px solid #000}
+.community-welcome:before{content:"YOUR SPACE";font-size:9px;letter-spacing:.14em}
+.community-welcome>div{grid-row:1 / span 2}
+.community-welcome h1{font-size:clamp(42px,5.5vw,76px);max-width:12ch;line-height:.98;letter-spacing:-.04em}
+.community-welcome p{font-size:15px;max-width:48ch;margin-top:13px}
+.community-welcome .community-create{grid-column:3;grid-row:1;align-self:center;justify-self:end;margin:0;white-space:nowrap}
+.community-banner{grid-template-columns:160px minmax(0,1fr) auto;padding:26px 28px;margin:26px 0 0;gap:28px;min-height:156px}
+.community-banner:before{content:"THE CIRCLE";display:block;grid-column:1;grid-row:1;color:#aaa;font:500 9px var(--dp-typography-mono);letter-spacing:.13em}
+.community-banner-main{grid-column:2;grid-row:1}
+.community-banner h2{font-size:clamp(30px,3.4vw,46px);margin:7px 0}
+.community-banner p{font-size:13px}
+.community-banner-faces{grid-column:3;grid-row:1;align-self:start}
+.community-banner>button{grid-column:3;grid-row:2;align-self:end;min-height:40px}
+.community-stat-row{grid-template-columns:repeat(4,minmax(0,1fr));margin:0 0 28px;border-bottom:1px solid #000}
+.community-stat-row>div{padding:16px 18px;display:grid;gap:5px;align-content:center}
+.community-stat-row strong{font-size:30px}
+.community-columns{grid-template-columns:minmax(0,1.55fr) minmax(280px,.8fr);gap:clamp(28px,4vw,56px)}
+.community-main-col,.community-side-col{gap:0}
+.community-panel{grid-template-columns:150px minmax(0,1fr);padding:24px 0;border-bottom:1px solid #cfcfcf}
+.community-panel-head{padding-right:16px}
+.community-panel-head h2{font-size:23px;line-height:1.05}
+.community-panel-head>button{margin-top:14px;text-align:left}
+.community-feed-row,.community-chat-row,.community-person{padding:13px 0}
+.community-feed-copy strong,.community-chat-row strong,.community-person strong{font-size:14px}
+.community-feed-copy small,.community-chat-row small,.community-person small{font-size:11px}
+.community-side-col .community-panel{grid-template-columns:1fr;padding:22px 0}
+.community-side-col .community-panel-head{border:0;padding:0;margin-bottom:12px}
+.community-side-col .community-panel-head h2{font-size:22px}
+.community-next-panel{padding:22px!important;margin-top:22px}
+.community-memory-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.community-memory{padding:12px 0}
+.chat-workspace{grid-template-columns:minmax(0,1fr) 270px;gap:30px}
+.chat-area-bold{height:min(720px,calc(100dvh - 230px))}
+@media(min-width:681px) and (max-width:1050px){
+ :root{--dp-spacing-rail:140px;--dp-spacing-column-gap:24px}
+ .community-columns{grid-template-columns:minmax(0,1fr) minmax(230px,.72fr);gap:24px}
+ .community-panel{grid-template-columns:120px minmax(0,1fr)}
+ .community-banner{grid-template-columns:120px minmax(0,1fr) auto}
+ .community-welcome{grid-template-columns:120px minmax(0,1fr)}
+ .community-welcome .community-create{grid-column:2;grid-row:3;justify-self:start;margin-top:16px}
+}
+@media(max-width:680px){
+ .topbar{padding-inline:16px}
+ .content-grid,.content-grid.home-layout,.content-grid.chat-layout{padding-inline:18px}
+ .community-welcome{padding:42px 0 26px;gap:0}
+ .community-welcome h1{font-size:clamp(42px,12vw,64px);max-width:11ch}
+ .community-welcome p{font-size:14px}
+ .community-welcome .community-create{align-self:flex-start;margin-top:18px}
+ .community-banner{margin-top:18px;padding:24px 20px;gap:12px}
+ .community-banner:before{display:none}
+ .community-banner h2{font-size:34px}
+ .community-stat-row{margin-bottom:12px}
+ .community-stat-row strong{font-size:25px}
+ .community-panel{padding:25px 0}
+ .community-panel-head h2{font-size:25px}
+ .community-side-col .community-panel{padding:24px 0}
+ .chat-area-bold{height:calc(100dvh - 245px);min-height:320px}
+}
+</style>
+
 </body>
 </html>
