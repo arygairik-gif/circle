@@ -648,6 +648,125 @@ html,body{background:var(--paper);color:var(--ink)}
 .chat-music-meta{overflow:hidden;overflow-wrap:anywhere}
 .chat-music-meta audio{display:block;max-width:100%;min-width:0}
 .chat-side-empty{overflow-wrap:anywhere;line-height:1.5}
+
+/* Circle chat: stable viewport layout, no decorative floating effects. */
+.app.chat-view-active{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-template-rows:minmax(0,1fr);
+  height:100dvh!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+.app.chat-view-active .main-shell{
+  display:flex!important;
+  flex-direction:column!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+.app.chat-view-active .topbar{flex:0 0 76px;min-height:76px}
+.app.chat-view-active .content-grid.chat-layout{
+  display:block!important;
+  flex:1 1 0!important;
+  width:100%;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+  padding:14px clamp(12px,2vw,28px) 18px!important;
+}
+.app.chat-view-active .content-grid.chat-layout #view{
+  display:block!important;
+  width:100%;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+.app.chat-view-active .chat-redesign{
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+.app.chat-view-active .chat-redesign-top{flex:0 0 58px}
+.app.chat-view-active .chat-workspace{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 245px!important;
+  flex:1 1 0!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+.app.chat-view-active .chat-main-panel{
+  display:flex!important;
+  flex-direction:column!important;
+  min-width:0;
+  min-height:0!important;
+  overflow:hidden!important;
+}
+.app.chat-view-active .chat-room-header,
+.app.chat-view-active .chat-now-strip{flex:0 0 auto}
+.app.chat-view-active .chat-area-bold{
+  display:flex!important;
+  flex:1 1 0!important;
+  flex-direction:column!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow:hidden!important;
+}
+.app.chat-view-active .chat-area-bold .chat-scroll{
+  display:block!important;
+  flex:1 1 0!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain;
+}
+.app.chat-view-active .chat-composer-bold{flex:0 0 auto}
+.app.chat-view-active .chat-side-panel{display:flex!important;min-width:0;min-height:0;overflow-y:auto}
+.chat-redesign,.chat-workspace,.chat-area-bold,.chat-side-card,.chat-room-header,.chat-now-strip{
+  background-image:none!important;
+  animation:none!important;
+  transform:none;
+}
+.chat-brand-mark{transform:none!important}
+.chat-redesign::before,.chat-redesign::after,.chat-workspace::before,.chat-workspace::after{content:none!important;display:none!important}
+@media(max-width:700px){
+  .app.chat-view-active{
+    display:block!important;
+    height:calc(100dvh - 64px - env(safe-area-inset-bottom))!important;
+    min-height:0!important;
+    padding-bottom:0!important;
+  }
+  .app.chat-view-active .main-shell{height:100%!important}
+  .app.chat-view-active .topbar{flex:0 0 62px;min-height:62px;height:62px}
+  .app.chat-view-active .content-grid.chat-layout{
+    display:block!important;
+    height:auto!important;
+    flex:1 1 0!important;
+    min-height:0!important;
+    padding:9px 8px 10px!important;
+  }
+  .app.chat-view-active .content-grid.chat-layout #view{height:100%!important}
+  .app.chat-view-active .chat-redesign-top{flex-basis:50px}
+  .app.chat-view-active .chat-workspace{
+    display:block!important;
+    height:calc(100% - 50px)!important;
+    padding:7px!important;
+  }
+  .app.chat-view-active .chat-main-panel{height:100%!important;gap:8px}
+  .app.chat-view-active .chat-side-panel{display:none!important}
+  .app.chat-view-active .chat-room-header,
+  .app.chat-view-active .chat-now-strip{flex:0 0 auto}
+  .app.chat-view-active .chat-area-bold{flex:1 1 0!important;min-height:0!important}
+  .app.chat-view-active .chat-area-bold .chat-scroll{flex:1 1 0!important;min-height:0!important}
+}
+
 </style>
 
 <style id="circle-accessibility-polish">
