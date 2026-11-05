@@ -1026,6 +1026,14 @@ html,body{background:var(--paper);color:var(--ink);font-size:14px}
  .mobile-nav button span:first-child{font-size:18px}
 }
 
+.community-drop-panel{background:#f2f0e6;border-color:#e6e2d3}
+.community-drop-status{font-size:8px;letter-spacing:1px;font-weight:800;color:#56785a;background:#e4ebdd;border-radius:5px;padding:6px 8px}
+.community-drop-prompt{font:400 18px/1.35 'DM Serif Display',Georgia,serif;color:var(--ink);margin:12px 0 9px}
+.community-drop-note{display:block;color:var(--muted);font-size:9px;line-height:1.5}
+.community-drop-action{width:100%;margin-top:13px;padding:11px 12px;border:1px solid #d9dfd2;border-radius:9px;background:#e7eee4;color:#3e5c42;text-align:left;font-size:10px;font-weight:800}
+.community-drop-action:hover{background:#dce7d7}
+html[data-theme="dark"] .community-drop-panel{background:#242c24;border-color:#394739}
+html[data-theme="dark"] .community-drop-action{background:#304231;border-color:#435b43;color:#e4f0dc}
 </style>
 
 <style id="circle-accessibility-polish">
@@ -1896,16 +1904,6 @@ function homeActivityItems(){
 function renderHomeRail(){
  return '<div class="home-rail"><section class="home-rail-card"><h3 class="home-rail-heading">Quick access</h3><div class="home-rail-links"><button class="home-rail-link" data-view="chat"><span class="home-rail-icon">◌</span><span class="home-rail-label">Chats</span><span class="home-rail-arrow">↗</span></button><button class="home-rail-link" data-view="plans"><span class="home-rail-icon">▦</span><span class="home-rail-label">Plans</span><span class="home-rail-arrow">↗</span></button><button class="home-rail-link" data-view="memories"><span class="home-rail-icon">▧</span><span class="home-rail-label">Memories</span><span class="home-rail-arrow">↗</span></button></div></section><button class="home-rail-invite" data-action="invite"><span>＋</span> Invite your people</button></div>';
 }
-<style id="circle-daily-return-loop">
-.community-drop-panel{background:#f2f0e6;border-color:#e6e2d3}
-.community-drop-status{font-size:8px;letter-spacing:1px;font-weight:800;color:#56785a;background:#e4ebdd;border-radius:5px;padding:6px 8px}
-.community-drop-prompt{font:400 18px/1.35 'DM Serif Display',Georgia,serif;color:var(--ink);margin:12px 0 9px}
-.community-drop-note{display:block;color:var(--muted);font-size:9px;line-height:1.5}
-.community-drop-action{width:100%;margin-top:13px;padding:11px 12px;border:1px solid #d9dfd2;border-radius:9px;background:#e7eee4;color:#3e5c42;text-align:left;font-size:10px;font-weight:800}
-.community-drop-action:hover{background:#dce7d7}
-html[data-theme="dark"] .community-drop-panel{background:#242c24;border-color:#394739}
-html[data-theme="dark"] .community-drop-action{background:#304231;border-color:#435b43;color:#e4f0dc}
-</style>
 function renderToday(){
  const members=Array.isArray(state.members)?state.members:[];
  const me=state.me.displayName||'Friend';
