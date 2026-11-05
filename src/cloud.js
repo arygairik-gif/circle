@@ -179,19 +179,22 @@ function authScreen(){
   finally{b.disabled=false}
  };
  $('#cloudGoogle').onclick=async()=>{
-  const b=$('#cloudGoogle');b.disabled=true;error('');
+  const b=$('#cloudGoogle'),originalLabel=b.innerHTML;b.disabled=true;error('');
+  b.textContent='Connecting to Google…';
   const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:'select_account'});
   try{
    const result=await signInWithPopup(auth,provider);
-   const photo=result.user.photoURL||'',current=await getDoc(doc(db,'users',result.user.uid));
-   profileData={...(current.data()||{}),displayName:validDisplayName(current.data()?.displayName,result.user.email)||validDisplayName(result.user.displayName,result.user.email),handle:current.data()?.handle||'',bio:current.data()?.bio||'',photoURL:current.data()?.photoURL||photo,email:result.user.email};
+   // Let onAuthStateChanged own profile loading and routing. A second
+   // Firestore read here raced that handler and could leave the gate unchanged.
+   profileData={displayName:validDisplayName(result.user.displayName,result.user.email),handle:'',bio:'',photoURL:result.user.photoURL||'',email:result.user.email};
+   b.textContent='Signed in — opening Circle…';
   }catch(x){
    const fallback=['auth/popup-blocked','auth/web-storage-unsupported','auth/operation-not-supported-in-this-environment'].includes(x?.code);
    if(fallback){
-    try{await signInWithRedirect(auth,provider);return}
+    try{b.textContent='Opening Google sign-in…';await signInWithRedirect(auth,provider);return}
     catch(redirectError){error(explain(redirectError))}
    }else error(explain(x));
-  }finally{if(b.isConnected)b.disabled=false}
+  }finally{if(b.isConnected){b.disabled=false;b.innerHTML=originalLabel}}
  };
 }
 function profileSetupScreen(){
