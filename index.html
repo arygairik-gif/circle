@@ -1435,6 +1435,86 @@ input,textarea,select{accent-color:#1b201b}
 }
 
 </style>
+<style id="circle-layout-correction">
+
+/* Layout correction: remove the third home column and restore a clear hierarchy. */
+body{background:#f4f4ef!important;background-image:none!important}
+.content-grid.home-layout{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr)!important;
+ max-width:1440px!important;
+ gap:0!important;
+ padding:34px clamp(22px,4.5vw,68px) 52px!important;
+}
+.content-grid.home-layout .right-rail{display:none!important}
+.content-grid.home-layout .main-column{width:100%;max-width:none;min-width:0}
+.community-home{width:100%;max-width:none;gap:22px}
+.community-welcome{padding:8px 0 3px;align-items:flex-end}
+.community-welcome h1{font-size:clamp(34px,3.5vw,46px);letter-spacing:-2.3px;line-height:1.02}
+.community-welcome p{font-size:12px;max-width:520px}
+.community-create{padding:12px 16px;border-radius:7px}
+.community-banner{
+ min-height:164px;padding:28px 30px;border-radius:8px;
+ display:flex;align-items:center;gap:22px;
+}
+.community-banner:after{content:"";display:none}
+.community-banner h2{font-size:clamp(27px,3vw,36px);letter-spacing:-1.6px}
+.community-banner p{font-size:11px;color:#c3c9bd}
+.community-banner-faces{margin-left:auto}
+.community-banner-faces .avatar{width:34px;height:34px}
+.community-banner>button{padding:11px 14px;border-radius:6px}
+.community-stat-row{grid-template-columns:repeat(4,minmax(0,1fr));border-radius:8px;background:#fbfbf8}
+.community-stat-row>div{padding:15px 18px;display:flex;align-items:baseline;gap:9px}
+.community-stat-row>div+div{border-left:1px solid #e1e4dc}
+.community-stat-row strong{font-size:25px;letter-spacing:-1.3px}
+.community-stat-row span{font-size:8px;letter-spacing:1.4px}
+.community-columns{
+ display:grid!important;
+ grid-template-columns:minmax(0,1.65fr) minmax(270px,.85fr)!important;
+ align-items:start;gap:18px;
+}
+.community-main-col,.community-side-col{gap:18px;min-width:0}
+.community-panel{padding:19px 20px;border-radius:8px}
+.community-panel-head{margin-bottom:13px}
+.community-panel-head h2{font-size:15px}
+.community-feed-row,.community-chat-row{padding:12px 0}
+.community-feed-copy strong,.community-chat-row strong,.community-person strong{font-size:11px}
+.community-feed-copy small,.community-chat-row small{font-size:10px}
+.community-feed-icon{width:35px;height:35px;border-radius:7px}
+.community-person{padding:10px 0}
+.community-next-panel{background:#e9eee4}
+.community-invite-panel{border-radius:8px;padding:18px}
+.community-memory-grid{gap:10px}
+.community-memory{border-radius:7px}
+.community-memory-art{height:96px}
+.home-rail,.home-rail-card{display:none!important}
+@media(max-width:900px){
+ .content-grid.home-layout{padding:25px 22px 40px!important}
+ .community-columns{grid-template-columns:minmax(0,1.5fr) minmax(230px,.9fr)!important;gap:13px}
+ .community-side-col{grid-template-columns:minmax(0,1fr)}
+ .community-stat-row>div{padding:12px 13px}
+}
+@media(max-width:720px){
+ .content-grid.home-layout{grid-template-columns:minmax(0,1fr)!important;padding:19px 13px calc(24px + env(safe-area-inset-bottom))!important}
+ .community-home{gap:15px}
+ .community-welcome{align-items:flex-start}
+ .community-welcome h1{font-size:29px;letter-spacing:-1.5px}
+ .community-welcome p{font-size:10px}
+ .community-create{padding:10px 11px;white-space:nowrap}
+ .community-banner{min-height:138px;padding:18px;gap:10px;flex-wrap:wrap}
+ .community-banner h2{font-size:23px}
+ .community-banner-faces{margin-left:auto}
+ .community-banner>button{margin-left:auto;padding:9px 10px}
+ .community-stat-row>div{display:grid;gap:3px;padding:10px 7px}
+ .community-stat-row strong{font-size:18px}
+ .community-stat-row span{font-size:7px;letter-spacing:.7px}
+ .community-columns{grid-template-columns:minmax(0,1fr)!important;gap:13px}
+ .community-main-col,.community-side-col{gap:13px}
+ .community-panel{padding:14px}
+ .community-memory-art{height:72px}
+}
+
+</style>
 </head>
 <body>
 <div id="cloudGate" class="cloud-gate" aria-live="polite" aria-busy="true"><section class="cloud-loading-panel" role="status" aria-live="polite"><span class="brand-mark" aria-hidden="true">c</span><p class="cloud-kicker">CIRCLE · CLOSER, TOGETHER</p><h1>Finding your people.</h1><p>Checking your sign-in and getting your private space ready.</p><div class="cloud-loading-mark" aria-hidden="true"></div></section><noscript><p class="cloud-loading-panel">Circle needs JavaScript enabled to sign in and load your private circles.</p></noscript></div>
