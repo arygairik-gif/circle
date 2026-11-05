@@ -1034,6 +1034,171 @@ html,body{background:var(--paper);color:var(--ink);font-size:14px}
 .community-drop-action:hover{background:#dce7d7}
 html[data-theme="dark"] .community-drop-panel{background:#242c24;border-color:#394739}
 html[data-theme="dark"] .community-drop-action{background:#304231;border-color:#435b43;color:#e4f0dc}
+
+/* Circle product UI refresh — one clear navigation system, calmer surfaces, better responsive ergonomics. */
+:root{
+ --paper:#f3f4ef;--surface:#fff;--surface-2:#f7f8f4;--ink:#202720;--muted:#687267;
+ --line:#e1e5dc;--green:#496b4f;--green-dark:#304b36;--green-soft:#e8efe5;
+ --shadow:0 8px 28px rgba(27,39,28,.055);--radius:16px;
+}
+html,body{background:#f3f4ef;color:var(--ink)}
+body{font-size:14px;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font-family:inherit}
+button{transition:background-color .16s ease,border-color .16s ease,color .16s ease,transform .16s ease}
+button:active{transform:translateY(1px)}
+button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #8ba783;outline-offset:3px}
+.app{display:block;max-width:none;min-height:100dvh}
+.app>.sidebar{display:none}
+.main-shell{min-height:100dvh;width:100%;max-width:none}
+.topbar{height:68px;padding:0 clamp(18px,3.5vw,54px);gap:16px;background:rgba(250,251,247,.94);border-bottom:1px solid #e2e6dd;backdrop-filter:blur(18px);box-shadow:0 2px 10px rgba(25,35,25,.025)}
+.desktop-brand{display:flex;align-items:center;gap:9px;font:800 18px Manrope;letter-spacing:-.8px;color:#202720;white-space:nowrap}
+.desktop-brand .brand-mark{width:31px;height:31px;border-radius:10px}
+.desktop-nav{margin-left:clamp(12px,2vw,30px);gap:5px}
+.desktop-nav button{padding:10px 13px;border-radius:9px;font-size:12px;color:#626d61}
+.desktop-nav button.active{background:#e8efe5;color:#304b36}
+.topbar .searchbox{width:min(320px,25vw);height:38px;margin-left:auto;background:#f4f6f1;border-color:#e3e7de;border-radius:10px}
+.topbar .top-status{padding:9px 12px;border:1px solid #dce6d8;background:#f3f7ef;border-radius:10px;font-size:11px}
+.topbar .icon-btn{width:36px;height:36px;border-radius:10px;border:1px solid #e4e8df;background:#fff}
+.top-create{padding:10px 14px;border-radius:10px;background:#202720;font-size:11px;white-space:nowrap}
+.top-create:hover{background:#3a493b}
+.top-profile{width:36px;height:36px;flex:0 0 auto}
+.content-grid,.content-grid.home-layout{width:100%;max-width:1500px;margin:0 auto;padding:30px clamp(18px,3.5vw,54px) 48px;grid-template-columns:minmax(0,1fr) 270px;gap:24px;align-items:start}
+.content-grid.chat-layout{grid-template-columns:minmax(0,1fr);max-width:1500px}
+.main-column{min-width:0}
+.right-rail{padding-top:0}
+.card,.community-panel,.chat-side-card,.chat-room-header,.chat-area-bold{border-radius:14px;box-shadow:0 2px 10px rgba(30,42,30,.025)}
+.page-title{font-size:28px;letter-spacing:-1.1px}
+.page-subtitle{font-size:13px;line-height:1.6;color:#687267}
+.eyebrow{letter-spacing:1.2px;color:#58734e}
+.primary-btn,.community-create,.chat-invite-btn{min-height:40px;border-radius:10px}
+.soft-btn{min-height:36px;border-radius:9px}
+.community-home{gap:20px}
+.community-welcome h1{font-size:clamp(28px,3vw,38px);letter-spacing:-1.6px}
+.community-welcome p{font-size:13px;color:#687267}
+.community-banner{min-height:142px;padding:23px 25px;border-radius:15px;background:#202720}
+.community-banner h2{font-size:26px;letter-spacing:-.8px}
+.community-banner p{font-size:12px;color:#c5cec1}
+.community-banner>button{min-height:38px;border-radius:9px}
+.community-stat-row{border-radius:12px;background:#fff}
+.community-stat-row>div{padding:14px 16px}
+.community-stat-row strong{font-size:21px}
+.community-stat-row span{font-size:9px;letter-spacing:.8px}
+.community-columns{grid-template-columns:minmax(0,1.45fr) minmax(250px,.85fr);gap:18px}
+.community-panel{padding:18px;background:#fff;border-color:#e3e7df}
+.community-panel-head h2{font-size:15px}
+.community-feed-row,.community-chat-row{padding:12px 0}
+.community-feed-copy strong,.community-chat-row strong,.community-person strong{font-size:12px}
+.community-feed-copy small,.community-chat-row small{font-size:10px}
+.community-feed-icon{width:34px;height:34px}
+.community-empty{padding:12px 0;color:#727c70;line-height:1.55;font-size:12px}
+.home-rail-card{border-radius:14px;border:1px solid #e3e7df;background:#fff;padding:17px}
+.home-rail-heading{font-size:13px}
+.home-rail-link{min-height:42px}
+.home-rail-invite{min-height:44px;border-radius:11px}
+.chat-redesign{--chat-ink:#202720;--chat-lime:#d9ef83}
+.chat-redesign-top{height:54px;padding:0 18px;border-radius:13px 13px 0 0}
+.chat-workspace{grid-template-columns:minmax(0,1fr) 260px;gap:16px;padding:16px;background:#eef0e9;border-color:#e1e5dc;border-radius:0 0 13px 13px}
+.chat-main-panel{gap:12px}
+.chat-room-header{padding:15px 17px;border-color:#e3e7df}
+.chat-room-title h1{font-size:21px}
+.chat-room-title p{font-size:11px}
+.chat-now-strip{border-radius:10px;padding:11px 13px}
+.chat-area-bold{min-height:560px;border-color:#e3e7df;background:#fff}
+.chat-area-bold .chat-scroll{max-height:calc(100dvh - 390px);min-height:340px;padding:22px clamp(16px,2vw,30px)}
+.chat-area-bold .chat-composer-bold{padding:14px 16px}
+.chat-composer-bold .composer-input{min-height:42px;background:#f3f5f0;border:1px solid #e6eae2;border-radius:11px;font-size:13px}
+.chat-composer-bold .send-btn{width:42px;height:42px;border-radius:11px}
+.chat-composer-bold .composer-tools button{width:34px;height:34px;border-radius:9px}
+.chat-side-card{border-color:#e3e7df;padding:16px}
+.chat-side-title{font-size:9px}
+.chat-person-row b,.chat-music-meta b,.chat-listening-copy b{font-size:11px}
+.chat-person-row small,.chat-music-meta small,.chat-listening-copy small{font-size:9px}
+.modal{border-radius:16px;box-shadow:0 24px 80px rgba(20,30,20,.2)}
+.modal-backdrop{backdrop-filter:blur(5px)}
+.toast{border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+/* Remove decorative noise and keep content readable at common laptop widths. */
+@media(max-width:1120px){
+ .topbar{gap:10px;padding-inline:18px}
+ .desktop-nav{margin-left:4px}
+ .desktop-nav button{padding-inline:9px}
+ .topbar .searchbox{width:min(240px,21vw)}
+ .content-grid,.content-grid.home-layout{grid-template-columns:minmax(0,1fr) 235px;gap:17px;padding-inline:20px}
+ .chat-workspace{grid-template-columns:minmax(0,1fr) 230px}
+}
+@media(max-width:900px){
+ .topbar{height:64px}
+ .desktop-brand{font-size:17px}
+ .desktop-nav{gap:2px}
+ .desktop-nav button{padding:9px 8px;font-size:11px}
+ .topbar .searchbox{width:min(210px,22vw)}
+ .content-grid,.content-grid.home-layout{grid-template-columns:minmax(0,1fr);padding:24px 20px 40px}
+ .content-grid .right-rail{display:none}
+ .chat-workspace{grid-template-columns:minmax(0,1fr) 220px}
+ .chat-area-bold .chat-scroll{max-height:calc(100dvh - 390px)}
+}
+@media(max-width:680px){
+ .topbar{height:60px;padding:0 13px;gap:9px}
+ .desktop-brand,.desktop-nav{display:none}
+ .mobile-brand{display:flex;align-items:center;gap:7px;font:800 16px Manrope;letter-spacing:-.5px;white-space:nowrap}
+ .mobile-brand .brand-mark{width:29px;height:29px;border-radius:9px}
+ .topbar .searchbox{width:auto;min-width:0;flex:1;height:35px;margin-left:0;padding-inline:8px}
+ .topbar .searchbox input{font-size:11px}
+ .topbar .top-status{width:34px;height:34px;padding:0;justify-content:center;flex:0 0 auto}
+ .topbar .top-status span:last-child{display:none}
+ .topbar>.icon-btn,.topbar .top-profile{display:none}
+ .top-create{width:35px;height:35px;padding:0;justify-content:center;font-size:0;flex:0 0 auto}
+ .top-create span{font-size:20px}
+ .content-grid,.content-grid.home-layout{display:block;padding:19px 13px calc(82px + env(safe-area-inset-bottom))}
+ .community-home{gap:15px}
+ .community-welcome{align-items:center}
+ .community-welcome h1{font-size:27px;line-height:1.08}
+ .community-welcome p{font-size:11px;max-width:260px}
+ .community-create{min-height:38px;padding:9px 11px;font-size:10px}
+ .community-banner{padding:17px;gap:10px;flex-wrap:wrap}
+ .community-banner-main{flex-basis:100%}
+ .community-banner h2{font-size:23px}
+ .community-banner-faces{margin-right:auto}
+ .community-banner>button{font-size:9px}
+ .community-stat-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .community-stat-row>div{padding:11px 12px;border-bottom:1px solid var(--line)}
+ .community-stat-row>div:nth-child(2){border-right:0}
+ .community-stat-row>div:nth-child(n+3){border-bottom:0}
+ .community-stat-row strong{font-size:19px}
+ .community-columns{grid-template-columns:minmax(0,1fr);gap:13px}
+ .community-panel{padding:15px}
+ .chat-workspace{display:block;padding:10px}
+ .chat-redesign-top{height:49px;padding:0 13px}
+ .chat-private-pill{display:none}
+ .chat-room-header{padding:11px;gap:9px}
+ .chat-room-symbol{width:37px;height:37px;border-radius:11px}
+ .chat-room-title h1{font-size:17px}
+ .chat-room-title p{font-size:9px;line-height:1.4}
+ .chat-room-members{display:none}
+ .chat-room-actions{margin-left:auto}
+ .chat-now-strip{min-height:47px;padding:8px 10px}
+ .chat-now-strip small{font-size:9px}
+ .chat-side-panel{display:none}
+ .chat-area-bold{height:calc(100dvh - 300px);min-height:310px;max-height:620px;overflow:hidden}
+ .chat-area-bold .chat-scroll{height:auto;min-height:0;max-height:none;padding:15px 12px}
+ .chat-area-bold .chat-composer-bold{padding:9px}
+ .chat-composer-bold .composer-tools{gap:0}
+ .chat-composer-bold .composer-tools button{width:29px;height:32px}
+ .chat-composer-bold .composer-input{font-size:12px;min-height:38px;padding:9px}
+ .chat-composer-bold .send-btn{width:38px;height:38px}
+ .chat-composer-bold .composer-hint{display:none}
+ .mobile-nav{height:66px;padding:5px 8px calc(5px + env(safe-area-inset-bottom));background:rgba(250,251,247,.97);border-top:1px solid #e2e6dd;box-shadow:0 -6px 20px rgba(24,35,24,.04)}
+ .mobile-nav button{min-width:55px;min-height:48px;gap:4px;font-size:10px;color:#7a8478}
+ .mobile-nav button span:first-child{font-size:18px}
+ .mobile-nav button.active{color:#304b36}
+ .mobile-nav button:focus-visible{border-radius:10px}
+ .app.chat-view-active{padding-bottom:0}
+ .app.chat-view-active .content-grid{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+ .app.chat-view-active .chat-area{height:auto;min-height:0;max-height:none}
+}
+@media(prefers-reduced-motion:reduce){
+ *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
 </style>
 
 <style id="circle-accessibility-polish">
