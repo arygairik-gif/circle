@@ -1,4 +1,4 @@
-import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile } from 'firebase/auth';
+import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from 'firebase/auth';
 import { addDoc, collection, deleteDoc, deleteField, doc, getDoc, getDocs, onSnapshot, orderBy, query, runTransaction, serverTimestamp, setDoc, updateDoc, limit, where, writeBatch, startAfter } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
 const dayKey=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
@@ -102,6 +102,7 @@ function authScreen(){
    </div>
    <div class="cloud-error" id="cloudError" role="alert"></div>
    <button class="cloud-primary" id="cloudSubmit">Sign in</button>
+   <button class="cloud-reset" id="cloudResetPassword" type="button">Forgot password?</button>
   </form>
   <div class="cloud-or"><span></span>OR<span></span></div>
   <button class="cloud-google" id="cloudGoogle"><span class="google-g">G</span> Continue with Google</button>
@@ -115,6 +116,7 @@ function authScreen(){
   $('#cloudIdentityWrap').querySelector('[name="handle"]').required=signup;
   $('#cloudModeLabel').textContent=signup?'Make your space':'Welcome back';
   $('#cloudSubmit').textContent=signup?'Create account':'Sign in';
+  $('#cloudResetPassword').hidden=signup;
   $('#cloudSwitchText').textContent=signup?'Already have an account?':'New to Circle?';
   $('#cloudSwitch').textContent=signup?'Back to sign in':'Get started';
   error('');
@@ -123,6 +125,14 @@ function authScreen(){
  };
  setMode('signin');
  $('#cloudSwitch').onclick=()=>setMode(mode==='signin'?'signup':'signin');
+ $('#cloudResetPassword').onclick=async()=>{
+  const email=$('#cloudAuthForm').elements.email.value.trim(),button=$('#cloudResetPassword');
+  if(!email){error('Enter your account email first, then choose Forgot password?');$('#cloudAuthForm').elements.email.focus();return}
+  button.disabled=true;
+  try{await sendPasswordResetEmail(auth,email);error('If an account exists for that address, a password reset email has been sent.')}
+  catch(x){error(explain(x))}
+  finally{button.disabled=false}
+ };
  $('#cloudAuthForm').addEventListener('input',e=>{
   if(e.target.name==='displayName'&&!signupPhotoDataUrl)paintAuthAvatar('',e.target.value||'Y');
  });
