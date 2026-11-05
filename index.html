@@ -796,6 +796,92 @@ html,body{background:var(--paper);color:var(--ink)}
   }
 }
 
+
+/* Accessibility and responsive polish: shared tokens, readable type and usable controls. */
+html,body{max-width:100%;overflow-x:clip}
+.app,.main-shell,.content-grid,.main-column,#view{min-width:0;max-width:100%}
+.community-home,.community-columns,.community-main-col,.community-side-col,.community-panel{min-width:0}
+.community-columns{grid-template-columns:minmax(0,1.55fr) minmax(240px,.85fr)}
+.community-feed,.community-chat-list{min-width:0;width:100%}
+.community-feed-row,.community-chat-row{
+ display:flex!important;align-items:center;gap:12px;width:100%;min-width:0;
+ padding:12px 14px;border:1px solid var(--line);border-radius:13px;
+ background:var(--surface);color:var(--ink);text-align:left;
+}
+.community-feed-copy,.community-chat-row>span{display:flex;flex:1 1 auto;flex-direction:column;gap:3px;min-width:0}
+.community-feed-copy strong,.community-feed-copy small,.community-chat-row strong,.community-chat-row small{
+ display:block;min-width:0;overflow-wrap:anywhere;white-space:normal;
+}
+.community-feed-row time{flex:0 0 auto;color:var(--muted)}
+.community-feed-row:hover,.community-chat-row:hover{border-color:var(--green);background:var(--surface-2)}
+.community-panel,.community-banner,.community-invite-panel,.community-next-panel{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.community-panel p,.community-empty,.community-person small,.community-feed-row time{color:var(--muted)}
+/* Secondary labels and metadata should not collapse into fine print. */
+.eyebrow,.community-overline,.community-kicker,.home-rail-label,.page-subtitle,
+small,time,.chat-overline,.chat-side-title,.chat-side-empty,.composer-hint,
+.date-divider,.message-meta,.message-actions,.cloud-field-hint,.search-shortcut{
+ font-size:max(12px,1em)!important;
+}
+p,.community-feed-copy small,.community-chat-row small,.community-person small,
+.community-empty,.chat-side-empty{font-size:max(14px,1em)}
+/* Touch controls meet a comfortable minimum size. */
+.nav-link,.desktop-nav button,.top-status,.chat-action-btn,.search-submit,
+.composer-tools button,.message-actions button,.reaction,.mobile-nav button{
+ min-height:44px;
+}
+.chat-action-btn{min-width:44px}
+.search-submit{min-width:40px}
+.composer-tools button{min-width:40px}
+.message-actions button{padding:8px 10px}
+.mobile-nav{min-height:52px}
+.skip-link{position:fixed;z-index:10000;top:8px;left:8px;padding:12px 16px;border-radius:10px;background:var(--ink);color:var(--surface);transform:translateY(-160%)}
+.skip-link:focus{transform:translateY(0)}
+/* Dark theme: the redesigned Home and Chat use the same semantic surfaces. */
+html[data-theme="dark"] .community-panel,
+html[data-theme="dark"] .community-banner,
+html[data-theme="dark"] .community-invite-panel,
+html[data-theme="dark"] .community-next-panel,
+html[data-theme="dark"] .community-feed-row,
+html[data-theme="dark"] .community-chat-row,
+html[data-theme="dark"] .community-memory,
+html[data-theme="dark"] .community-person,
+html[data-theme="dark"] .home-rail-card,
+html[data-theme="dark"] .home-rail-link,
+html[data-theme="dark"] .chat-room-header,
+html[data-theme="dark"] .chat-area-bold,
+html[data-theme="dark"] .chat-side-card{
+ background:var(--surface)!important;color:var(--ink)!important;border-color:var(--line)!important;
+}
+html[data-theme="dark"] .community-feed-row:hover,
+html[data-theme="dark"] .community-chat-row:hover,
+html[data-theme="dark"] .home-rail-link:hover{background:var(--surface-2)!important}
+html[data-theme="dark"] .community-panel p,
+html[data-theme="dark"] .community-empty,
+html[data-theme="dark"] .community-feed-row time,
+html[data-theme="dark"] .community-person small,
+html[data-theme="dark"] .chat-side-empty{color:var(--muted)!important}
+@media(max-width:700px){
+ .community-columns{grid-template-columns:minmax(0,1fr)}
+ .community-feed-row{align-items:flex-start;flex-wrap:wrap}
+ .community-feed-row time{margin-left:42px}
+ .community-chat-row{width:100%;max-width:100%}
+}
+@media(max-width:360px){
+ .topbar{padding-left:8px;padding-right:8px;gap:6px}
+ .mobile-brand{font-size:14px}
+ .searchbox{min-width:0;max-width:42vw}
+ .top-create{padding:8px!important;min-width:40px}
+ .content-grid{padding-left:8px!important;padding-right:8px!important}
+ .community-stat-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .community-banner{min-width:0;flex-wrap:wrap}
+ .community-banner-main{min-width:0}
+ .community-banner h2,.community-welcome h1{overflow-wrap:anywhere}
+ .chat-workspace{min-width:0}
+ .chat-composer-bold{min-width:0}
+ .composer-row{min-width:0;gap:4px}
+ .composer-input{min-width:0}
+}
+
 </style>
 
 <style id="circle-accessibility-polish">
@@ -926,7 +1012,7 @@ function hydrateState(){
  data.messages=data.messages.map(m=>({...m,reactions:Array.isArray(m.reactions)?m.reactions:[]}));
  data.plans=data.plans.map(p=>({...p,options:Array.isArray(p.options)&&p.options.length?p.options:['Let’s decide together'],votes:Array.isArray(p.votes)?p.votes.map(v=>Array.isArray(v)?v:[]):[],rsvps:Array.isArray(p.rsvps)?p.rsvps:[]}));
  data.drop={...cloneData(seed.drop),...(data.drop&&typeof data.drop==='object'?data.drop:{}),entries:Array.isArray(data.drop?.entries)?data.drop.entries.filter(item=>item&&typeof item==='object'):[]};
- if(!['chat','today','plans','memories','activities','stickers','circle','profile','settings'].includes(data.view)) data.view='chat';
+ if(!['chat','today','spaces','plans','memories','activities','stickers','circle','profile','settings'].includes(data.view)) data.view='chat';
  if(!['light','dark'].includes(data.settings.theme))data.settings.theme='light';
  if(!['warm','minimal','neo','glass'].includes(data.settings.style))data.settings.style='warm';
  if(typeof data.circleName!=='string'||!data.circleName.trim()) data.circleName='The Usuals';
@@ -1017,7 +1103,7 @@ function renderChat(){
      <div class="chat-room-actions"><button class="chat-action-btn" data-action="hangout" title="Start a hangout" aria-label="Start a hangout">◉</button><button class="chat-action-btn" data-action="circle-info" title="Circle options" aria-label="Circle options">•••</button></div>
     </header>
     <div class="chat-now-strip"><span class="chat-now-icon">✦</span><span><b>${latest?'THE CONVERSATION IS ALIVE':'START THE CONVERSATION'}</b><small>${latest?escapeHtml((person(latest.from).name||'Someone')+' sent the latest message · '+(latest.text||'Shared something with the circle').slice(0,75)):'Say something, share a photo, or drop a sticker.'}</small></span><span class="chat-now-arrow">↗</span></div>
-    <section class="chat-area chat-area-bold"><div class="chat-scroll" id="chatScroll">${state.hasOlderMessages?'<div class="older-messages-wrap"><button class="soft-btn" data-action="load-older-messages">Load older messages</button></div>':''}${renderMessageTimeline()}</div>
+    <section class="chat-area chat-area-bold"><div class="chat-scroll" id="chatScroll" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Circle messages">${state.hasOlderMessages?'<div class="older-messages-wrap"><button class="soft-btn" data-action="load-older-messages">Load older messages</button></div>':''}${renderMessageTimeline()}</div>
      <div class="chat-composer chat-composer-bold">${replyTo?`<div class="replying-to"><span>Replying to ${escapeHtml(person(state.messages.find(m=>String(m.id)===String(replyTo))?.from).name)}</span><button data-action="cancel-reply">✕</button></div>`:''}
       <div class="composer-row"><div class="composer-tools"><button type="button" title="Choose a photo" aria-label="Choose a photo" data-action="attach">▧</button><button type="button" title="Send a voice note" aria-label="Send a voice note" data-action="voice-note">♫</button><button type="button" title="Choose a sticker" aria-label="Choose a sticker" data-action="sticker-picker">✧</button><button type="button" title="Add emoji" aria-label="Add emoji" data-action="emoji">☺</button></div><textarea class="composer-input" id="messageInput" rows="1" placeholder="Say something to your people…" maxlength="1500" aria-label="Message your circle"></textarea><button class="send-btn" data-action="send-message" title="Send" aria-label="Send message"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 14-7-5 14-3-6-6-1Z"/><path d="m11 13 8-8"/></svg></button></div>
       <div class="composer-hint">ENTER TO SEND <span>·</span> SHIFT + ENTER FOR A NEW LINE</div><input type="file" id="attachmentInput" accept="image/*,audio/*" hidden>
